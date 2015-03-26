@@ -89,7 +89,7 @@ namespace Xunit
 		}
 
 		/// <summary>
-		/// Orders the test collections using the <see cref="TestCollectionOrderer"/>.
+		/// Orders the test collections using the TestCollectionOrderer.
 		/// </summary>
 		/// <returns>Test collections (and the associated test cases) in run order</returns>
 		private List<Tuple<VsxTestCollection, List<IXunitTestCase>>> CreateTestCollections (IEnumerable<VsxTestCase> vsxTests)

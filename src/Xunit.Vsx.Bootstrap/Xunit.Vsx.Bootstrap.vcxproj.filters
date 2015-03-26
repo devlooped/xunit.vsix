@@ -25,9 +25,4 @@
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="makefile.def">
-      <Filter>Source Files</Filter>
-    </None>
-  </ItemGroup>
 </Project>

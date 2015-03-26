@@ -4,6 +4,9 @@ init:
 build_script:
   - build.cmd
 
+# since this requires launching VS and special UI permissions
+test: off
+
 deploy:
   - provider: NuGet
     api_key:

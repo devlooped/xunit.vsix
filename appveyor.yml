@@ -10,7 +10,7 @@ deploy:
       secure: 7MS5+XWaFchMXFqzgneQCqo9U0DlxiPXe/KWWUnbCBDEizVn06EjdQZkWu1gbNOJ
     artifact: /.*\.nupkg/
     on:
-      branch: dev
+      branch: master
       
 nuget:
   project_feed: true

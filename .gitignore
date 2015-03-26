@@ -27,3 +27,4 @@ packages/
 *.sln.ide
 *.metaproj
 *.tmp
+*.ipch

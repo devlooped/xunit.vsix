@@ -21,7 +21,7 @@
 		<file src="..\Xunit.Vsx\bin\xunit.vsx.dll" target="lib\net45" />
 		<file src="..\Xunit.Vsx\bin\xunit.vsx.pdb" target="lib\net45" />
 		<file src="..\Xunit.Vsx\bin\xunit.vsx.xml" target="lib\net45" />
-		<file src="..\Xunit.Vsx.Bootstrap\bin\Xunit.Vsx.Bootstrap.dll" target="lib\net45" />
+		<file src="..\Xunit.Vsx.Bootstrap\bin\xunit.vsx.bootstrap.dll" target="lib\net45" />
 		<file src="build\xunit.vsx.targets" target="build" />
 	</files>
 </package>

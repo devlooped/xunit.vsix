@@ -13,7 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8072B47B-5611-4BAB-8EF4-CB3125D676A5}</ProjectGuid>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <RootNamespace>ManagedInjector</RootNamespace>
+    <RootNamespace>Xunit</RootNamespace>
     <Keyword>ManagedCProj</Keyword>
     <ProjectName>Xunit.Vsx.Bootstrap</ProjectName>
     <OutDir>$(MSBuildProjectDirectory)\bin\</OutDir>
@@ -46,6 +46,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>xunit.vsx.bootstrap</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>

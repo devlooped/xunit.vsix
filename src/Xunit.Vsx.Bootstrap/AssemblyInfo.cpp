@@ -16,12 +16,12 @@ using namespace System::Security::Permissions;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 //
-[assembly:AssemblyTitleAttribute("ManagedInjector")];
+[assembly:AssemblyTitleAttribute("Xunit.Vsx.Bootstrap")];
 [assembly:AssemblyDescriptionAttribute("")];
 [assembly:AssemblyConfigurationAttribute("")];
-[assembly:AssemblyCompanyAttribute("Microsoft")];
-[assembly:AssemblyProductAttribute("ManagedInjector")];
-[assembly:AssemblyCopyrightAttribute("Copyright (c) Microsoft 2006")];
+[assembly:AssemblyCompanyAttribute("Xamarin")];
+[assembly:AssemblyProductAttribute("Xunit.Vsx.Bootstrap")];
+[assembly:AssemblyCopyrightAttribute("Copyright (c) Xamarin 2015")];
 [assembly:AssemblyTrademarkAttribute("")];
 [assembly:AssemblyCultureAttribute("")];
 

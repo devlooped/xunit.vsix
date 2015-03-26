@@ -10,7 +10,7 @@ LRESULT __stdcall MessageHookProc(int nCode, WPARAM wparam, LPARAM lparam);
 
 using namespace System;
 
-namespace ManagedInjector
+namespace Xunit
 {
 	public ref class Injector : System::Object
 	{

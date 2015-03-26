@@ -9,7 +9,6 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Threading.Tasks;
-using ManagedInjector;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using Xunit.Abstractions;

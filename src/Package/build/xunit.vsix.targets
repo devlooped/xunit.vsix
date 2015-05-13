@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<PropertyGroup>
+		<CompileDependsOn>
+			GenerateVsxFrameworkInfo;
+			IncludeVsxFrameworkInfo;
+			$(CompileDependsOn);
+		</CompileDependsOn>
+		<VsxFrameworkInfoFile Condition="'$(VsxFrameworkInfoFile)' == ''">$(IntermediateOutputPath)AssemblyInfo.VsxFramework.g$(DefaultLanguageSourceExtension)</VsxFrameworkInfoFile>
+	</PropertyGroup>
+
+	<Target Name="GenerateVsxFrameworkInfo"
+			Inputs="$(MSBuildProjectFullPath)"
+			Outputs="$(VsxFrameworkInfoFile)">
+		<WriteLinesToFile File="$(VsxFrameworkInfoFile)" Lines="[assembly: Xunit.TestFrameworkAttribute (&quot;Xunit.VsxTestFramework&quot;, &quot;xunit.vsx&quot;)]" Overwrite="true" />
+		<ItemGroup>
+			<FileWrites Include="$(VsxFrameworkInfoFile)" />
+		</ItemGroup>
+	</Target>
+
+	<Target Name="IncludeVsxFrameworkInfo">
+		<ItemGroup>
+			<Compile Include="$(VsxFrameworkInfoFile)" />
+		</ItemGroup>
+	</Target>
+
+</Project>

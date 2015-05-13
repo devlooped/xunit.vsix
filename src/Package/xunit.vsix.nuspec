@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+    <metadata>
+        <id>xunit.vsix</id>
+        <version>0.1.0</version>
+        <title>xUnit.net for VSIX [Extension: VsixFact]</title>
+        <authors>Mobile Essentials</authors>
+        <licenseUrl>http://www.mobileessentials.org</licenseUrl>
+        <projectUrl>http://www.mobileessentials.org</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Allows creating much more reliable VS SDK integration (VSIX) tests that run using any xUnit capable runner, such as TestDriven.NET.</description>
+        <copyright>Copyright 2015</copyright>
+        <tags>xunit vssdk testing</tags>
+		<dependencies>
+		  <dependency id="xunit.abstractions" version="2.0.0" />
+		  <dependency id="xunit.extensibility.core" version="2.0.0" />
+		  <dependency id="xunit.extensibility.execution" version="2.0.0" />
+		</dependencies>
+    </metadata>
+	<files>
+		<file src="..\Xunit.Vsix\bin\xunit.vsix.dll" target="lib\net45" />
+		<file src="..\Xunit.Vsix\bin\xunit.vsix.pdb" target="lib\net45" />
+		<file src="..\Xunit.Vsix\bin\xunit.vsix.xml" target="lib\net45" />
+		<file src="..\Xunit.Vsix.Bootstrap\bin\xunit.vsix.bootstrap.dll" target="lib\net45" />
+		<file src="build\xunit.vsix.targets" target="build" />
+	</files>
+</package>

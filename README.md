@@ -1,2 +1,2 @@
-# xunit.vsx
-Xunit for VSSDK
+# xunit.vsix
+Xunit for VSIX

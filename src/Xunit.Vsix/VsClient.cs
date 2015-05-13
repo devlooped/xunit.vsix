@@ -18,6 +18,8 @@ namespace Xunit
 {
 	class VsClient : IVsClient
 	{
+		const string BindingPathKey = "{30C4F4A2-17C9-470C-AED2-2D4E97CC5686}";
+
 		bool initializedExtension;
 
 		string visualStudioVersion;
@@ -147,11 +149,12 @@ namespace Xunit
 		public void Dispose ()
 		{
 			Stop ();
+			ClearBindingPaths ();
 		}
 
 		private bool Start ()
 		{
-			InitializeExtension ();
+			AddBindingPaths ();
 
 			// This environment variable is used by the VsRemoveRunner to set up the right 
 			// server channel named pipe, which is later used by the test runner to execute 
@@ -206,10 +209,11 @@ namespace Xunit
 			} catch (Exception) {
 				return false;
 			}
+
 			return true;
 		}
 
-		private void InitializeExtension ()
+		private void AddBindingPaths ()
 		{
 			if (initializedExtension)
 				return;
@@ -228,44 +232,45 @@ namespace Xunit
 				visualStudioVersion + rootSuffix,
 				"Extensions");
 
-			// Touch file so that configuration is refreshed.
-			File.WriteAllText (Path.Combine (extensionsPath, "extensions.configurationchanged"), "");
+			using (var pathsKey = Registry.CurrentUser.OpenSubKey (@"Software\Microsoft\VisualStudio\" +
+				visualStudioVersion + rootSuffix + @"_Config\BindingPaths\", true)) {
 
-			var baseDir = Path.Combine (Path.GetTempPath (), @"Xamarin\xunit.vsix", visualStudioVersion + rootSuffix);
-			if (!Directory.Exists (baseDir))
-				Directory.CreateDirectory (baseDir);
+				var bindingKey = pathsKey.OpenSubKey (BindingPathKey, true);
+				if (bindingKey == null)
+					bindingKey = pathsKey.CreateSubKey (BindingPathKey);
 
-			var pkgDef = PkgTemplate + string.Join (
-				Environment.NewLine,
-				probingPaths.Select (path => string.Format ("\"{0}\"=\"\"", path)));
+				using (bindingKey) {
+					// Across multiple VsClient sessions within the same 
+					// test run (i.e. tests that request their own clean 
+					// instance of VS), these paths won't change.
+					var bindingPaths = new HashSet<string>(bindingKey.GetValueNames());
 
-			File.WriteAllText (Path.Combine (baseDir, "xunit.vsix.pkgdef"), pkgDef);
-			File.WriteAllText (Path.Combine (baseDir, "extension.vsixmanifest"),
-				VsixTemplate.Replace ("$version$", visualStudioVersion));
+					if (probingPaths.Any (probingPath => !bindingPaths.Contains (probingPath))) {
+						// There was a change, meaning it's another run, and typically all 
+						// assemblies change location because of shadow copying, so we 
+						// have to refresh all of them.
+						foreach (var name in bindingKey.GetValueNames ()) {
+							bindingKey.DeleteValue (name);
+						}
 
-			using (var package = System.IO.Packaging.Package.Open (Path.Combine (Path.GetTempPath (), @"Xamarin\xunit.vsix", visualStudioVersion + rootSuffix + ".vsix"), FileMode.Create)) {
-				foreach (var item in Directory.EnumerateFiles (baseDir)) {
-					var info = new FileInfo (item);
-					var partUri = PackUriHelper.CreatePartUri (new Uri (info.Name, UriKind.Relative));
-					if (!package.PartExists (partUri)) {
-						var part = package.CreatePart (partUri, info.Extension == ".pkgdef" ? "text/plain" : "text/xml");
-						using (var stream = File.OpenRead (info.FullName)) {
-							stream.WriteTo (part.GetStream ());
+						foreach (var probingPath in probingPaths) {
+							bindingKey.SetValue (probingPath, "");
 						}
 					}
 				}
 			}
 
-			using (var key = Registry.CurrentUser.OpenSubKey (@"Software\Microsoft\VisualStudio\" + visualStudioVersion + rootSuffix, true)) {
-				key.SetValue ("ConfigurationChanged", DateTime.UtcNow.ToFileTimeUtc (), RegistryValueKind.QWord);
-			}
-
-			var pkgDefFile = Directory.EnumerateFiles (extensionsPath, "xunit.vsix.pkgdef", SearchOption.AllDirectories).FirstOrDefault ();
-			if (pkgDefFile != null)
-				File.Copy (Path.Combine (baseDir, "xunit.vsix.pkgdef"), pkgDefFile, true);
-
 			initializedExtension = true;
 		}
+
+		private void ClearBindingPaths ()
+		{
+			using (var pathsKey = Registry.CurrentUser.OpenSubKey (@"Software\Microsoft\VisualStudio\" +
+				visualStudioVersion + rootSuffix + @"_Config\BindingPaths\", true)) {
+				pathsKey.DeleteSubKey (BindingPathKey);
+			}
+		}
+
 
 		private void Stop ()
 		{
@@ -330,28 +335,5 @@ namespace Xunit
 				}
 			}
 		}
-
-		const string VsixTemplate = @"<Vsix Version='1.0.0' xmlns='http://schemas.microsoft.com/developer/vsx-schema/2010'>
-  <Identifier Id='xunit.vsix'>
-    <Name>Xunit for VSIX</Name>
-    <Author>Xamarin</Author>
-    <Version>1.0.0</Version>
-    <Description xml:space='preserve'>Provides VSIX runtime testing support for xunit.</Description>
-    <Locale>1033</Locale>
-    <MoreInfoUrl>http://www.xamarin.com/</MoreInfoUrl>
-    <SupportedProducts>
-      <VisualStudio Version='$version$'>
-        <Edition>Pro</Edition>
-      </VisualStudio>
-    </SupportedProducts>
-    <SupportedFrameworkRuntimeEdition MinVersion='4.0' MaxVersion='4.5' />
-  </Identifier>
-  <Content>
-    <VsPackage>xunit.vsix.pkgdef</VsPackage>
-  </Content>
-</Vsix>";
-
-		const string PkgTemplate = @"[$RootKey$\BindingPaths\{30C4F4A2-17C9-470C-AED2-2D4E97CC5686}]
-";
 	}
 }

@@ -11,6 +11,10 @@ static class NativeMethods
 	public const int PROCESS_QUERY_INFORMATION = 0x400;
 	public const int TH32CS_SNAPPROCESS = 2;
 
+    public static readonly Guid IID_IServiceProvider = typeof(Microsoft.VisualStudio.OLE.Interop.IServiceProvider).GUID;
+    public static readonly Guid IID_IObjectWithSite = typeof(Microsoft.VisualStudio.OLE.Interop.IObjectWithSite).GUID;
+    public static Guid IID_IUnknown = new Guid("00000000-0000-0000-C000-000000000046");
+
 	[DllImport ("ole32.dll")]
 	internal static extern int CoRegisterMessageFilter (IMessageFilter lpMessageFilter, out IMessageFilter lplpMessageFilter);
 	[DllImport ("ole32.dll")]
@@ -58,4 +62,15 @@ static class NativeMethods
         [PreserveSig, MethodImpl(MethodImplOptions.InternalCall, MethodCodeType=MethodCodeType.Runtime)]
         uint MessagePending([In] IntPtr htaskCallee, [In, ComAliasName("Microsoft.VisualStudio.OLE.Interop.DWORD")] uint dwTickCount, [In, ComAliasName("Microsoft.VisualStudio.OLE.Interop.DWORD")] uint dwPendingType);
     }
+
+    internal static bool Succeeded(int hr)
+    {
+        return hr >= 0;
+    }
+
+    internal static bool Failed(int hr)
+    {
+        return hr < 0;
+    }
+
 }

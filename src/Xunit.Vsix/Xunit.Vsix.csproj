@@ -91,6 +91,7 @@
     <Compile Include="RemotingUtil.cs" />
     <Compile Include="RunningObjects.cs" />
     <Compile Include="GlobalServices.cs" />
+    <Compile Include="ServiceProvider.cs" />
     <Compile Include="TaskExtensions.cs" />
     <Compile Include="VisualStudioVersion.cs" />
     <Compile Include="VsClient.cs" />

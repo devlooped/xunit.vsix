@@ -3,25 +3,25 @@
 
 	<PropertyGroup>
 		<CompileDependsOn>
-			GenerateVsxFrameworkInfo;
-			IncludeVsxFrameworkInfo;
+			GenerateVsixFrameworkInfo;
+			IncludeVsixFrameworkInfo;
 			$(CompileDependsOn);
 		</CompileDependsOn>
-		<VsxFrameworkInfoFile Condition="'$(VsxFrameworkInfoFile)' == ''">$(IntermediateOutputPath)AssemblyInfo.VsxFramework.g$(DefaultLanguageSourceExtension)</VsxFrameworkInfoFile>
+		<VsixFrameworkInfoFile Condition="'$(VsixFrameworkInfoFile)' == ''">$(IntermediateOutputPath)AssemblyInfo.VsixFramework.g$(DefaultLanguageSourceExtension)</VsixFrameworkInfoFile>
 	</PropertyGroup>
 
-	<Target Name="GenerateVsxFrameworkInfo"
+	<Target Name="GenerateVsixFrameworkInfo"
 			Inputs="$(MSBuildProjectFullPath)"
-			Outputs="$(VsxFrameworkInfoFile)">
-		<WriteLinesToFile File="$(VsxFrameworkInfoFile)" Lines="[assembly: Xunit.TestFrameworkAttribute (&quot;Xunit.VsxTestFramework&quot;, &quot;xunit.vsx&quot;)]" Overwrite="true" />
+			Outputs="$(VsixFrameworkInfoFile)">
+		<WriteLinesToFile File="$(VsixFrameworkInfoFile)" Lines="[assembly: Xunit.TestFrameworkAttribute (&quot;Xunit.VsixTestFramework&quot;, &quot;xunit.vsix&quot;)]" Overwrite="true" />
 		<ItemGroup>
-			<FileWrites Include="$(VsxFrameworkInfoFile)" />
+			<FileWrites Include="$(VsixFrameworkInfoFile)" />
 		</ItemGroup>
 	</Target>
 
-	<Target Name="IncludeVsxFrameworkInfo">
+	<Target Name="IncludeVsixFrameworkInfo">
 		<ItemGroup>
-			<Compile Include="$(VsxFrameworkInfoFile)" />
+			<Compile Include="$(VsixFrameworkInfoFile)" />
 		</ItemGroup>
 	</Target>
 

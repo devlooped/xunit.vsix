@@ -75,10 +75,12 @@ namespace Xunit
 
 				try {
 					runner = (IVsRemoteRunner)RemotingServices.Connect (typeof (IVsRemoteRunner), hostUrl);
-					if (runner.ShouldRestart ()) {
-						Stop ();
-						return await RunAsync (testCase, messageBus, aggregator, constructorArguments);
-					}
+                    // We don't require restart anymore since we write to the registry directly the binding paths, 
+                    // rather than installing a VSIX
+                    //if (runner.ShouldRestart ()) {
+                    //    Stop ();
+                    //    return await RunAsync (testCase, messageBus, aggregator, constructorArguments);
+                    //}
 
 					if (Debugger.IsAttached) {
 						// Add default trace listeners to the remote process.

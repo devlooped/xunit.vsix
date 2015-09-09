@@ -15,12 +15,12 @@ namespace Xunit
 		/// </summary>
 		public const int DefaultTimeout = 60;
 
-		public static T GetComputedProperty<T> (this ITestMethod testMethod, string argumentName)
+		public static T GetComputedProperty<T>(this ITestMethod testMethod, string argumentName)
 		{
 			return GetComputedProperty<T> (testMethod, testMethod.Method.GetCustomAttributes (typeof (IVsixAttribute)).FirstOrDefault (), argumentName);
 		}
 
-		public static T GetComputedProperty<T> (this ITestMethod testMethod, IAttributeInfo factAttribute, string argumentName)
+		public static T GetComputedProperty<T>(this ITestMethod testMethod, IAttributeInfo factAttribute, string argumentName)
 		{
 			var value = factAttribute == null ? default(T) : factAttribute.GetNamedArgument<T>(argumentName);
 			if (!Object.Equals (value, default (T)))
@@ -36,7 +36,7 @@ namespace Xunit
 			}
 
 			// Finally assembly level.
-			vsixAttr = testMethod.TestClass.Class.Assembly.GetCustomAttributes (typeof(IVsixAttribute)).FirstOrDefault ();
+			vsixAttr = testMethod.TestClass.Class.Assembly.GetCustomAttributes (typeof (IVsixAttribute)).FirstOrDefault ();
 			if (vsixAttr != null) {
 				value = vsixAttr.GetNamedArgument<T> (argumentName);
 
@@ -47,28 +47,33 @@ namespace Xunit
 			return default (T);
 		}
 
-		public static T GetComputedArgument<T> (this ITestMethod testMethod, string argumentName)
+		public static T GetComputedArgument<T>(this ITestMethod testMethod, string argumentName)
 		{
 			return GetComputedArgument<T> (testMethod, testMethod.Method.GetCustomAttributes (typeof (IVsixAttribute)).FirstOrDefault (), argumentName);
 		}
 
-		public static T GetComputedArgument<T> (this ITestMethod testMethod, IAttributeInfo factAttribute, string argumentName)
+		public static T GetComputedArgument<T>(this ITestMethod testMethod, IAttributeInfo factAttribute, string argumentName)
 		{
 			var value = factAttribute == null ? default(T) : GetNamedArgument<T>(factAttribute, argumentName);
 			if (!Object.Equals (value, default (T)))
 				return value;
 
 			// Go up to the class level.
-			var vsixAttr = testMethod.TestClass.Class.GetCustomAttributes (typeof(IVsixAttribute)).FirstOrDefault ();
-			if (vsixAttr != null) {
-				value = GetNamedArgument<T> (vsixAttr, argumentName);
+			var testClass = testMethod.TestClass.Class;
+			IAttributeInfo vsixAttr;
+			while (testClass != null && testClass.Name != typeof (object).FullName) {
+				vsixAttr = testClass.GetCustomAttributes (typeof (IVsixAttribute)).FirstOrDefault ();
+				if (vsixAttr != null) {
+					value = GetNamedArgument<T> (vsixAttr, argumentName);
 
-				if (!Object.Equals (value, default (T)))
-					return value;
+					if (!Object.Equals (value, default (T)))
+						return value;
+				}
+				testClass = testClass.BaseType;
 			}
 
 			// Finally assembly level.
-			vsixAttr = testMethod.TestClass.Class.Assembly.GetCustomAttributes (typeof(IVsixAttribute)).FirstOrDefault ();
+			vsixAttr = testMethod.TestClass.Class.Assembly.GetCustomAttributes (typeof (IVsixAttribute)).FirstOrDefault ();
 			if (vsixAttr != null) {
 				value = GetNamedArgument<T> (vsixAttr, argumentName);
 

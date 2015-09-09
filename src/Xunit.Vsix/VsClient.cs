@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Packaging;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Remoting;
@@ -75,12 +74,12 @@ namespace Xunit
 
 				try {
 					runner = (IVsRemoteRunner)RemotingServices.Connect (typeof (IVsRemoteRunner), hostUrl);
-                    // We don't require restart anymore since we write to the registry directly the binding paths, 
-                    // rather than installing a VSIX
-                    //if (runner.ShouldRestart ()) {
-                    //    Stop ();
-                    //    return await RunAsync (testCase, messageBus, aggregator, constructorArguments);
-                    //}
+					// We don't require restart anymore since we write to the registry directly the binding paths,
+					// rather than installing a VSIX
+					//if (runner.ShouldRestart ()) {
+					//    Stop ();
+					//    return await RunAsync (testCase, messageBus, aggregator, constructorArguments);
+					//}
 
 					if (Debugger.IsAttached) {
 						// Add default trace listeners to the remote process.
@@ -123,7 +122,7 @@ namespace Xunit
 					() => runner.Run (testCase, remoteBus, args))
 					.TimeoutAfter (testCase.TimeoutSeconds * 1000);
 
-				// Dump output only if a debugger is attached, meaning that most likely 
+				// Dump output only if a debugger is attached, meaning that most likely
 				// there is a single test being run/debugged.
 				if (Debugger.IsAttached && outputHelper != null && !string.IsNullOrEmpty (outputHelper.Output)) {
 					Trace.WriteLine (outputHelper.Output);
@@ -158,15 +157,15 @@ namespace Xunit
 		{
 			AddBindingPaths ();
 
-			// This environment variable is used by the VsRemoveRunner to set up the right 
-			// server channel named pipe, which is later used by the test runner to execute 
+			// This environment variable is used by the VsRemoveRunner to set up the right
+			// server channel named pipe, which is later used by the test runner to execute
 			// tests in the VS app domain.
 			Environment.SetEnvironmentVariable (Constants.PipeNameEnvironmentVariable, pipeName);
 
 			Process = new Process {
 				StartInfo = {
 					FileName = devEnvPath,
-					Arguments = string.IsNullOrEmpty (rootSuffix) ? "" : "/RootSuffix Exp",
+					Arguments = string.IsNullOrEmpty (rootSuffix) ? "" : "/RootSuffix " + rootSuffix,
 					UseShellExecute = false,
 					WorkingDirectory = Directory.GetCurrentDirectory (),
 				},
@@ -242,14 +241,14 @@ namespace Xunit
 					bindingKey = pathsKey.CreateSubKey (BindingPathKey);
 
 				using (bindingKey) {
-					// Across multiple VsClient sessions within the same 
-					// test run (i.e. tests that request their own clean 
+					// Across multiple VsClient sessions within the same
+					// test run (i.e. tests that request their own clean
 					// instance of VS), these paths won't change.
 					var bindingPaths = new HashSet<string>(bindingKey.GetValueNames());
 
 					if (probingPaths.Any (probingPath => !bindingPaths.Contains (probingPath))) {
-						// There was a change, meaning it's another run, and typically all 
-						// assemblies change location because of shadow copying, so we 
+						// There was a change, meaning it's another run, and typically all
+						// assemblies change location because of shadow copying, so we
 						// have to refresh all of them.
 						foreach (var name in bindingKey.GetValueNames ()) {
 							bindingKey.DeleteValue (name);

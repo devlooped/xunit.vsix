@@ -1,2 +1,2 @@
 # xunit.vsix
-Xunit for VSIX
+Xunit for VSIX integration testing

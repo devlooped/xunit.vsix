@@ -23,4 +23,4 @@ IF EXIST packages\MSBuilder.NuGet.GetLatestVersion goto run
 build\.nuget\NuGet.exe install packages.config -OutputDirectory packages -ExcludeVersion
 
 :run
-msbuild /nologo /v:minimal %1 %2 %3 %4 %5 %6 %7 %8 %9
+msbuild /nologo /v:normal %1 %2 %3 %4 %5 %6 %7 %8 %9

@@ -1,16 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.Win32;
-using Xunit.Abstractions;
-
-[assembly: Xunit.TestFrameworkAttribute ("Xunit.VsixTestFramework", "xunit.vsix")]
 
 namespace Xunit
 {

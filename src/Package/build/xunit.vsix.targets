@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <PropertyGroup>
+    <!-- Specify 'All' to run against all installed VS versions. -->
+    <!-- Specify a semicolon-separated list for specific versions. -->
+    <!-- Default is current VS version -->
+    <VisualStudioVersions Condition=" '' == '' ">$(VisualStudioVersion)</VisualStudioVersions>
+  </PropertyGroup>
+  
 	<PropertyGroup>
 		<CompileDependsOn>
 			GenerateVsixFrameworkInfo;
@@ -13,8 +20,18 @@
 	<Target Name="GenerateVsixFrameworkInfo"
 			Inputs="$(MSBuildProjectFullPath)"
 			Outputs="$(VsixFrameworkInfoFile)">
+
+    <ItemGroup>
+      <_VisualStudioVersion Include="$(VisualStudioVersions)" />
+      <_QuotedVisualStudioVersion Include="@(_VisualStudioVersion -> '&quot;%(Identity)&quot;')" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_QuotedVisualStudioVersion>@(_QuotedVisualStudioVersion, ', ')</_QuotedVisualStudioVersion>
+    </PropertyGroup>
+    
 		<WriteLinesToFile File="$(VsixFrameworkInfoFile)" Lines="[assembly: Xunit.TestFrameworkAttribute (&quot;Xunit.VsixTestFramework&quot;, &quot;xunit.vsix&quot;)]" Overwrite="true" />
-		<ItemGroup>
+    <WriteLinesToFile File="$(VsixFrameworkInfoFile)" Lines="[assembly: Xunit.Vsix ($(_QuotedVisualStudioVersion))]" Overwrite="false" />
+    <ItemGroup>
 			<FileWrites Include="$(VsixFrameworkInfoFile)" />
 		</ItemGroup>
 	</Target>

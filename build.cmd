@@ -18,9 +18,9 @@ md build\.nuget
 copy %CACHED_NUGET% build\.nuget\nuget.exe > nul
 
 :restore
-IF NOT EXIST packages.config goto run
-IF EXIST packages\MSBuilder.NuGet.GetLatestVersion goto run
-build\.nuget\NuGet.exe install packages.config -OutputDirectory packages -ExcludeVersion
+IF NOT EXIST build\packages.config goto run
+IF EXIST build\packages\GitInfo goto run
+build\.nuget\NuGet.exe install build\packages.config -OutputDirectory build\packages -ExcludeVersion
 
 :run
 msbuild /nologo /v:normal %1 %2 %3 %4 %5 %6 %7 %8 %9

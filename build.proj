@@ -1,166 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-	The MIT License (MIT)
-
-	Copyright (c) 2015 Mobile Essentials
-
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
-
-	The above copyright notice and this permission notice shall be included in all
-	copies or substantial portions of the Software.
-
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-	SOFTWARE.
--->
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
 	<PropertyGroup>
-		<Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
-		<TrackFileAccess>false</TrackFileAccess>
-		<VersionFormat Condition="'$(VersionFormat)' == ''">MAJOR.MINOR.PATCH-PRE</VersionFormat>
+		<Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+		<GitInfoReportImportance>high</GitInfoReportImportance>
+    <IntermediateOutputPath>build\</IntermediateOutputPath>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<!-- To build a single solution or project, just pass it as a property $(Solution) or $(Project) -->
-		
-		<!-- Solutions at the root of the src directory are all built automatically unless overriden -->
-		<Solution Include="src\*.sln" Condition="'$(Solution)' == ''">
-			<AdditionalProperties>Configuration=$(Configuration);TrackFileAccess=$(TrackFileAccess)</AdditionalProperties>
-		</Solution>
-		
-		<Solution Include="$(Solution)" Condition="'$(Solution)' != ''">
-			<AdditionalProperties>Configuration=$(Configuration);TrackFileAccess=$(TrackFileAccess)</AdditionalProperties>
-		</Solution>
-		
-		<NuGet Include="**\*.nuspec" />
-	</ItemGroup>
-	
-	<Import Project="build\build.targets" />
-	<Import Project="packages\MSBuilder.CodeTaskAssembly\build\MSBuilder.CodeTaskAssembly.props" />
-	<Import Project="packages\MSBuilder.Git\build\MSBuilder.Git.props" />
-	<Import Project="packages\MSBuilder.Run\build\MSBuilder.Run.targets" />
-	<Import Project="packages\MSBuilder.NuGet.GetLatestVersion\build\MSBuilder.NuGet.GetLatestVersion.tasks" />
-
-	<PropertyGroup>
-		<!-- We overwrite the prop since we don't want FormatVersion at all -->
-		<BuildPackagesDependsOn>
-			$(BuildPackagesDependsOn);
-			AddPackageMetadata;
-			FilterPackages;
-		</BuildPackagesDependsOn>
+	<PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
+		<NuGetPath Condition=" '$(NuGetPath)' == '' ">build\.nuget</NuGetPath>
+		<NuGetExe Condition=" '$(NuGetExe)' == '' ">$(NuGetPath)\NuGet.exe</NuGetExe>
 	</PropertyGroup>
 
-	<Target Name="FilterPackages" Inputs="@(NuGet)" Outputs="%(NuGet.Identity)-BATCH">
+	<PropertyGroup Condition=" '$(OS)' != 'Windows_NT' ">
+		<NuGetExe>nuget</NuGetExe>
+	</PropertyGroup>
 
-		<GetLatestVersion PackageId="%(NuGet.Id)" IncludePreRelease="true">
-			<Output TaskParameter="SimpleVersion" PropertyName="LatestVersion" />
-		</GetLatestVersion>
-
-		<CompareVersions Current="%(NuGet.Version)" Latest="$(LatestVersion)">
-			<Output TaskParameter="Result" PropertyName="Comparison" />
-		</CompareVersions>
-
-		<IncrementVersion Version="$(LatestVersion)" Commits="1" Condition="'$(Comparison)' == '-1'">
-			<Output TaskParameter="Result" PropertyName="SuggestedVersion" />
-		</IncrementVersion>
-
-		<Message Text="Skipping '%(NuGet.Id)': %(NuGet.Version) == $(LatestVersion) (current == latest)" Importance="normal" Condition="'$(Comparison)' == '0'" />
-		<Message Text="Updated '%(NuGet.Id)': %(NuGet.Version) &gt; $(LatestVersion) (current &gt; latest!)" Importance="high" Condition="'$(Comparison)' == '1'" />
-		<Error Text="Currently determined package version for '%(NuGet.Id)' is %(NuGet.Version), which is smaller than the latest published version $(LatestVersion). 
-This is an authoring error that typically indicates that a change was made to the .nuspec file without changing the version to be greater than the latest published version.
-Change the 'version' attribute to be at least '$(SuggestedVersion)' (or increase the major or minor components)." Condition="'$(Comparison)' == '-1'" />
-
-		<ItemGroup>
-			<NuGet Remove="@(NuGet)" Condition="$(Comparison) == '0'" />
-		</ItemGroup>
-	</Target>
-
-	<Target Name="AddPackageMetadata" Inputs="@(NuGet)" Outputs="%(NuGet.Identity)-BATCH">
-
+	<Target Name="Build" DependsOnTargets="Clean;GitVersion">
 		<PropertyGroup>
-			<NuSpec>%(NuGet.Identity)</NuSpec>
+			<Version>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)</Version>
+			<Args>-Version $(Version) -NoPackageAnalysis -NonInteractive -OutputDirectory out -Properties Configuration=$(Configuration)</Args>
 		</PropertyGroup>
 
-		<Run Exe='$(Git)'
-			 Args='log -n 1 --pretty=format:%H "$(NuSpec)"'
-			 WorkingDir='$(MSBuildProjectDirectory)'>
-			<Output TaskParameter="Output" PropertyName="NuSpecSha" />
-		</Run>
-
-		<Run Exe='$(Git)'
-			 Args='rev-list --count "$(NuSpecSha)"..HEAD $([System.IO.Path]::GetDirectoryName("$(NuSpec)"))'
-			 WorkingDir='$(MSBuildProjectDirectory)'>
-			<Output TaskParameter="Output" PropertyName="NuSpecCommits" />
-		</Run>
-
-		<XmlPeek XmlInputPath="$(NuSpec)"
-				 Query="/package/metadata/id/text()">
-			<Output TaskParameter="Result" PropertyName="NuSpecId" />
-		</XmlPeek>
-
-		<XmlPeek XmlInputPath="$(NuSpec)"
-				 Query="/package/metadata/version/text()">
-			<Output TaskParameter="Result" PropertyName="NuSpecVersion" />
-		</XmlPeek>
-
-		<IncrementVersion Version="$(NuSpecVersion)" Commits="$(NuSpecCommits)">
-			<Output TaskParameter="Result" PropertyName="NuSpecVersion" />
-		</IncrementVersion>
-
-		<ItemGroup>
-			<NuGet>
-				<Id>$(NuSpecId)</Id>
-				<Commits>$(NuSpecCommits)</Commits>
-				<Version>$(NuSpecVersion)</Version>
-			</NuGet>
-		</ItemGroup>
-
+		<MSBuild Projects="src\Xunit.Vsix.sln" Properties="Configuration=$(Configuration)" />
+		<MakeDir Directories="out" Condition=" !Exists('out') " />
+		<Exec Command='"$(NuGetExe)" Pack "src\Package\xunit.vsix.nuspec" $(Args)' />
+	</Target>
+	
+	<Target Name="Clean">
+		<Exec Command="rmdir out /s /q" Condition=" Exists('out') " />
 	</Target>
 
-	<UsingTask TaskName="IncrementVersion" TaskFactory="CodeTaskFactory" AssemblyFile="$(CodeTaskAssembly)">
+	<Target Name="Push" DependsOnTargets="Build">	
+		<Exec Command='"$(NuGetExe)" Push "out\*.nupkg"' />
+	</Target>
 
-		<ParameterGroup>
-			<Version Required="true"/>
-			<Commits Required="false" ParameterType="System.Int32" />
-			<Result Output="true"/>
-		</ParameterGroup>
-
-		<Task>
-			<Code Type="Fragment" Language="cs">
-				<![CDATA[
-				var version = new Version(Version);
-				Result = new Version(version.Major, version.Minor, (version.Build != -1 ? version.Build : 0) + Commits).ToString();
-]]>
-			</Code>
-		</Task>
-
-	</UsingTask>
-
-	<UsingTask TaskName="CompareVersions" TaskFactory="CodeTaskFactory" AssemblyFile="$(CodeTaskAssembly)">
-
-		<ParameterGroup>
-			<Current Required="true"/>
-			<Latest Required="true" />
-			<Result Output="true"/>
-		</ParameterGroup>
-
-		<Task>
-			<Code Type="Fragment" Language="cs">
-				<![CDATA[
-				Result = new Version(Current).CompareTo(new Version(Latest)).ToString();
-]]>
-			</Code>
-		</Task>
-
-	</UsingTask>
+	<Import Project="build\packages\GitInfo\build\GitInfo.targets" />
 </Project>

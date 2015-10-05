@@ -18,20 +18,20 @@
 	<Target Name="Build" DependsOnTargets="Clean;GitVersion">
 		<PropertyGroup>
 			<Version>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)</Version>
-			<Args>-Version $(Version) -NoPackageAnalysis -NonInteractive -OutputDirectory out -Properties Configuration=$(Configuration)</Args>
+			<Args>-Version $(Version) -NoPackageAnalysis -NonInteractive -Properties Configuration=$(Configuration)</Args>
 		</PropertyGroup>
 
 		<MSBuild Projects="src\Xunit.Vsix.sln" Properties="Configuration=$(Configuration)" />
-		<MakeDir Directories="out" Condition=" !Exists('out') " />
 		<Exec Command='"$(NuGetExe)" Pack "src\Package\xunit.vsix.nuspec" $(Args)' />
 	</Target>
 	
 	<Target Name="Clean">
 		<Exec Command="rmdir out /s /q" Condition=" Exists('out') " />
-	</Target>
+    <Exec Command="del *.nupkg" />
+  </Target>
 
 	<Target Name="Push" DependsOnTargets="Build">	
-		<Exec Command='"$(NuGetExe)" Push "out\*.nupkg"' />
+		<Exec Command='"$(NuGetExe)" Push "*.nupkg"' />
 	</Target>
 
 	<Import Project="build\packages\GitInfo\build\GitInfo.targets" />

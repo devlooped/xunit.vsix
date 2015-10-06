@@ -6,6 +6,8 @@
     <!-- Specify a semicolon-separated list for specific versions. -->
     <!-- Default is current VS version -->
     <VisualStudioVersions Condition=" '' == '' ">$(VisualStudioVersion)</VisualStudioVersions>
+    <!-- Ignore warning about xunit.vsix.bootstrap being x86 -->
+    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
   </PropertyGroup>
   
 	<PropertyGroup>

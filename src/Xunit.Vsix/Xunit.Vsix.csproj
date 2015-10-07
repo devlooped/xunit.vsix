@@ -28,6 +28,12 @@
     <Optimize>true</Optimize>
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\Xunit.Vsix.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="envdte, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>False</EmbedInteropTypes>
@@ -113,6 +119,9 @@
     <Compile Include="VsVersions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Xunit.Vsix.snk">
+      <Link>Xunit.Vsix.snk</Link>
+    </None>
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

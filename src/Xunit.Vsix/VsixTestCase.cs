@@ -24,6 +24,8 @@ namespace Xunit
 
 		public int TimeoutSeconds { get; private set; }
 
+		public bool HasTestOutput { get; set; }
+
 		protected override void Initialize ()
 		{
 			base.Initialize ();
@@ -45,6 +47,7 @@ namespace Xunit
             data.AddValue(SpecialNames.VsixAttribute.RootSuffix, RootSuffix);
             data.AddValue(SpecialNames.VsixAttribute.NewIdeInstance, NewIdeInstance);
             data.AddValue(SpecialNames.VsixAttribute.TimeoutSeconds, TimeoutSeconds);
+			data.AddValue ("HasTestOutput", HasTestOutput);
         }
 
         /// <inheritdoc/>
@@ -54,6 +57,7 @@ namespace Xunit
             RootSuffix = data.GetValue<string>(SpecialNames.VsixAttribute.RootSuffix);
             NewIdeInstance = data.GetValue<bool?>(SpecialNames.VsixAttribute.NewIdeInstance);
 			TimeoutSeconds = data.GetValue<int> (SpecialNames.VsixAttribute.TimeoutSeconds);
+			HasTestOutput = data.GetValue<bool> ("HasTestOutput");
         }
 	}
 }

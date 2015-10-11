@@ -6,7 +6,7 @@ namespace Xunit
 	interface IVsRemoteRunner
 	{
 		void AddListener (TraceListener listener);
-		bool ShouldRestart ();
-		VsixRunSummary Run (VsixTestCase testCase, IMessageBus messageBus, object[] constructorArguments);
+
+		VsixRunSummary Run (VsixTestCase testCase, IMessageBus messageBus);
 	}
 }

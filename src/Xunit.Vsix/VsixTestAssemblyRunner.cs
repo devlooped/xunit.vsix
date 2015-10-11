@@ -10,7 +10,7 @@ using Xunit.Sdk;
 namespace Xunit
 {
 	/// <summary>
-	/// Groups test cases by IDE version and root suffix, and 
+	/// Groups test cases by IDE version and root suffix, and
 	/// delegates to the <see cref="VsixTestCollectionRunner"/>.
 	/// </summary>
 	class VsixTestAssemblyRunner : XunitTestAssemblyRunner
@@ -48,8 +48,8 @@ namespace Xunit
 
 				var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
-				var tasks = CreateTestCollections(allTests.OfType<VsixTestCase>()).Select(collection => 
-					Task.Factory.StartNew(() => 
+				var tasks = CreateTestCollections(allTests.OfType<VsixTestCase>()).Select(collection =>
+					Task.Factory.StartNew(() =>
 						RunTestCollectionAsync(messageBus, collection.Item1, collection.Item2, cancellationTokenSource),
 						cancellationTokenSource.Token,
 						TaskCreationOptions.DenyChildAttach | TaskCreationOptions.HideScheduler,
@@ -78,7 +78,7 @@ namespace Xunit
 				disposables.Add (runner);
 				return runner.RunAsync ();
 			}
-			
+
 			return new XunitTestCollectionRunner (testCollection, testCases, DiagnosticMessageSink, messageBus, TestCaseOrderer, new ExceptionAggregator (Aggregator), cancellationTokenSource).RunAsync();
 		}
 
@@ -97,7 +97,7 @@ namespace Xunit
 			var collections = new ConcurrentDictionary<string, ITestCollection>();
 
 			var testCases = from tc in vsixTests.OfType<VsixTestCase>()
-							// For NewIdeInstance tests, every test case is its own new collection that will 
+							// For NewIdeInstance tests, every test case is its own new collection that will
 							// run in parallel with the rest. Otherwise, it's a combination of VS + Suffix.
 							let key = tc.NewIdeInstance.GetValueOrDefault() ? Guid.NewGuid().ToString() : tc.VisualStudioVersion + tc.RootSuffix
 							let col = collections.GetOrAdd(key, x => new VsixTestCollection(

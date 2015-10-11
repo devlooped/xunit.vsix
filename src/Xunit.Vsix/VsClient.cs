@@ -74,20 +74,12 @@ namespace Xunit
 
 				try {
 					runner = (IVsRemoteRunner)RemotingServices.Connect (typeof (IVsRemoteRunner), hostUrl);
-					// We don't require restart anymore since we write to the registry directly the binding paths,
-					// rather than installing a VSIX
-					//if (runner.ShouldRestart ()) {
-					//    Stop ();
-					//    return await RunAsync (testCase, messageBus, aggregator, constructorArguments);
-					//}
-
 					if (Debugger.IsAttached) {
 						// Add default trace listeners to the remote process.
 						foreach (var listener in Trace.Listeners.OfType<TraceListener> ()) {
 							runner.AddListener (listener);
 						}
 					}
-
 				} catch (Exception ex) {
 					messageBus.QueueMessage (new TestFailed (new XunitTest (testCase, testCase.DisplayName), 0, ex.Message, ex));
 					return new RunSummary {
@@ -99,36 +91,30 @@ namespace Xunit
 			var xunitTest = new XunitTest (testCase, testCase.DisplayName);
 
 			try {
-				var outputHelper = constructorArguments.OfType<TestOutputHelper> ().FirstOrDefault ();
-				if (outputHelper != null)
-					outputHelper.Initialize (messageBus, xunitTest);
-
-				// Special case for test output, since it's not MBR.
-				var args = constructorArguments.Select (arg => {
-					var helper = arg as ITestOutputHelper;
-					if (helper != null) {
-						var remoteHeper = new RemoteTestOutputHelper (helper);
-						remoteObjects.Add (remoteHeper);
-						return remoteHeper;
-					}
-
-					return arg;
-				}).ToArray ();
-
 				var remoteBus = new RemoteMessageBus (messageBus);
 				remoteObjects.Add (remoteBus);
 
-				var summary = await System.Threading.Tasks.Task.Run (
-					() => runner.Run (testCase, remoteBus, args))
-					.TimeoutAfter (testCase.TimeoutSeconds * 1000);
+				var outputBus = new InterceptingMessageBus (remoteBus, message => {
+					var resultMessage = message as ITestResultMessage;
+					if (resultMessage != null) {
+						// Dump output only if a debugger is attached, meaning that most likely
+						// there is a single test being run/debugged.
+						//if (Debugger.IsAttached && outputHelper != null && !string.IsNullOrEmpty (outputHelper.Output)) {
+						Trace.WriteLine (resultMessage.Output);
+						Debugger.Log (0, "", resultMessage.Output);
+						Console.WriteLine (resultMessage.Output);
+						//}
+					}
+				});
 
-				// Dump output only if a debugger is attached, meaning that most likely
-				// there is a single test being run/debugged.
-				if (Debugger.IsAttached && outputHelper != null && !string.IsNullOrEmpty (outputHelper.Output)) {
-					Trace.WriteLine (outputHelper.Output);
-					Debugger.Log (0, "", outputHelper.Output);
-					Console.WriteLine (outputHelper.Output);
-				}
+				if (constructorArguments.OfType<ITestOutputHelper> ().Any ())
+					// This property will indicate to the remote runner to create an output helper.
+					testCase.HasTestOutput = true;
+
+				var summary = await Task.Run (
+					// If ITestOutputHelper form exits in the ctor, it can't be marshalled.
+					() => runner.Run (testCase, outputBus))
+					.TimeoutAfter (testCase.TimeoutSeconds * 1000);
 
 				if (summary.Exception != null)
 					aggregator.Add (summary.Exception);
@@ -244,7 +230,7 @@ namespace Xunit
 					// Across multiple VsClient sessions within the same
 					// test run (i.e. tests that request their own clean
 					// instance of VS), these paths won't change.
-					var bindingPaths = new HashSet<string>(bindingKey.GetValueNames());
+					var bindingPaths = new HashSet<string> (bindingKey.GetValueNames ());
 
 					if (probingPaths.Any (probingPath => !bindingPaths.Contains (probingPath))) {
 						// There was a change, meaning it's another run, and typically all

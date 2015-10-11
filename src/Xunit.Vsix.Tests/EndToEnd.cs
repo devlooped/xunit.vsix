@@ -1,12 +1,20 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using Xunit.Abstractions;
 
 namespace Xunit
 {
 	[Vsix (RootSuffix = "Exp")]
 	public class EndToEnd
 	{
+		ITestOutputHelper output;
+
+		public EndToEnd (ITestOutputHelper output)
+		{
+			this.output = output;
+		}
+
 		[InlineData ("foo")]
 		[InlineData ("base")]
 		[Theory]
@@ -37,6 +45,7 @@ namespace Xunit
 		public void when_succeeding_then_reports ()
 		{
 			Assert.Equal ("foo", "foo");
+			output.WriteLine ("Exito!");
 		}
 
 		[VsixFact]

@@ -3,12 +3,12 @@
     <metadata>
         <id>xunit.vsix</id>
         <version>0.2.2</version>
-        <title>xUnit.net for VSIX > [VsixFact]</title>
+        <title>xUnit.net for VSIX [VsixFact and VsixTheory]</title>
         <authors>Mobile Essentials</authors>
-        <licenseUrl>http://www.mobileessentials.org</licenseUrl>
-        <projectUrl>http://www.mobileessentials.org</projectUrl>
+        <licenseUrl>https://github.com/kzu/xunit.vsix/blob/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/kzu/xunit.vsix</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Allows creating much more reliable VS SDK integration (VSIX) tests that run using any xUnit capable runner, such as TestDriven.NET.</description>
+        <description>Allows creating reliable, flexible and fast VS SDK integration (VSIX) tests that run using any xUnit capable runner, such as Visual Studio built-in Test Explorer or TestDriven.NET.</description>
         <copyright>Copyright 2015</copyright>
         <tags>xunit vssdk testing</tags>
 		<dependencies>

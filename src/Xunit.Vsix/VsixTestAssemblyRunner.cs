@@ -25,11 +25,6 @@ namespace Xunit
 			: base (testAssembly, testCases, diagnosticMessageSink, executionMessageSink, executionOptions)
 		{ }
 
-		protected override IMessageBus CreateMessageBus ()
-		{
-			return new InterceptingMessageBus (base.CreateMessageBus (), OnMessage);
-		}
-
 		protected override async Task<RunSummary> RunTestCollectionsAsync (IMessageBus messageBus, CancellationTokenSource cancellationTokenSource)
 		{
 			var allTests = TestCases;
@@ -58,8 +53,7 @@ namespace Xunit
 
 				var summaries = await Task.WhenAll(tasks.Select(t => t.Unwrap()));
 
-				return new RunSummary ()
-				{
+				return new RunSummary () {
 					Total = summaries.Sum (s => s.Total) + xunitSummary.Total,
 					Failed = summaries.Sum (s => s.Failed) + xunitSummary.Failed,
 					Skipped = summaries.Sum (s => s.Skipped) + xunitSummary.Skipped
@@ -79,13 +73,18 @@ namespace Xunit
 				return runner.RunAsync ();
 			}
 
-			return new XunitTestCollectionRunner (testCollection, testCases, DiagnosticMessageSink, messageBus, TestCaseOrderer, new ExceptionAggregator (Aggregator), cancellationTokenSource).RunAsync();
+			return new XunitTestCollectionRunner (testCollection, testCases, DiagnosticMessageSink, messageBus, TestCaseOrderer, new ExceptionAggregator (Aggregator), cancellationTokenSource).RunAsync ();
 		}
 
-		private void OnMessage(IMessageSinkMessage message)
+		public override void Dispose ()
 		{
-			if (message is ITestAssemblyFinished)
-				disposables.ForEach (d => d.Dispose ());
+			base.Dispose ();
+			disposables.ForEach (d => d.Dispose ());
+		}
+
+		protected override IMessageBus CreateMessageBus ()
+		{
+			return new SynchronousMessageBus (ExecutionMessageSink);
 		}
 
 		/// <summary>
@@ -101,8 +100,8 @@ namespace Xunit
 							// run in parallel with the rest. Otherwise, it's a combination of VS + Suffix.
 							let key = tc.NewIdeInstance.GetValueOrDefault() ? Guid.NewGuid().ToString() : tc.VisualStudioVersion + tc.RootSuffix
 							let col = collections.GetOrAdd(key, x => new VsixTestCollection(
-								tc.TestMethod.TestClass.TestCollection.TestAssembly,
-								tc.TestMethod.TestClass.Class,
+								base.TestAssembly,
+								tc.TestMethod?.TestClass?.Class,
 								tc.VisualStudioVersion, tc.RootSuffix))
 							select new { Collection = col, Test = tc };
 
@@ -120,7 +119,7 @@ namespace Xunit
 			}
 
 			return orderedTestCollections
-				.OfType<VsixTestCollection>()
+				.OfType<VsixTestCollection> ()
 				.Select (collection => Tuple.Create (collection, testCasesByCollection[collection]))
 				.ToList ();
 		}

@@ -18,10 +18,14 @@ namespace Xunit
 
 		public void Dispose ()
 		{
-			innerBus.Dispose ();
+			try {
+				innerBus.Dispose ();
+			} catch (ObjectDisposedException) {
+				// Others consuming the inner bus could dispose it before us.
+			}
 		}
 
-		public void OnMessage(Action<IMessageSinkMessage> action)
+		public void OnMessage (Action<IMessageSinkMessage> action)
 		{
 			callbacks.Add (action);
 		}

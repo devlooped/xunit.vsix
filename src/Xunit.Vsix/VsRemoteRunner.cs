@@ -34,6 +34,8 @@ namespace Xunit
 
 			var result = new XunitTestCaseRunner (
 					testCase, testCase.DisplayName, testCase.SkipReason,
+					// NOTE: we create the test output helper always locally in the
+					// remote process, since otherwise it isn't properly initialized.
 					testCase.HasTestOutput ? new[] { new TestOutputHelper() } : new object[0],
 					testCase.TestMethodArguments, messageBus,
 					aggregator, new CancellationTokenSource ())

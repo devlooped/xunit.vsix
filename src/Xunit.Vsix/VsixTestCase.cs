@@ -6,6 +6,10 @@ namespace Xunit
 {
 	class VsixTestCase : XunitTestCase
 	{
+#pragma warning disable 0618
+		public VsixTestCase () { }
+#pragma warning restore 0618
+
 		public VsixTestCase (IMessageSink messageSink, Xunit.Sdk.TestMethodDisplay defaultMethodDisplay, ITestMethod testMethod,
 			string vsVersion, string rootSuffix, bool? newIdeInstance, int timeoutSeconds)
 			: base (messageSink, defaultMethodDisplay, testMethod)
@@ -33,7 +37,7 @@ namespace Xunit
 			DisplayName += " > vs" + VisualStudioVersion;
 
 			// Register VS version as a trait, so that it can be used to group runs.
-			Traits["VisualStudioVersion"] = new List<string>(new [] { VisualStudioVersion });
+			Traits["VisualStudioVersion"] = new List<string> (new[] { VisualStudioVersion });
 		}
 
 		protected override string GetUniqueID ()
@@ -41,23 +45,25 @@ namespace Xunit
 			return base.GetUniqueID () + "-" + VisualStudioVersion;
 		}
 
-        public override void Serialize(IXunitSerializationInfo data)
-        {
-            data.AddValue("VisualStudioVersion", VisualStudioVersion);
-            data.AddValue(SpecialNames.VsixAttribute.RootSuffix, RootSuffix);
-            data.AddValue(SpecialNames.VsixAttribute.NewIdeInstance, NewIdeInstance);
-            data.AddValue(SpecialNames.VsixAttribute.TimeoutSeconds, TimeoutSeconds);
+		public override void Serialize (IXunitSerializationInfo data)
+		{
+			base.Serialize (data);
+			data.AddValue ("VisualStudioVersion", VisualStudioVersion);
+			data.AddValue (SpecialNames.VsixAttribute.RootSuffix, RootSuffix);
+			data.AddValue (SpecialNames.VsixAttribute.NewIdeInstance, NewIdeInstance);
+			data.AddValue (SpecialNames.VsixAttribute.TimeoutSeconds, TimeoutSeconds);
 			data.AddValue ("HasTestOutput", HasTestOutput);
-        }
+		}
 
-        /// <inheritdoc/>
-        public override void Deserialize(IXunitSerializationInfo data)
-        {
-            VisualStudioVersion = data.GetValue<string>("VisualStudioVersion");
-            RootSuffix = data.GetValue<string>(SpecialNames.VsixAttribute.RootSuffix);
-            NewIdeInstance = data.GetValue<bool?>(SpecialNames.VsixAttribute.NewIdeInstance);
+		/// <inheritdoc/>
+		public override void Deserialize (IXunitSerializationInfo data)
+		{
+			base.Deserialize (data);
+			VisualStudioVersion = data.GetValue<string> ("VisualStudioVersion");
+			RootSuffix = data.GetValue<string> (SpecialNames.VsixAttribute.RootSuffix);
+			NewIdeInstance = data.GetValue<bool?> (SpecialNames.VsixAttribute.NewIdeInstance);
 			TimeoutSeconds = data.GetValue<int> (SpecialNames.VsixAttribute.TimeoutSeconds);
 			HasTestOutput = data.GetValue<bool> ("HasTestOutput");
-        }
+		}
 	}
 }

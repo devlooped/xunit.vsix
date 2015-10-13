@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
@@ -97,13 +98,9 @@ namespace Xunit
 				var outputBus = new InterceptingMessageBus (remoteBus, message => {
 					var resultMessage = message as ITestResultMessage;
 					if (resultMessage != null) {
-						// Dump output only if a debugger is attached, meaning that most likely
-						// there is a single test being run/debugged.
-						//if (Debugger.IsAttached && outputHelper != null && !string.IsNullOrEmpty (outputHelper.Output)) {
 						Trace.WriteLine (resultMessage.Output);
 						Debugger.Log (0, "", resultMessage.Output);
 						Console.WriteLine (resultMessage.Output);
-						//}
 					}
 				});
 
@@ -112,7 +109,6 @@ namespace Xunit
 					testCase.HasTestOutput = true;
 
 				var summary = await Task.Run (
-					// If ITestOutputHelper form exits in the ctor, it can't be marshalled.
 					() => runner.Run (testCase, outputBus))
 					.TimeoutAfter (testCase.TimeoutSeconds * 1000);
 
@@ -160,7 +156,7 @@ namespace Xunit
 			Process.Start ();
 
 			// This forces us to wait until VS is fully started.
-			var dte = RunningObjects.GetDTE (visualStudioVersion, Process.Id, TimeSpan.FromSeconds (120));
+			var dte = RunningObjects.GetDTE (visualStudioVersion, Process.Id, TimeSpan.FromMinutes (1));
 			if (dte == null)
 				return false;
 
@@ -219,8 +215,16 @@ namespace Xunit
 				visualStudioVersion + rootSuffix,
 				"Extensions");
 
-			using (var pathsKey = Registry.CurrentUser.OpenSubKey (@"Software\Microsoft\VisualStudio\" +
-				visualStudioVersion + rootSuffix + @"_Config\BindingPaths\", true)) {
+			var bindingPathKeyName = @"Software\Microsoft\VisualStudio\" +
+				visualStudioVersion + rootSuffix + @"_Config\BindingPaths\";
+
+			var pathsKey = Registry.CurrentUser.OpenSubKey (bindingPathKeyName, true);
+
+			try {
+				if (pathsKey == null) {
+					FirstRun ();
+					pathsKey = Registry.CurrentUser.OpenSubKey (bindingPathKeyName, true);
+				}
 
 				var bindingKey = pathsKey.OpenSubKey (BindingPathKey, true);
 				if (bindingKey == null)
@@ -245,9 +249,44 @@ namespace Xunit
 						}
 					}
 				}
+
+			} finally {
+				if (pathsKey != null)
+					pathsKey.Dispose ();
 			}
 
 			initializedExtension = true;
+		}
+
+		/// <summary>
+		/// If the given VS vesion + hive hasn't been run ever before, we need
+		/// to do it once to give VS a chance to create the _Config registry
+		/// key populated from available extensions.
+		/// </summary>
+		private void FirstRun ()
+		{
+			var process = new Process {
+				StartInfo = {
+					FileName = devEnvPath,
+					Arguments = string.IsNullOrEmpty (rootSuffix) ? "" : "/RootSuffix " + rootSuffix,
+					UseShellExecute = false,
+					WorkingDirectory = Directory.GetCurrentDirectory (),
+				},
+			};
+
+			process.Start ();
+
+			// This forces us to wait until VS is fully started.
+			var dte = RunningObjects.GetDTE (visualStudioVersion, process.Id, TimeSpan.FromMinutes(2));
+			if (dte != null) {
+				dte.ExecuteCommand ("File.Exit");
+				var timeout = SpinWait.SpinUntil (() => process.HasExited, TimeSpan.FromSeconds(15));
+
+				if (timeout && !process.HasExited)
+					process.Kill ();
+			} else {
+				process.Kill ();
+			}
 		}
 
 		private void ClearBindingPaths ()

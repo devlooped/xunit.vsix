@@ -3,7 +3,7 @@
     <metadata>
         <id>xunit.vsix</id>
         <version>0.2.2</version>
-        <title>xUnit.net for VSIX [VsixFact and VsixTheory]</title>
+        <title>xUnit.net [VsixFact and VsixTheory]</title>
         <authors>Mobile Essentials</authors>
         <licenseUrl>https://github.com/kzu/xunit.vsix/blob/master/LICENSE</licenseUrl>
         <projectUrl>https://github.com/kzu/xunit.vsix</projectUrl>

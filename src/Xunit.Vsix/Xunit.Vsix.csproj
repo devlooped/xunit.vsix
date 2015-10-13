@@ -104,10 +104,14 @@
     <Compile Include="RemotingUtil.cs" />
     <Compile Include="RunningObjects.cs" />
     <Compile Include="GlobalServices.cs" />
+    <Compile Include="SerializationHelper.cs" />
     <Compile Include="ServiceProvider.cs" />
     <Compile Include="TaskExtensions.cs" />
     <Compile Include="VisualStudioVersion.cs" />
     <Compile Include="VsClient.cs" />
+    <Compile Include="VsixTheoryAttribute.cs" />
+    <Compile Include="VsixTheoryDiscoverer.cs" />
+    <Compile Include="VsixTheoryTestCase.cs" />
     <Compile Include="VsRemoteRunner.cs" />
     <Compile Include="VsStartup.cs" />
     <Compile Include="XunitExtensions.cs" />

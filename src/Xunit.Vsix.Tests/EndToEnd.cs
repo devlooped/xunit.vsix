@@ -29,6 +29,14 @@ namespace Xunit
 			Assert.True (true);
 		}
 
+		[InlineData ("foo", "foo")]
+		[InlineData ("bar", "bar")]
+		[VsixTheory (VisualStudioVersion.All)]
+		public void when_theory_for_vsix_then_executes_on_vs (string expected, string actual)
+		{
+			Assert.Equal (expected, actual);
+		}
+
 		[VsixFact (TimeoutSeconds = 2)]
 		public void when_execution_times_out_then_restarts_vs_for_other_tests ()
 		{

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -6,13 +8,13 @@ namespace Xunit
 {
 	class VsixTestCase : XunitTestCase
 	{
-#pragma warning disable 0618
+		[EditorBrowsable (EditorBrowsableState.Never)]
+		[Obsolete ("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes")]
 		public VsixTestCase () { }
-#pragma warning restore 0618
 
 		public VsixTestCase (IMessageSink messageSink, Xunit.Sdk.TestMethodDisplay defaultMethodDisplay, ITestMethod testMethod,
-			string vsVersion, string rootSuffix, bool? newIdeInstance, int timeoutSeconds)
-			: base (messageSink, defaultMethodDisplay, testMethod)
+			string vsVersion, string rootSuffix, bool? newIdeInstance, int timeoutSeconds, object[] testMethodArguments = null)
+			: base (messageSink, defaultMethodDisplay, testMethod, testMethodArguments)
 		{
 			VisualStudioVersion = vsVersion;
 			RootSuffix = rootSuffix;

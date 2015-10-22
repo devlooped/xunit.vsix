@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <!-- Specify 'All' to run against all installed VS versions. -->
+    <!-- Specify a semicolon-separated list for specific versions. -->
+    <!-- Default is current VS version -->
+    <VisualStudioVersions Condition=" '$(VisualStudioVersions)' == '' ">$(VisualStudioVersion)</VisualStudioVersions>
+    <RootSuffix Condition=" '$(RootSuffix)' == '' ">Exp</RootSuffix>
+    <!-- If you want to customize the [assembly: Vsix(..)] attribute, set this to false -->
+    <GenerateAssemblyVsixAttribute Condition=" '$(GenerateAssemblyVsixAttribute)' == '' ">true</GenerateAssemblyVsixAttribute>
+  </PropertyGroup>
+
+</Project>

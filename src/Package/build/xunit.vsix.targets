@@ -2,15 +2,8 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <!-- Specify 'All' to run against all installed VS versions. -->
-    <!-- Specify a semicolon-separated list for specific versions. -->
-    <!-- Default is current VS version -->
-    <VisualStudioVersions Condition=" '$(VisualStudioVersions)' == '' ">$(VisualStudioVersion)</VisualStudioVersions>
     <!-- Ignore warning about xunit.vsix.bootstrap being x86 -->
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
-  </PropertyGroup>
-  
-	<PropertyGroup>
 		<CompileDependsOn>
       GetVsixFrameworkInfoFile;
       GenerateVsixFrameworkInfo;
@@ -25,7 +18,7 @@
     </ItemGroup>
     <PropertyGroup>
       <!-- The item list concatenation wouldn't work outside a target -->
-      <VsixFrameworkInfoFile Condition="'$(VsixFrameworkInfoFile)' == ''">$(IntermediateOutputPath)AssemblyInfo.VsixFramework-@(VisualStudioVersion, '-').g$(DefaultLanguageSourceExtension)</VsixFrameworkInfoFile>
+      <VsixFrameworkInfoFile Condition="'$(VsixFrameworkInfoFile)' == ''">$(IntermediateOutputPath)AssemblyInfo.VsixFramework-@(VisualStudioVersion, '-')-$(RootSuffix).g$(DefaultLanguageSourceExtension)</VsixFrameworkInfoFile>
     </PropertyGroup>
   </Target>
 
@@ -42,7 +35,7 @@
     </PropertyGroup>
     
 		<WriteLinesToFile File="$(VsixFrameworkInfoFile)" Lines="[assembly: Xunit.TestFrameworkAttribute (&quot;Xunit.VsixTestFramework&quot;, &quot;xunit.vsix&quot;)]" Overwrite="true" />
-    <WriteLinesToFile File="$(VsixFrameworkInfoFile)" Lines="[assembly: Xunit.Vsix ($(_QuotedVisualStudioVersion))]" Overwrite="false" />
+    <WriteLinesToFile Condition=" '$(GenerateAssemblyVsixAttribute)' == 'true' " File="$(VsixFrameworkInfoFile)" Lines="[assembly: Xunit.Vsix ($(_QuotedVisualStudioVersion), RootSuffix = &quot;$(RootSuffix)&quot;)]" Overwrite="false" />
     <ItemGroup>
 			<FileWrites Include="$(VsixFrameworkInfoFile)" />
 		</ItemGroup>

@@ -5,7 +5,7 @@
     <!-- Specify 'All' to run against all installed VS versions. -->
     <!-- Specify a semicolon-separated list for specific versions. -->
     <!-- Default is current VS version -->
-    <VisualStudioVersions Condition=" '' == '' ">$(VisualStudioVersion)</VisualStudioVersions>
+    <VisualStudioVersions Condition=" '$(VisualStudioVersions)' == '' ">$(VisualStudioVersion)</VisualStudioVersions>
     <!-- Ignore warning about xunit.vsix.bootstrap being x86 -->
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
   </PropertyGroup>

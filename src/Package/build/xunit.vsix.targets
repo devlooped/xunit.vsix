@@ -12,14 +12,24 @@
   
 	<PropertyGroup>
 		<CompileDependsOn>
-			GenerateVsixFrameworkInfo;
-			IncludeVsixFrameworkInfo;
-			$(CompileDependsOn);
-		</CompileDependsOn>
-		<VsixFrameworkInfoFile Condition="'$(VsixFrameworkInfoFile)' == ''">$(IntermediateOutputPath)AssemblyInfo.VsixFramework.g$(DefaultLanguageSourceExtension)</VsixFrameworkInfoFile>
+      GetVsixFrameworkInfoFile;
+      GenerateVsixFrameworkInfo;
+      IncludeVsixFrameworkInfo;
+      $(CompileDependsOn);
+    </CompileDependsOn>
 	</PropertyGroup>
 
-	<Target Name="GenerateVsixFrameworkInfo"
+  <Target Name="GetVsixFrameworkInfoFile">
+    <ItemGroup>
+      <VisualStudioVersion Include="$(VisualStudioVersions)" />
+    </ItemGroup>
+    <PropertyGroup>
+      <!-- The item list concatenation wouldn't work outside a target -->
+      <VsixFrameworkInfoFile Condition="'$(VsixFrameworkInfoFile)' == ''">$(IntermediateOutputPath)AssemblyInfo.VsixFramework-@(VisualStudioVersion, '-').g$(DefaultLanguageSourceExtension)</VsixFrameworkInfoFile>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="GenerateVsixFrameworkInfo"
 			Inputs="$(MSBuildProjectFullPath)"
 			Outputs="$(VsixFrameworkInfoFile)">
 

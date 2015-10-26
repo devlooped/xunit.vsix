@@ -1,0 +1,150 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <IsXBuild Condition="'$(MSBuildRuntimeVersion)' == ''">true</IsXBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(IsXBuild)' == 'true' ">
+    <!-- Under Xbuild, just include the binary -->
+    <ResolveReferencesDependsOn>
+      SmartReference:AddAssemblyReference;
+      $(ResolveReferencesDependsOn)
+    </ResolveReferencesDependsOn>
+    <CompileDependsOn>
+      SmartReference:AddAssemblyReference;
+      $(CompileDependsOn)
+    </CompileDependsOn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(IsXBuild)' != 'true' ">
+    <ResolveReferencesDependsOn>
+      SmartReference:AddSmartReference;
+      $(ResolveReferencesDependsOn)
+    </ResolveReferencesDependsOn>
+    <CompileDependsOn>
+      SmartReference:AddSmartReference;
+      $(CompileDependsOn);
+    </CompileDependsOn>
+    <AddSmartReferenceDependsOn>
+      _GitRoot;
+      SmartReference:DetectSubmodule;
+      SmartReference:CollectSubmoduleDependencies;
+      SmartReference:CompileSubmodule;
+      SmartReference:AddSubmoduleReference;
+      SmartReference:AddAssemblyReference;
+    </AddSmartReferenceDependsOn>
+  </PropertyGroup>
+
+  <Target Name="SmartReference:AddAssemblyReference" Condition=" '@(SmartReference)' != '' ">
+    <ItemGroup>
+      <Reference Include="%(SmartReference.AssemblyName)">
+        <HintPath>%(SmartReference.AssemblyFile)</HintPath>
+        <Private>True</Private>
+      </Reference>
+    </ItemGroup>
+
+    <Message Importance="high" Text="=== SmartReference:AddAssemblyReference ===" />
+    <DumpItems Items="@(SmartReference)" />
+  </Target>
+
+  <Target Name="SmartReference:AddSmartReference" BeforeTargets="BuildOnlySettings" DependsOnTargets="$(AddSmartReferenceDependsOn)" />
+
+  <Target Name="SmartReference:DetectSubmodule" Inputs="@(SmartReference)" Outputs="%(SmartReference.Identity)-BATCH">
+
+    <PropertyGroup>
+      <SubmodulePathExpr>\[submodule[^\]]+\]\s+path\s?=\s?(?&lt;path&gt;[^\s]+).*?\/%(SmartReference.RepositoryName)\.git</SubmodulePathExpr>
+      <GitSubmodulesFile>$([System.IO.Path]::Combine('$(GitRoot)', '.gitmodules'))</GitSubmodulesFile>
+      <GitSubmodulesFile>$([System.IO.Path]::GetFullPath('$(GitSubmodulesFile)'))</GitSubmodulesFile>
+    </PropertyGroup>
+    <PropertyGroup Condition=" Exists('$(GitSubmodulesFile)') ">
+      <GitSubmodulesContent>$([System.IO.File]::ReadAllText('$(GitSubmodulesFile)'))</GitSubmodulesContent>
+      <IsSubmodule>$([System.Text.RegularExpressions.Regex]::IsMatch('$(GitSubmodulesContent)', '$(SubmodulePathExpr)', System.Text.RegularExpressions.RegexOptions.Singleline))</IsSubmodule>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(IsSubmodule)' == 'true' ">
+      <SubmodulePath>$([System.Text.RegularExpressions.Regex]::Match('$(GitSubmodulesContent)', '$(SubmodulePathExpr)', System.Text.RegularExpressions.RegexOptions.Singleline).Groups['path'].Value)</SubmodulePath>
+      <SubmoduleProject>$([System.IO.Path]::Combine('$(GitRoot)', '$(SubmodulePath)', '%(SmartReference.RelativeSource)'))</SubmoduleProject>
+      <SubmoduleProject>$([System.IO.Path]::GetFullPath('$(SubmoduleProject)'))</SubmoduleProject>
+      <SubmoduleSolution>$([System.IO.Path]::Combine('$(GitRoot)', '$(SubmodulePath)', '%(SmartReference.RelativeSolution)'))</SubmoduleSolution>
+      <SubmoduleSolution>$([System.IO.Path]::GetFullPath('$(SubmoduleSolution)'))</SubmoduleSolution>
+      <SubmoduleSolutionDir>$([System.IO.Path]::GetDirectoryName('$(SubmoduleSolution)'))</SubmoduleSolutionDir>
+      <IsSubmodule Condition=" Exists('$(SubmoduleProject)') ">true</IsSubmodule>
+      <IsSubmodule Condition=" !Exists('$(SubmoduleProject)') ">false</IsSubmodule>
+    </PropertyGroup>
+
+    <ItemGroup Condition=" '$(IsSubmodule)' == 'true' ">
+      <SubmoduleReference Include="@(SmartReference)">
+        <IsSubmodule>true</IsSubmodule>
+        <SubmodulePath>$(SubmodulePath)</SubmodulePath>
+        <SubmoduleProject>$(SubmoduleProject)</SubmoduleProject>
+        <SubmoduleSolution>$(SubmoduleSolution)</SubmoduleSolution>
+      </SubmoduleReference>
+      <SmartReference Remove="@(SmartReference)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="SmartReference:CollectSubmoduleDependencies" Inputs="@(SubmoduleReference)" Outputs="%(SubmoduleReference.Identity)-BATCH">
+    <MSBuild Projects="$(MSBuildThisFileFullPath)" Properties="SubmoduleProject=%(SubmoduleReference.SubmoduleProject)" Targets="GetCoreCompileInputs">
+      <Output TaskParameter="TargetOutputs" ItemName="_SubmoduleReferenceInputs" />
+    </MSBuild>
+    <MSBuild Projects="$(MSBuildThisFileFullPath)" Properties="SubmoduleProject=%(SubmoduleReference.SubmoduleProject)" Targets="GetCoreCompileOutputs">
+      <Output TaskParameter="TargetOutputs" ItemName="_SubmoduleReferenceOutputs" />
+    </MSBuild>
+
+    <ItemGroup>
+      <SubmoduleReference>
+        <SubmoduleInputs>$(_SubmoduleReferenceInputs)</SubmoduleInputs>
+        <SubmoduleOutputs>$(_SubmoduleReferenceOutputs)</SubmoduleOutputs>
+      </SubmoduleReference>
+    </ItemGroup>
+    
+  </Target>
+
+  <Target Name="SmartReference:CompileSubmodule" Inputs="%(SubmoduleReference.SubmoduleInputs)" Outputs="%(SubmoduleReference.SubmoduleOutputs)">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)NuGet.Restore.targets" 
+             Properties="Configuration=$(Configuration);ConfigFile=$(MSBuildThisFileDirectory)NuGet.Config;SolutionPath=%(SubmoduleReference.SubmoduleSolution);SolutionFileName=%(SubmoduleReference.RelativeSolution)" 
+             Targets="RestorePackages"  />
+    <MSBuild Projects="%(SubmoduleReference.SubmoduleProject)"
+             Properties="Configuration=$(Configuration);SolutionDir=%(SubmoduleReference.SubmoduleSolutionDir);SolutionPath=%(SubmoduleReference.SubmoduleSolution)"
+             Targets="Build" />
+  </Target>
+
+  <Target Name="SmartReference:AddSubmoduleReference" Inputs="@(SubmoduleReference)" Outputs="%(SubmoduleReference.Identity)-BATCH">
+    <MSBuild Projects="%(SubmoduleReference.SubmoduleProject)" Properties="Configuration=$(Configuration)" Targets="GetTargetPath">
+      <Output TaskParameter="TargetOutputs" PropertyName="_SubmoduleReferenceAssembly" />
+    </MSBuild>
+
+    <ItemGroup>
+      <Reference Include="%(SubmoduleReference.AssemblyName)">
+        <HintPath>$(_SubmoduleReferenceAssembly)</HintPath>
+        <Private>True</Private>
+      </Reference>
+    </ItemGroup>
+
+    <Message Importance="high" Text="=== SmartReference:AddSubmoduleReference ===
+%(SubmoduleReference.AssemblyName) from $(_SubmoduleReferenceAssembly)" />
+  </Target>
+
+  <Import Project="$(SubmoduleProject)" Condition=" '$(SubmoduleProject)' != '' "/>
+  
+  <Target Name="GetCoreCompileInputs"
+          Returns="$(MSBuildAllProjects);
+                @(Compile);
+                @(_CoreCompileResourceInputs);
+                $(ApplicationIcon);
+                $(AssemblyOriginatorKeyFile);
+                @(ReferencePath);
+                @(CompiledLicenseFile);
+                @(LinkResource);
+                @(EmbeddedDocumentation);
+                $(Win32Resource);
+                $(Win32Manifest);
+                @(CustomAdditionalCompileInputs);
+                $(ResolvedCodeAnalysisRuleSet)" />
+
+  <Target Name="GetCoreCompileOutputs"
+          Returns="@(DocFileItem);
+                 @(IntermediateAssembly);
+                 @(_DebugSymbolsIntermediatePath);
+                 $(NonExistentFile);
+                 @(CustomAdditionalCompileOutputs)" />  
+</Project>

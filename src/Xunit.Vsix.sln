@@ -30,18 +30,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{595A9F47
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Xunit.Vsix.Bootstrap", "Xunit.Vsix.Bootstrap\Xunit.Vsix.Bootstrap.vcxproj", "{8072B47B-5611-4BAB-8EF4-CB3125D676A5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external", "external", "{2AF3978D-79AA-4958-B1F1-8EBDB9E05805}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xunit.core", "..\external\xunit\src\xunit.core\xunit.core.csproj", "{1B843C0F-8E08-4BA9-8C85-EEAF779A0774}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xunit.execution.desktop", "..\external\xunit\src\xunit.execution.desktop\xunit.execution.desktop.csproj", "{09EF9917-4B00-4646-8C3F-96EFACC8BF51}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xunit.runner.tdnet", "..\external\xunit\src\xunit.runner.tdnet\xunit.runner.tdnet.csproj", "{C9B3978D-DA2C-4F3B-8FC5-1E024EF2F6E8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xunit.runner.utility.desktop", "..\external\xunit\src\xunit.runner.utility.desktop\xunit.runner.utility.desktop.csproj", "{EFC3F529-3686-416B-9C67-36EC914C776A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xunit.execution.dotnet", "..\external\xunit\src\xunit.execution.dotnet\xunit.execution.dotnet.csproj", "{0A9A4F91-6E1F-4F0A-B69A-165A12EF2016}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,36 +46,11 @@ Global
 		{8072B47B-5611-4BAB-8EF4-CB3125D676A5}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{8072B47B-5611-4BAB-8EF4-CB3125D676A5}.Debug|Any CPU.Build.0 = Debug|Win32
 		{8072B47B-5611-4BAB-8EF4-CB3125D676A5}.Release|Any CPU.ActiveCfg = Release|Win32
-		{1B843C0F-8E08-4BA9-8C85-EEAF779A0774}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1B843C0F-8E08-4BA9-8C85-EEAF779A0774}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1B843C0F-8E08-4BA9-8C85-EEAF779A0774}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1B843C0F-8E08-4BA9-8C85-EEAF779A0774}.Release|Any CPU.Build.0 = Release|Any CPU
-		{09EF9917-4B00-4646-8C3F-96EFACC8BF51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{09EF9917-4B00-4646-8C3F-96EFACC8BF51}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{09EF9917-4B00-4646-8C3F-96EFACC8BF51}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{09EF9917-4B00-4646-8C3F-96EFACC8BF51}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C9B3978D-DA2C-4F3B-8FC5-1E024EF2F6E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C9B3978D-DA2C-4F3B-8FC5-1E024EF2F6E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C9B3978D-DA2C-4F3B-8FC5-1E024EF2F6E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C9B3978D-DA2C-4F3B-8FC5-1E024EF2F6E8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EFC3F529-3686-416B-9C67-36EC914C776A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EFC3F529-3686-416B-9C67-36EC914C776A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EFC3F529-3686-416B-9C67-36EC914C776A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EFC3F529-3686-416B-9C67-36EC914C776A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0A9A4F91-6E1F-4F0A-B69A-165A12EF2016}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0A9A4F91-6E1F-4F0A-B69A-165A12EF2016}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0A9A4F91-6E1F-4F0A-B69A-165A12EF2016}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0A9A4F91-6E1F-4F0A-B69A-165A12EF2016}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{595A9F47-1615-4FC3-9B20-E08FA47F9DC0} = {FB4FD484-8321-4FED-BEDB-3D6FED1351FC}
-		{1B843C0F-8E08-4BA9-8C85-EEAF779A0774} = {2AF3978D-79AA-4958-B1F1-8EBDB9E05805}
-		{09EF9917-4B00-4646-8C3F-96EFACC8BF51} = {2AF3978D-79AA-4958-B1F1-8EBDB9E05805}
-		{C9B3978D-DA2C-4F3B-8FC5-1E024EF2F6E8} = {2AF3978D-79AA-4958-B1F1-8EBDB9E05805}
-		{EFC3F529-3686-416B-9C67-36EC914C776A} = {2AF3978D-79AA-4958-B1F1-8EBDB9E05805}
-		{0A9A4F91-6E1F-4F0A-B69A-165A12EF2016} = {2AF3978D-79AA-4958-B1F1-8EBDB9E05805}
 	EndGlobalSection
 EndGlobal

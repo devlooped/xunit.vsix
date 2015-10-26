@@ -20,7 +20,8 @@ namespace Xunit
 	{
 		string pipeName;
 		IChannel channel;
-		ConcurrentDictionary<ITestClass, VsRemoteTestClassRunner> classRunnerMap = new ConcurrentDictionary<ITestClass, VsRemoteTestClassRunner>();
+
+		ConcurrentDictionary<ITestCollection, VsRemoteTestCollectionRunner> collectionRunnerMap = new ConcurrentDictionary<ITestCollection, VsRemoteTestCollectionRunner>();
 
 		public VsRemoteRunner ()
 		{
@@ -36,35 +37,17 @@ namespace Xunit
 
 		public VsixRunSummary Run (VsixTestCase testCase, IMessageBus messageBus)
 		{
-			var classRunner = classRunnerMap.GetOrAdd(testCase.TestMethod.TestClass,
-				testClass => new VsRemoteTestClassRunner(testClass, (IReflectionTypeInfo)testClass.Class));
-
 			var aggregator = new ExceptionAggregator ();
+			var runner = collectionRunnerMap.GetOrAdd(testCase.TestMethod.TestClass.TestCollection, tc => new VsRemoteTestCollectionRunner(tc));
 
-			try {
-				var result = classRunner.RunAsync(testCase, messageBus, aggregator)
+			var result = runner.RunAsync(testCase, messageBus, aggregator)
 					.Result
 					.ToVsixRunSummary();
 
-				//var result = new XunitTestCaseRunner (
-				//		testCase, testCase.DisplayName, testCase.SkipReason,
-				//		// NOTE: we create the test output helper always locally in the
-				//		// remote process, since otherwise it isn't properly initialized.
-				//		testCase.HasTestOutput ? new[] { new TestOutputHelper() } : new object[0],
-				//		testCase.TestMethodArguments, messageBus,
-				//		aggregator, new CancellationTokenSource ())
-				//	.RunAsync ()
-				//	.Result
-				//	.ToVsixRunSummary ();
+			if (aggregator.HasExceptions)
+				result.Exception = aggregator.ToException ();
 
-				if (aggregator.HasExceptions)
-					result.Exception = aggregator.ToException ();
-
-				return result;
-
-			} catch (Exception) {
-				throw;
-			}
+			return result;
 		}
 
 		/// <summary>
@@ -81,11 +64,34 @@ namespace Xunit
 			return null;
 		}
 
+		class VsRemoteTestCollectionRunner : XunitTestCollectionRunner
+		{
+			public VsRemoteTestCollectionRunner (ITestCollection testCollection)
+				: base (testCollection, Enumerable.Empty<IXunitTestCase>(), new NullMessageSink(), null,
+					  new DefaultTestCaseOrderer (new NullMessageSink ()), new ExceptionAggregator (), new CancellationTokenSource ())
+			{
+			}
+
+			public Task<RunSummary> RunAsync (IXunitTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator)
+			{
+				TestCases = new[] { testCase };
+				MessageBus = messageBus;
+				Aggregator = aggregator;
+
+				return RunAsync ();
+			}
+
+			protected override Task<RunSummary> RunTestClassAsync (ITestClass testClass, IReflectionTypeInfo @class, IEnumerable<IXunitTestCase> testCases)
+			{
+				return new VsRemoteTestClassRunner (testClass, @class, CollectionFixtureMappings).RunAsync (testCases.Single (), MessageBus, Aggregator);
+			}
+		}
+
 		class VsRemoteTestClassRunner : XunitTestClassRunner
 		{
-			public VsRemoteTestClassRunner (ITestClass testClass, IReflectionTypeInfo @class)
+			public VsRemoteTestClassRunner (ITestClass testClass, IReflectionTypeInfo @class, Dictionary<Type, object> collectionFixtureMappings)
 				: base (testClass, @class, Enumerable.Empty<IXunitTestCase> (), new NullMessageSink (), null,
-					  new DefaultTestCaseOrderer (new NullMessageSink ()), new ExceptionAggregator (), new CancellationTokenSource (), new Dictionary<Type, object> ())
+					  new DefaultTestCaseOrderer (new NullMessageSink ()), new ExceptionAggregator (), new CancellationTokenSource (), collectionFixtureMappings)
 			{
 			}
 

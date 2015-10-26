@@ -13,7 +13,7 @@ namespace Xunit
 
 		}
 
-		public void Dispose()
+		public void Dispose ()
 		{
 		}
 	}
@@ -27,16 +27,10 @@ namespace Xunit
 		{
 			this.state = state;
 			this.output = output;
-        }
-
-		[Fact]
-		public void when_action_then_assert ()
-		{
-
 		}
 
 		[VsixFact]
-		public void when_using_class_fixture_then_can_access_its_state()
+		public void when_using_class_fixture_then_can_access_its_state ()
 		{
 			Assert.NotNull (state);
 			output.WriteLine ("Success!!!!");

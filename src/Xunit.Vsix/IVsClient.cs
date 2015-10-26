@@ -8,6 +8,6 @@ namespace Xunit
 	{
 		void Shutdown ();
 
-		Task<RunSummary> RunAsync (VsixTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator, object[] constructorArguments);
+		Task<RunSummary> RunAsync (VsixTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator);
 	}
 }

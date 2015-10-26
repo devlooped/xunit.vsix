@@ -10,19 +10,17 @@ namespace Xunit
 	class VsixTestMethodRunner : XunitTestMethodRunner
 	{
 		readonly IVsClient vsClient;
-        readonly object[] constructorArguments;
 
 
-		public VsixTestMethodRunner (IVsClient vsClient, ITestMethod testMethod, IReflectionTypeInfo @class, IReflectionMethodInfo method, IEnumerable<IXunitTestCase> testCases, IMessageSink diagnosticMessageSink, IMessageBus messageBus, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, object[] constructorArguments)
-			: base (testMethod, @class, method, testCases, diagnosticMessageSink, messageBus, aggregator, cancellationTokenSource, constructorArguments)
+		public VsixTestMethodRunner (IVsClient vsClient, ITestMethod testMethod, IReflectionTypeInfo @class, IReflectionMethodInfo method, IEnumerable<IXunitTestCase> testCases, IMessageSink diagnosticMessageSink, IMessageBus messageBus, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
+			: base (testMethod, @class, method, testCases, diagnosticMessageSink, messageBus, aggregator, cancellationTokenSource, new object[0])
 		{
 			this.vsClient = vsClient;
-			this.constructorArguments = constructorArguments;
 		}
 
 		protected override Task<RunSummary> RunTestCaseAsync (IXunitTestCase testCase)
 		{
-			return vsClient.RunAsync((VsixTestCase)testCase, MessageBus, Aggregator, constructorArguments);
+			return vsClient.RunAsync((VsixTestCase)testCase, MessageBus, Aggregator);
 		}
 
 		protected override void BeforeTestMethodFinished ()

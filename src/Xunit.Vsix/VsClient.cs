@@ -18,7 +18,7 @@ namespace Xunit
 {
 	class VsClient : IVsClient
 	{
-		const string BindingPathKey = "{30C4F4A2-17C9-470C-AED2-2D4E97CC5686}";
+		const string BindingPathKey = "{00000000-17C9-470C-AED2-2D4E97CC5686}";
 
 		bool initializedExtension;
 
@@ -48,7 +48,7 @@ namespace Xunit
 			Stop ();
 		}
 
-		public async Task<RunSummary> RunAsync (VsixTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator, object[] constructorArguments)
+		public async Task<RunSummary> RunAsync (VsixTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator)
 		{
 			if (Process == null) {
 				if (!Start ()) {
@@ -82,6 +82,9 @@ namespace Xunit
 						}
 					}
 				} catch (Exception ex) {
+					if (ex is RemotingException)
+						Stop ();
+
 					messageBus.QueueMessage (new TestFailed (new XunitTest (testCase, testCase.DisplayName), 0, ex.Message, ex));
 					return new RunSummary {
 						Failed = 1
@@ -104,10 +107,6 @@ namespace Xunit
 					}
 				});
 
-				if (constructorArguments.OfType<ITestOutputHelper> ().Any ())
-					// This property will indicate to the remote runner to create an output helper.
-					testCase.HasTestOutput = true;
-
 				var summary = await Task.Run (
 					() => runner.Run (testCase, outputBus))
 					.TimeoutAfter (testCase.TimeoutSeconds * 1000);
@@ -117,15 +116,14 @@ namespace Xunit
 
 				return summary.ToRunSummary ();
 			} catch (Exception ex) {
+				if (ex is RemotingException)
+					Stop ();
+
 				aggregator.Add (ex);
 				messageBus.QueueMessage (new TestFailed (xunitTest, 0, ex.Message, ex));
 				return new RunSummary {
 					Failed = 1
 				};
-			} finally {
-				var outputHelper = constructorArguments.OfType<TestOutputHelper> ().FirstOrDefault ();
-				if (outputHelper != null)
-					outputHelper.Uninitialize ();
 			}
 		}
 
@@ -204,8 +202,8 @@ namespace Xunit
 			// Add all currently loaded assemblies paths to the resolve paths.
 			var probingPaths = AppDomain.CurrentDomain.GetAssemblies ()
 				.Select (x => Path.GetDirectoryName (x.Location))
-				//.Concat (new[] { Directory.GetCurrentDirectory() })
 				.Where (x => x.StartsWith (Environment.GetFolderPath (Environment.SpecialFolder.LocalApplicationData)))
+				.Concat (new[] { Directory.GetCurrentDirectory() })
 				.Distinct ()
 				.ToArray ();
 
@@ -293,10 +291,10 @@ namespace Xunit
 		{
 			using (var pathsKey = Registry.CurrentUser.OpenSubKey (@"Software\Microsoft\VisualStudio\" +
 				visualStudioVersion + rootSuffix + @"_Config\BindingPaths\", true)) {
-				pathsKey.DeleteSubKey (BindingPathKey);
+				if (pathsKey != null)
+					pathsKey.DeleteSubKey (BindingPathKey, false);
 			}
 		}
-
 
 		private void Stop ()
 		{
@@ -317,8 +315,13 @@ namespace Xunit
 
 			clientChannel = null;
 			runner = null;
-			Process.Kill ();
-			Process = null;
+
+			if (Process != null) {
+				if (!Process.HasExited)
+					Process.Kill ();
+
+				Process = null;
+			}
 		}
 
 		private string GetDevEnvPath ()

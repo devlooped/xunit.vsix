@@ -29,3 +29,4 @@ packages/
 *.tmp
 *.ipch
 *.cache
+log.txt

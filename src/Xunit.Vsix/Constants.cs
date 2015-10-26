@@ -7,7 +7,5 @@ namespace Xunit
 
 		public const string ServerChannelName = "xunit.vsix.server";
 		public const string ClientChannelName = "xunit.vsix.client-";
-
-		public const string VsixIdentifier = "xunit.vsix";
 	}
 }

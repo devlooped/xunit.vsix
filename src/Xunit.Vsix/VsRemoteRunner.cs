@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Threading;
@@ -21,6 +22,7 @@ namespace Xunit
 		string pipeName;
 		IChannel channel;
 
+		Dictionary<Type, object> assemblyFixtureMappings = new Dictionary<Type, object>();
 		ConcurrentDictionary<ITestCollection, VsRemoteTestCollectionRunner> collectionRunnerMap = new ConcurrentDictionary<ITestCollection, VsRemoteTestCollectionRunner>();
 
 		public VsRemoteRunner ()
@@ -38,7 +40,7 @@ namespace Xunit
 		public VsixRunSummary Run (VsixTestCase testCase, IMessageBus messageBus)
 		{
 			var aggregator = new ExceptionAggregator ();
-			var runner = collectionRunnerMap.GetOrAdd(testCase.TestMethod.TestClass.TestCollection, tc => new VsRemoteTestCollectionRunner(tc));
+			var runner = collectionRunnerMap.GetOrAdd(testCase.TestMethod.TestClass.TestCollection, tc => new VsRemoteTestCollectionRunner(tc, assemblyFixtureMappings));
 
 			var result = runner.RunAsync(testCase, messageBus, aggregator)
 					.Result
@@ -48,6 +50,15 @@ namespace Xunit
 				result.Exception = aggregator.ToException ();
 
 			return result;
+		}
+
+		public void Dispose()
+		{
+			foreach (var disposable in assemblyFixtureMappings.Values.OfType<IDisposable>()) {
+				try {
+					disposable.Dispose ();
+				} catch { }
+			}
 		}
 
 		/// <summary>
@@ -66,10 +77,13 @@ namespace Xunit
 
 		class VsRemoteTestCollectionRunner : XunitTestCollectionRunner
 		{
-			public VsRemoteTestCollectionRunner (ITestCollection testCollection)
+			readonly Dictionary<Type, object> assemblyFixtureMappings;
+
+			public VsRemoteTestCollectionRunner (ITestCollection testCollection, Dictionary<Type, object> assemblyFixtureMappings)
 				: base (testCollection, Enumerable.Empty<IXunitTestCase>(), new NullMessageSink(), null,
 					  new DefaultTestCaseOrderer (new NullMessageSink ()), new ExceptionAggregator (), new CancellationTokenSource ())
 			{
+				this.assemblyFixtureMappings = assemblyFixtureMappings;
 			}
 
 			public Task<RunSummary> RunAsync (IXunitTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator)
@@ -83,7 +97,26 @@ namespace Xunit
 
 			protected override Task<RunSummary> RunTestClassAsync (ITestClass testClass, IReflectionTypeInfo @class, IEnumerable<IXunitTestCase> testCases)
 			{
-				return new VsRemoteTestClassRunner (testClass, @class, CollectionFixtureMappings).RunAsync (testCases.Single (), MessageBus, Aggregator);
+				foreach (var fixtureType in @class.Type.GetTypeInfo ().ImplementedInterfaces
+						.Where (i => i.GetTypeInfo ().IsGenericType && i.GetGenericTypeDefinition () == typeof (IAssemblyFixture<>))
+						.Select (i => i.GetTypeInfo ().GenericTypeArguments.Single ())
+						// First pass at filtering out before locking
+						.Where (i => !assemblyFixtureMappings.ContainsKey (i))) {
+					// ConcurrentDictionary's GetOrAdd does not lock around the value factory call, so we need
+					// to do it ourselves.
+					lock (assemblyFixtureMappings)
+						if (!assemblyFixtureMappings.ContainsKey (fixtureType))
+							Aggregator.Run (() => assemblyFixtureMappings.Add (fixtureType, Activator.CreateInstance (fixtureType)));
+				}
+
+				// Don't want to use .Concat + .ToDictionary because of the possibility of overriding types,
+				// so instead we'll just let collection fixtures override assembly fixtures.
+				var combinedFixtures = new Dictionary<Type, object>(assemblyFixtureMappings);
+				foreach (var kvp in CollectionFixtureMappings)
+					combinedFixtures[kvp.Key] = kvp.Value;
+
+				// We've done everything we need, so let the built-in types do the rest of the heavy lifting
+				return new VsRemoteTestClassRunner (testClass, @class, combinedFixtures).RunAsync (testCases.Single (), MessageBus, Aggregator);
 			}
 		}
 

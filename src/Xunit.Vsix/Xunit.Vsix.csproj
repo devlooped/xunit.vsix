@@ -101,6 +101,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="ErrorHandler.cs" />
     <Compile Include="ExceptionExtensions.cs" />
+    <Compile Include="IAssemblyFixture.cs" />
     <Compile Include="InterceptingMessageBus.cs">
       <SubType>Code</SubType>
     </Compile>

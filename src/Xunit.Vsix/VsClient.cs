@@ -298,6 +298,10 @@ namespace Xunit
 
 		private void Stop ()
 		{
+			try {
+				runner.Dispose ();
+			} catch { }
+
 			foreach (var mbr in remoteObjects) {
 				try {
 					var disposable = mbr as IDisposable;

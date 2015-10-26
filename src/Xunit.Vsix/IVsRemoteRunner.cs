@@ -1,9 +1,10 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Xunit.Sdk;
 
 namespace Xunit
 {
-	interface IVsRemoteRunner
+	interface IVsRemoteRunner : IDisposable
 	{
 		void AddListener (TraceListener listener);
 

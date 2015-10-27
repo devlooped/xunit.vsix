@@ -5,10 +5,10 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 14.0.23107.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2AF55F73-4FE0-46B1-B5C4-534F028A90C1}"
 	ProjectSection(SolutionItems) = preProject
+		Before.Xunit.Vsix.sln.targets = Before.Xunit.Vsix.sln.targets
 		..\build.cmd = ..\build.cmd
 		..\build.proj = ..\build.proj
 		..\build\build.targets = ..\build\build.targets
-		..\packages.config = ..\packages.config
 		SmartReferences.targets = SmartReferences.targets
 		Xunit.Vsix.targets = Xunit.Vsix.targets
 	EndProjectSection

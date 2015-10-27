@@ -2,12 +2,13 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <!-- Specify 'All' to run against all installed VS versions. -->
+    <!-- Specify 'All' to set the assembly-level default to use all installed VS versions. -->
     <!-- Specify a semicolon-separated list for specific versions. -->
-    <!-- Default is current VS version -->
+    <!-- Default is current VS version being used to build -->
     <VisualStudioVersions Condition=" '$(VisualStudioVersions)' == '' ">$(VisualStudioVersion)</VisualStudioVersions>
+    <!-- Allows customizing the assembly-level default value for the hive to use to run tests. Defaults to 'Exp' (VS experimental instance) -->
     <RootSuffix Condition=" '$(RootSuffix)' == '' ">Exp</RootSuffix>
-    <!-- If you want to customize the [assembly: Vsix(..)] attribute, set this to false -->
+    <!-- If you want to avoid generating the [assembly: Vsix(..)] attribute altogether, set this to false -->
     <GenerateAssemblyVsixAttribute Condition=" '$(GenerateAssemblyVsixAttribute)' == '' ">true</GenerateAssemblyVsixAttribute>
   </PropertyGroup>
 

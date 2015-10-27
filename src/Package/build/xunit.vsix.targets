@@ -35,6 +35,8 @@
     </PropertyGroup>
     
 		<WriteLinesToFile File="$(VsixFrameworkInfoFile)" Lines="[assembly: Xunit.TestFrameworkAttribute (&quot;Xunit.VsixTestFramework&quot;, &quot;xunit.vsix&quot;)]" Overwrite="true" />
+    <WriteLinesToFile Condition=" '$(GenerateAssemblyVsixAttribute)' == 'true' " File="$(VsixFrameworkInfoFile)" Lines="// Customize by providing $(VisualStudioVersions) and $(RootSuffix) MSBuild properties" Overwrite="false" />
+    <WriteLinesToFile Condition=" '$(GenerateAssemblyVsixAttribute)' == 'true' " File="$(VsixFrameworkInfoFile)" Lines="// Turn off attribute generation by setting $(GenerateAssemblyVsixAttribute) to 'false'" Overwrite="false" />
     <WriteLinesToFile Condition=" '$(GenerateAssemblyVsixAttribute)' == 'true' " File="$(VsixFrameworkInfoFile)" Lines="[assembly: Xunit.Vsix ($(_QuotedVisualStudioVersion), RootSuffix = &quot;$(RootSuffix)&quot;)]" Overwrite="false" />
     <ItemGroup>
 			<FileWrites Include="$(VsixFrameworkInfoFile)" />

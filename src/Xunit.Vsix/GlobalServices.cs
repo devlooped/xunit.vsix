@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Xunit.Properties;
 
 namespace Xunit
 {
@@ -9,6 +10,7 @@ namespace Xunit
 	/// </summary>
 	public static class GlobalServices
 	{
+		static readonly ITracer tracer = Tracer.Get (Constants.TracerName);
 		static IServiceProvider services;
 
 		static GlobalServices ()
@@ -16,15 +18,17 @@ namespace Xunit
 			try {
 				var dte = RunningObjects.GetDTE(TimeSpan.FromSeconds(5));
 				if (dte == null) {
-					Debug.Fail ("Failed to retrieve currently running DTE.");
+					Debug.Fail (Strings.GlobalServices.NoDte);
+					tracer.Warn (Strings.GlobalServices.NoDte);
 					services = new NullServices ();
 				} else {
 					services = new Microsoft.VisualStudio.Shell.ServiceProvider (
 						(Microsoft.VisualStudio.OLE.Interop.IServiceProvider)dte);
+					tracer.Info (Strings.GlobalServices.InitializedDte (dte.Version));
 				}
-
-			} catch (NotSupportedException) {
-				Debug.Fail ("Failed to retrieve currently running DTE.");
+			} catch (NotSupportedException ex) {
+				Debug.Fail (Strings.GlobalServices.NoDte);
+				tracer.Warn (ex, Strings.GlobalServices.NoDte);
 				services = new NullServices ();
 			}
 		}

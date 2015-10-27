@@ -32,9 +32,12 @@ namespace Xunit
 			RemotingServices.Marshal (this, RemotingUtil.HostName);
 		}
 
+		public void Ping () { }
+
 		public void AddListener (TraceListener listener)
 		{
-			Trace.Listeners.Add (listener);
+			if (Trace.Listeners.Contains(listener))
+				Trace.Listeners.Add (listener);
 		}
 
 		public VsixRunSummary Run (VsixTestCase testCase, IMessageBus messageBus)

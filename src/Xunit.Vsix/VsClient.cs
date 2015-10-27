@@ -12,13 +12,16 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using Xunit.Abstractions;
+using Xunit.Properties;
 using Xunit.Sdk;
 
 namespace Xunit
 {
 	class VsClient : IVsClient
 	{
+		static readonly ITracer tracer = Tracer.Get(Constants.TracerName);
 		const string BindingPathKey = "{00000000-17C9-470C-AED2-2D4E97CC5686}";
+		const int MaxConnectRetries = 5;
 
 		bool initializedExtension;
 
@@ -30,6 +33,7 @@ namespace Xunit
 		IChannel clientChannel;
 		IVsRemoteRunner runner;
 
+		ConcurrentDictionary<IMessageBus, RemoteMessageBus> remoteBuses = new ConcurrentDictionary<IMessageBus, RemoteMessageBus>();
 		ConcurrentBag<MarshalByRefObject> remoteObjects = new ConcurrentBag<MarshalByRefObject> ();
 
 		public VsClient (string visualStudioVersion, string pipeName, string rootSuffix)
@@ -43,60 +47,27 @@ namespace Xunit
 
 		public Process Process { get; private set; }
 
-		public void Shutdown ()
+		public void Recycle ()
 		{
 			Stop ();
 		}
 
 		public async Task<RunSummary> RunAsync (VsixTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator)
 		{
-			if (Process == null) {
-				if (!Start ()) {
-					Stop ();
-					if (!Start ()) {
-						Stop ();
-
-						messageBus.QueueMessage (new TestFailed (new XunitTest (testCase, testCase.DisplayName), 0,
-							string.Format ("Failed to start Visual Studio {0}{1}.", visualStudioVersion, rootSuffix),
-							new TimeoutException ()));
-
-						return new RunSummary {
-							Failed = 1,
-						};
-					}
-				}
-			}
-
-			if (runner == null) {
-				var hostUrl = RemotingUtil.GetHostUri (pipeName);
-				var clientPipeName = Guid.NewGuid ().ToString ("N");
-
-				clientChannel = RemotingUtil.CreateChannel (Constants.ClientChannelName + clientPipeName, clientPipeName);
-
-				try {
-					runner = (IVsRemoteRunner)RemotingServices.Connect (typeof (IVsRemoteRunner), hostUrl);
-					if (Debugger.IsAttached) {
-						// Add default trace listeners to the remote process.
-						foreach (var listener in Trace.Listeners.OfType<TraceListener> ()) {
-							runner.AddListener (listener);
-						}
-					}
-				} catch (Exception ex) {
-					if (ex is RemotingException)
-						Stop ();
-
-					messageBus.QueueMessage (new TestFailed (new XunitTest (testCase, testCase.DisplayName), 0, ex.Message, ex));
-					return new RunSummary {
-						Failed = 1
-					};
-				}
+			if (!EnsureConnected (testCase, messageBus)) {
+				return new RunSummary {
+					Failed = 1,
+				};
 			}
 
 			var xunitTest = new XunitTest (testCase, testCase.DisplayName);
 
 			try {
-				var remoteBus = new RemoteMessageBus (messageBus);
-				remoteObjects.Add (remoteBus);
+				var remoteBus = remoteBuses.GetOrAdd(messageBus, bus => {
+					var instance = new RemoteMessageBus (bus);
+					remoteObjects.Add (instance);
+					return instance;
+				});
 
 				var outputBus = new InterceptingMessageBus (remoteBus, message => {
 					var resultMessage = message as ITestResultMessage;
@@ -133,7 +104,80 @@ namespace Xunit
 			ClearBindingPaths ();
 		}
 
-		private bool Start ()
+		bool EnsureConnected (VsixTestCase testCase, IMessageBus messageBus)
+		{
+			if (!EnsureStarted (testCase, messageBus))
+				return false;
+
+			if (runner == null) {
+				var hostUrl = RemotingUtil.GetHostUri (pipeName);
+				var clientPipeName = Guid.NewGuid ().ToString ("N");
+
+				clientChannel = RemotingUtil.CreateChannel (Constants.ClientChannelName + clientPipeName, clientPipeName);
+				runner = (IVsRemoteRunner)RemotingServices.Connect (typeof (IVsRemoteRunner), hostUrl);
+			}
+
+			var retries = 0;
+			var connected = false;
+			while (retries++ < MaxConnectRetries && !(connected = TryPing (runner))) {
+				Stop ();
+				if (!EnsureStarted (testCase, messageBus))
+					return false;
+			}
+
+			if (!connected) {
+				Stop ();
+				var message = Strings.VsClient.FailedToConnect(testCase.VisualStudioVersion, testCase.RootSuffix);
+                messageBus.QueueMessage (new TestFailed (new XunitTest (testCase, testCase.DisplayName), 0, message, new InvalidOperationException (message)));
+				return false;
+			}
+
+			// If successfully connected, attach trace listeners to remote runner.
+			if (Debugger.IsAttached) {
+				// Add default trace listeners to the remote process.
+				foreach (var listener in Trace.Listeners.OfType<TraceListener> ()) {
+					runner.AddListener (listener);
+				}
+			}
+
+			return true;
+		}
+
+		bool EnsureStarted(VsixTestCase testCase, IMessageBus messageBus)
+		{
+			if (Process == null) {
+				var retries = 0;
+				var started = false;
+				while (retries++ < MaxConnectRetries && !(started = Start ())) {
+					Stop ();
+				}
+
+				if (!started) {
+					Stop ();
+
+					tracer.Error (Strings.VsClient.FailedToStart (visualStudioVersion, rootSuffix));
+					messageBus.QueueMessage (new TestFailed (new XunitTest (testCase, testCase.DisplayName), 0,
+						Strings.VsClient.FailedToStart (visualStudioVersion, rootSuffix),
+						new TimeoutException ()));
+
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		bool TryPing (IVsRemoteRunner runner)
+		{
+			try {
+				runner.Ping ();
+				return true;
+			} catch (RemotingException) {
+				return false;
+			}
+		}
+
+		bool Start ()
 		{
 			AddBindingPaths ();
 
@@ -185,16 +229,17 @@ namespace Xunit
 
 			try {
 				Injector.Launch (Process.MainWindowHandle,
-					this.GetType ().Assembly.Location,
+					GetType ().Assembly.Location,
 					typeof (VsStartup).FullName, "Start");
-			} catch (Exception) {
+			} catch (Exception ex) {
+				tracer.Error (ex, Strings.VsClient.FailedToInject (Process.Id));
 				return false;
 			}
 
 			return true;
 		}
 
-		private void AddBindingPaths ()
+		void AddBindingPaths ()
 		{
 			if (initializedExtension)
 				return;
@@ -261,7 +306,7 @@ namespace Xunit
 		/// to do it once to give VS a chance to create the _Config registry
 		/// key populated from available extensions.
 		/// </summary>
-		private void FirstRun ()
+		void FirstRun ()
 		{
 			var process = new Process {
 				StartInfo = {
@@ -287,7 +332,7 @@ namespace Xunit
 			}
 		}
 
-		private void ClearBindingPaths ()
+		void ClearBindingPaths ()
 		{
 			using (var pathsKey = Registry.CurrentUser.OpenSubKey (@"Software\Microsoft\VisualStudio\" +
 				visualStudioVersion + rootSuffix + @"_Config\BindingPaths\", true)) {
@@ -296,10 +341,11 @@ namespace Xunit
 			}
 		}
 
-		private void Stop ()
+		void Stop ()
 		{
 			try {
-				runner.Dispose ();
+				if (runner != null)
+					runner.Dispose ();
 			} catch { }
 
 			foreach (var mbr in remoteObjects) {
@@ -328,7 +374,7 @@ namespace Xunit
 			}
 		}
 
-		private string GetDevEnvPath ()
+		string GetDevEnvPath ()
 		{
 			var varName = "VS" + visualStudioVersion.Replace (".", "") + "COMNTOOLS";
 			var varValue = Environment.GetEnvironmentVariable (varName);
@@ -343,7 +389,7 @@ namespace Xunit
 			return path;
 		}
 
-		private IEnumerable<EnvDTE.DTE> GetAllDtes ()
+		IEnumerable<EnvDTE.DTE> GetAllDtes ()
 		{
 			IRunningObjectTable table;
 			IEnumMoniker moniker;

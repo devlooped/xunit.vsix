@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using Xunit.Properties;
 
 namespace Xunit
 {
@@ -17,6 +19,7 @@ namespace Xunit
 	[EditorBrowsable (EditorBrowsableState.Never)]
 	public static class VsStartup
 	{
+		static readonly ITracer tracer = Tracer.Get(Constants.TracerName);
 		static VsRemoteRunner runner;
 
 		/// <summary>
@@ -26,15 +29,17 @@ namespace Xunit
 		public static bool Start ()
 		{
 			try {
+				tracer.Verbose (Strings.VsStartup.Starting);
 				GlobalServices.Initialize ();
 
 				runner = new VsRemoteRunner ();
 				runner.Start ();
 
 				LocalResolver.Initialize (Directory.GetCurrentDirectory ());
-
+				tracer.Info (Strings.VsStartup.Started);
 				return true;
-			} catch (Exception) {
+			} catch (Exception ex) {
+				tracer.Error (ex, Strings.VsStartup.Failed);
 				return false;
 			}
 		}

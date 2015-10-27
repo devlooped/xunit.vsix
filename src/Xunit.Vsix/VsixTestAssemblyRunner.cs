@@ -39,24 +39,30 @@ namespace Xunit
 				if (maxParallelThreads < VsVersions.InstalledVersions.Length)
 					maxParallelThreads = VsVersions.InstalledVersions.Length;
 
-				SetupSyncContext (maxParallelThreads);
+				Func<Func<Task<RunSummary>>, Task<RunSummary>> taskRunner;
+				if (SynchronizationContext.Current != null) {
+					var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
+					taskRunner = code => Task.Factory.StartNew (code, cancellationTokenSource.Token, TaskCreationOptions.DenyChildAttach | TaskCreationOptions.HideScheduler, scheduler).Unwrap ();
+				} else
+					taskRunner = code => Task.Run (code, cancellationTokenSource.Token);
 
-				var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
-				var tasks = CreateTestCollections(allTests.OfType<VsixTestCase>()).Select(collection =>
-					Task.Factory.StartNew(() =>
-						RunTestCollectionAsync(messageBus, collection.Item1, collection.Item2, cancellationTokenSource),
-						cancellationTokenSource.Token,
-						TaskCreationOptions.DenyChildAttach | TaskCreationOptions.HideScheduler,
-						scheduler)
+				var tasks = CreateTestCollections(allTests.OfType<VsixTestCase>()).Select(
+					collection => taskRunner(() => RunTestCollectionAsync(messageBus, collection.Item1, collection.Item2, cancellationTokenSource))
 				).ToArray();
 
-				var summaries = await Task.WhenAll(tasks.Select(t => t.Unwrap()));
+				var summaries = new List<RunSummary>();
+
+				foreach (var task in tasks) {
+					try {
+						summaries.Add (await task);
+					} catch (TaskCanceledException) { }
+				}
 
 				return new RunSummary () {
-					Total = summaries.Sum (s => s.Total) + xunitSummary.Total,
-					Failed = summaries.Sum (s => s.Failed) + xunitSummary.Failed,
-					Skipped = summaries.Sum (s => s.Skipped) + xunitSummary.Skipped
+					Total = summaries.Sum (s => s.Total),
+					Failed = summaries.Sum (s => s.Failed),
+					Skipped = summaries.Sum (s => s.Skipped)
 				};
 
 			} finally {
@@ -79,7 +85,11 @@ namespace Xunit
 		public override void Dispose ()
 		{
 			base.Dispose ();
-			disposables.ForEach (d => d.Dispose ());
+			foreach (var disposable in disposables) {
+				try {
+					disposable.Dispose ();
+				} catch  {  }
+			}
 		}
 
 		protected override IMessageBus CreateMessageBus ()
@@ -100,7 +110,7 @@ namespace Xunit
 							// run in parallel with the rest. Otherwise, it's a combination of VS + Suffix.
 							let key = tc.NewIdeInstance.GetValueOrDefault() ? Guid.NewGuid().ToString() : tc.VisualStudioVersion + tc.RootSuffix
 							let col = collections.GetOrAdd(key, x => new VsixTestCollection(
-								base.TestAssembly,
+								TestAssembly,
 								tc.TestMethod?.TestClass?.Class,
 								tc.VisualStudioVersion, tc.RootSuffix))
 							select new { Collection = col, Test = tc };

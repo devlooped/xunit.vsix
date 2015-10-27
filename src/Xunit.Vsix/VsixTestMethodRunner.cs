@@ -27,7 +27,7 @@ namespace Xunit
 		{
 			base.BeforeTestMethodFinished ();
 			if (Aggregator.HasExceptions && Aggregator.ToException () is TimeoutException)
-				vsClient.Shutdown ();
+				vsClient.Recycle ();
 		}
 	}
 }

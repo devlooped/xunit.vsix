@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
+using Xunit.Properties;
 
 namespace Xunit
 {
@@ -8,6 +10,8 @@ namespace Xunit
 	/// </summary>
 	static class VsVersions
 	{
+		static readonly ITracer tracer = Tracer.Get (Constants.TracerName);
+
 		static VsVersions ()
 		{
 			InstalledVersions = (from version in Enumerable.Range (10, 20)
@@ -17,11 +21,16 @@ namespace Xunit
 								 select version + ".0")
 								.ToArray ();
 
+
 			LatestVersion = InstalledVersions.LastOrDefault ();
+			tracer.Info (Strings.VsVersions.InstalledVersions (string.Join (", ", InstalledVersions)));
+			tracer.Info (Strings.VsVersions.LatestVersion (LatestVersion));
 
 			var currentVersion = Environment.GetEnvironmentVariable("VisualStudioVersion");
-			if (!string.IsNullOrEmpty (currentVersion) && InstalledVersions.Contains(currentVersion))
+			if (!string.IsNullOrEmpty (currentVersion) && InstalledVersions.Contains(currentVersion)) {
 				CurrentVersion = currentVersion;
+				tracer.Info (Strings.VsVersions.CurrentVersion (currentVersion));
+			}
 		}
 
 		public static string CurrentVersion { get; private set; }
@@ -31,7 +40,7 @@ namespace Xunit
 		public static string[] InstalledVersions { get; private set; }
 
 		/// <summary>
-		/// Converts the token values for All, Current and Latest to their actual 
+		/// Converts the token values for All, Current and Latest to their actual
 		/// values, and returns a distinct list.
 		/// </summary>
 		public static string[] GetFinalVersions(string[] candidateVersions)

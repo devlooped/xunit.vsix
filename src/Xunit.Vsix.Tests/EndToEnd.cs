@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Xunit;
@@ -6,38 +7,6 @@ using Xunit.Abstractions;
 
 namespace Xunit
 {
-	public class ClassFixture : IDisposable
-	{
-		public ClassFixture ()
-		{
-
-		}
-
-		public void Dispose ()
-		{
-		}
-	}
-
-	public class TestsWithClassFixture : IClassFixture<ClassFixture>
-	{
-		ITestOutputHelper output;
-		ClassFixture state;
-
-		public TestsWithClassFixture (ClassFixture state, ITestOutputHelper output)
-		{
-			this.state = state;
-			this.output = output;
-		}
-
-		[VsixFact]
-		public void when_using_class_fixture_then_can_access_its_state ()
-		{
-			Assert.NotNull (state);
-			output.WriteLine ("Success!!!!");
-		}
-	}
-
-	[Vsix (RootSuffix = "Exp")]
 	public class EndToEnd
 	{
 		ITestOutputHelper output;
@@ -45,6 +14,8 @@ namespace Xunit
 		public EndToEnd (ITestOutputHelper output)
 		{
 			this.output = output;
+			Tracer.Configuration.AddListener (Constants.TracerName, new TestOutpuTraceListener (output));
+			Tracer.Configuration.SetTracingLevel (Constants.TracerName, SourceLevels.All);
 		}
 
 		[InlineData ("foo")]

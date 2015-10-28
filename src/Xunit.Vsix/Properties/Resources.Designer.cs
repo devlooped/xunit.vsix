@@ -79,6 +79,15 @@ namespace Xunit.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to attach debugger to running Visual Studio {0}{1}.
+        /// </summary>
+        internal static string VsClient_FailedToAttach {
+            get {
+                return ResourceManager.GetString("VsClient_FailedToAttach", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to connect to remote runner to running Visual Studio {0}{1}.
         /// </summary>
         internal static string VsClient_FailedToConnect {
@@ -102,6 +111,15 @@ namespace Xunit.Properties {
         internal static string VsClient_FailedToStart {
             get {
                 return ResourceManager.GetString("VsClient_FailedToStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to attach debugger. Attempt {0} of {1}.
+        /// </summary>
+        internal static string VsClient_RetryAttach {
+            get {
+                return ResourceManager.GetString("VsClient_RetryAttach", resourceCulture);
             }
         }
         

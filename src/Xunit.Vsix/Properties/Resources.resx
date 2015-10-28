@@ -123,6 +123,9 @@
   <data name="GlobalServices_NoDte" xml:space="preserve">
     <value>Failed to retrieve currently running DTE</value>
   </data>
+  <data name="VsClient_FailedToAttach" xml:space="preserve">
+    <value>Failed to attach debugger to running Visual Studio {0}{1}</value>
+  </data>
   <data name="VsClient_FailedToConnect" xml:space="preserve">
     <value>Failed to connect to remote runner to running Visual Studio {0}{1}</value>
   </data>
@@ -131,6 +134,9 @@
   </data>
   <data name="VsClient_FailedToStart" xml:space="preserve">
     <value>Failed to start Visual Studio {0}{1}</value>
+  </data>
+  <data name="VsClient_RetryAttach" xml:space="preserve">
+    <value>Failed to attach debugger. Attempt {0} of {1}</value>
   </data>
   <data name="VsStartup_Failed" xml:space="preserve">
     <value>Failed to start remote runner</value>

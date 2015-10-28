@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
+using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -7,8 +10,23 @@ namespace Xunit
 {
 	class VsixTestFramework : XunitTestFramework
 	{
+		static ITracer tracer = Tracer.Get (Constants.TracerName);
+
 		public VsixTestFramework (IMessageSink messageSink) : base (messageSink)
 		{
+			AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+			TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+		}
+
+		void OnUnobservedTaskException (object sender, UnobservedTaskExceptionEventArgs e)
+		{
+			tracer.Error (e.Exception.Flatten ().InnerException, e.Exception.Message);
+			e.SetObserved ();
+		}
+
+		void OnUnhandledException (object sender, UnhandledExceptionEventArgs e)
+		{
+			tracer.Error((Exception)e.ExceptionObject, ((Exception)e.ExceptionObject).Message);
 		}
 
 		protected override ITestFrameworkDiscoverer CreateDiscoverer (IAssemblyInfo assemblyInfo)
@@ -37,8 +55,8 @@ namespace Xunit
 			}
 		}
 
-/*********************************************** 
- * Showcases how to change [Fact] execution 
+/***********************************************
+ * Showcases how to change [Fact] execution
  * without even having to inherit the attribute
  * *********************************************
 

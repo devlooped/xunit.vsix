@@ -21,7 +21,8 @@ namespace Xunit
 	{
 		static readonly ITracer tracer = Tracer.Get(Constants.TracerName);
 		const string BindingPathKey = "{00000000-17C9-470C-AED2-2D4E97CC5686}";
-		const int MaxConnectRetries = 5;
+		const int MaxOperationRetries = 5;
+		const int RetryInterval = 200;
 
 		bool initializedExtension;
 
@@ -119,10 +120,20 @@ namespace Xunit
 
 			var retries = 0;
 			var connected = false;
-			while (retries++ < MaxConnectRetries && !(connected = TryPing (runner))) {
+			while (retries++ < MaxOperationRetries && !(connected = TryPing (runner))) {
 				Stop ();
 				if (!EnsureStarted (testCase, messageBus))
 					return false;
+
+				if (runner == null) {
+					var hostUrl = RemotingUtil.GetHostUri (pipeName);
+					var clientPipeName = Guid.NewGuid ().ToString ("N");
+
+					clientChannel = RemotingUtil.CreateChannel (Constants.ClientChannelName + clientPipeName, clientPipeName);
+					runner = (IVsRemoteRunner)RemotingServices.Connect (typeof (IVsRemoteRunner), hostUrl);
+				}
+
+				Thread.Sleep (RetryInterval);
 			}
 
 			if (!connected) {
@@ -148,8 +159,9 @@ namespace Xunit
 			if (Process == null) {
 				var retries = 0;
 				var started = false;
-				while (retries++ < MaxConnectRetries && !(started = Start ())) {
+				while (retries++ < MaxOperationRetries && !(started = Start ())) {
 					Stop ();
+					Thread.Sleep (RetryInterval);
 				}
 
 				if (!started) {
@@ -205,25 +217,42 @@ namespace Xunit
 			var services = new Microsoft.VisualStudio.Shell.ServiceProvider ((Microsoft.VisualStudio.OLE.Interop.IServiceProvider)dte);
 			IVsShell shell;
 			while ((shell = (IVsShell)services.GetService (typeof (SVsShell))) == null) {
-				System.Threading.Thread.Sleep (100);
+				Thread.Sleep (100);
 			}
 
 			object zombie;
 			while ((int?)(zombie = shell.GetProperty ((int)__VSSPROPID.VSSPROPID_Zombie, out zombie)) != 0) {
-				System.Threading.Thread.Sleep (100);
+				Thread.Sleep (100);
 			}
 
 			if (Debugger.IsAttached) {
 				// When attached via TD.NET, there will be an environment variable named DTE_MainWindow=2296172
 				var mainWindow = Environment.GetEnvironmentVariable ("DTE_MainWindow");
 				if (!string.IsNullOrEmpty (mainWindow)) {
-					var mainHWnd = int.Parse (mainWindow);
-					var mainDte = GetAllDtes ().FirstOrDefault (x => x.MainWindow.HWnd == mainHWnd);
-					if (mainDte != null) {
-						var startedVs = mainDte.Debugger.LocalProcesses.OfType<EnvDTE.Process> ().FirstOrDefault (x => x.ProcessID == Process.Id);
-						if (startedVs != null)
-							startedVs.Attach ();
+					var attached = false;
+					var retries = 0;
+
+					while (retries++ < MaxOperationRetries && !attached) {
+						try {
+							var mainHWnd = int.Parse (mainWindow);
+							var mainDte = GetAllDtes ().FirstOrDefault (x => x.MainWindow.HWnd == mainHWnd);
+							if (mainDte != null) {
+								var startedVs = mainDte.Debugger.LocalProcesses.OfType<EnvDTE.Process> ().FirstOrDefault (x => x.ProcessID == Process.Id);
+								if (startedVs != null) {
+									startedVs.Attach ();
+									attached = true;
+									break;
+								}
+							}
+						} catch (Exception ex) {
+							tracer.Warn (ex, Strings.VsClient.RetryAttach (retries, MaxOperationRetries));
+						}
+
+						Thread.Sleep (RetryInterval);
 					}
+
+					if (!attached)
+						tracer.Error (Strings.VsClient.FailedToAttach (visualStudioVersion, rootSuffix));
 				}
 			}
 
@@ -251,6 +280,10 @@ namespace Xunit
 				.Concat (new[] { Directory.GetCurrentDirectory() })
 				.Distinct ()
 				.ToArray ();
+
+			// Loading just the current path into the VS binding paths causes all
+			// other deps to fail.
+			//var probingPaths = new [] { GetType().Assembly.ManifestModule.FullyQualifiedName };
 
 			var extensionsPath = Path.Combine (
 				Environment.GetFolderPath (Environment.SpecialFolder.LocalApplicationData),

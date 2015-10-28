@@ -18,6 +18,6 @@ namespace Xunit
 
 		static void Launch(System::IntPtr windowHandle, System::String^ assemblyName, System::String^ className, System::String^ methodName);
 
-		static void LogMessage(System::String^ message, bool append);
+		static void LogMessage(System::String^ message);
 	};
 }

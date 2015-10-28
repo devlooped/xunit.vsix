@@ -25,30 +25,30 @@ void Injector::Launch(System::IntPtr windowHandle, System::String^ assembly, Sys
 
 	if (::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCTSTR)&MessageHookProc, &hinstDLL))
 	{
-		LogMessage("GetModuleHandleEx successful", true);
+		LogMessage("GetModuleHandleEx successful");
 		DWORD processID = 0;
 		DWORD threadID = ::GetWindowThreadProcessId((HWND)windowHandle.ToPointer(), &processID);
 
 		if (processID)
 		{
-			LogMessage("Got process id", true);
+			LogMessage("Got process id");
 			HANDLE hProcess = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, processID);
 			if (hProcess)
 			{
-				LogMessage("Got process handle", true);
+				LogMessage("Got process handle");
 				int buffLen = (assemblyClassAndMethod->Length + 1) * sizeof(wchar_t);
 				void* acmRemote = ::VirtualAllocEx(hProcess, NULL, buffLen, MEM_COMMIT, PAGE_READWRITE);
 
 				if (acmRemote)
 				{
-					LogMessage("VirtualAllocEx successful", true);
+					LogMessage("VirtualAllocEx successful");
 					::WriteProcessMemory(hProcess, acmRemote, acmLocal, buffLen, NULL);
 				
 					_messageHookHandle = ::SetWindowsHookEx(WH_CALLWNDPROC, &MessageHookProc, hinstDLL, threadID);
 
 					if (_messageHookHandle)
 					{
-						LogMessage("SetWindowsHookEx successful", true);
+						LogMessage("SetWindowsHookEx successful");
 						::SendMessage((HWND)windowHandle.ToPointer(), WM_GOBABYGO, (WPARAM)acmRemote, 0);
 						::UnhookWindowsHookEx(_messageHookHandle);
 					}
@@ -63,28 +63,9 @@ void Injector::Launch(System::IntPtr windowHandle, System::String^ assembly, Sys
 	}
 }
 
-void Injector::LogMessage(System::String^ message, bool append)
+void Injector::LogMessage(System::String^ message)
 {	            
-	System::String ^ applicationDataPath = Environment::GetFolderPath(Environment::SpecialFolder::LocalApplicationData);
-	applicationDataPath += "\\Xamarin\\xunit.vsx";
-
-	if (!System::IO::Directory::Exists(applicationDataPath))
-	{
-		System::IO::Directory::CreateDirectory(applicationDataPath);
-	}
-
-	System::String ^ pathname = applicationDataPath + "\\log.txt";
-
-	if (!append)    
-	{    
-		System::IO::File::Delete(pathname);        
-	}
-
-	System::IO::FileInfo ^ fi = gcnew System::IO::FileInfo(pathname);
-	            
-	System::IO::StreamWriter ^ sw = fi->AppendText();   
-	sw->WriteLine(System::DateTime::Now.ToString("MM/dd/yyyy HH:mm:ss") + " : " + message);
-	sw->Close();
+	System::Diagnostics::Trace::WriteLine(message);
 }
 
 __declspec(dllexport) 

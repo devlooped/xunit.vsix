@@ -3,11 +3,34 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Windows;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Xunit
 {
+	public class SolutionTests
+	{
+		IVsHierarchyItem item;
+
+		public SolutionTests ()
+		{
+			var components = GlobalServices.GetService<SComponentModel, IComponentModel>();
+			var manager = components.GetService<IVsHierarchyItemManager>();
+			item = manager.GetHierarchyItem (GlobalServices.GetService<SVsSolution, IVsHierarchy>(), (uint)VSConstants.VSITEMID.Root);
+		}
+
+		[VsixFact]
+		public void when_retrieving_solution_then_succeeds ()
+		{
+			Assert.NotNull (item);
+			Assert.True (item.HierarchyIdentity.IsRoot);
+		}
+	}
+
 	public class EndToEnd
 	{
 		ITestOutputHelper output;

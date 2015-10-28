@@ -1,13 +1,13 @@
 ﻿namespace Xunit
 {
 	/// <summary>
-	/// Represents the metadata available for VSX integration tests 
+	/// Represents the metadata available for VSX integration tests
 	/// at the assembly, class or method level.
 	/// </summary>
 	public interface IVsixAttribute
 	{
 		/// <summary>
-		/// Whether to start a new instance of Visual Studio for each 
+		/// Whether to start a new instance of Visual Studio for each
 		/// test run.
 		/// </summary>
 		bool NewIdeInstance { get; }
@@ -18,13 +18,13 @@
 		string RootSuffix { get; }
 
 		/// <summary>
-		/// Timeout in seconds for the test to complete its run, excluding the 
+		/// Timeout in seconds for the test to complete its run, excluding the
 		/// time that it takes to launch VS and set up the test run context.
 		/// </summary>
 		int TimeoutSeconds { get; }
 
 		/// <summary>
-		/// Versions of Visual Studio to run the given test in. See 
+		/// Versions of Visual Studio to run the given test in. See
 		/// <see cref="VisualStudioVersion"/> for available well-known values.
 		/// </summary>
 		string[] VisualStudioVersions { get; }

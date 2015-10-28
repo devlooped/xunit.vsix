@@ -8,6 +8,8 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -139,19 +141,25 @@ namespace Xunit
 				return RunAsync ();
 			}
 
-			protected override Task<RunSummary> RunTestMethodAsync (ITestMethod testMethod, IReflectionMethodInfo method, IEnumerable<IXunitTestCase> testCases, object[] constructorArguments)
+			protected override async Task<RunSummary> RunTestMethodAsync (ITestMethod testMethod, IReflectionMethodInfo method, IEnumerable<IXunitTestCase> testCases, object[] constructorArguments)
 			{
 				// We don't want to run the discovery again over the test method,
 				// generate new test cases and so on, since we already have received a single test case to run.
-				return new XunitTestCaseRunner (
-						testCases.Single (),
-						testCases.Single ().DisplayName,
-						testCases.Single ().SkipReason,
-						constructorArguments,
-						testCases.Single ().TestMethodArguments,
-						MessageBus,
-						Aggregator, new CancellationTokenSource ())
-						.RunAsync ();
+				// Also, we want the test case to be run in the UI thread, which is what you typically want.
+				RunSummary summary = null;
+				await Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, (Action)(async () => {
+					summary = await new XunitTestCaseRunner (
+					testCases.Single (),
+					testCases.Single ().DisplayName,
+					testCases.Single ().SkipReason,
+					constructorArguments,
+					testCases.Single ().TestMethodArguments,
+					MessageBus,
+					Aggregator, new CancellationTokenSource ())
+					.RunAsync ();
+				}));
+
+				return summary;
 			}
 		}
 	}

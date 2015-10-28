@@ -4,6 +4,8 @@
 // All other rights reserved.
 
 #include "stdafx.h"
+#include <Windows.h>
+#include <exception>
 
 #include "Injector.h"
 #include <vcclr.h>
@@ -97,10 +99,26 @@ LRESULT __stdcall MessageHookProc(int nCode, WPARAM wparam, LPARAM lparam)
 					if (methodInfo != nullptr)
 					{
 						System::Diagnostics::Debug::WriteLine(System::String::Format("About to invoke {0} on type {1}", methodInfo->Name, acmSplit[1]));
-						Object ^ returnValue = methodInfo->Invoke(nullptr, nullptr);
-						if (nullptr == returnValue)
-							returnValue = "NULL";
-						System::Diagnostics::Debug::WriteLine(String::Format("Return value of {0} on type {1} is {2}", methodInfo->Name, acmSplit[1], returnValue));
+						int maxRetries = 5;
+						int retry = 0;
+						bool injected = false;
+
+						while (retry < maxRetries && !injected)
+						{
+							retry++;
+							__try
+							{
+								Object ^ returnValue = methodInfo->Invoke(nullptr, nullptr);
+								if (nullptr == returnValue)
+									returnValue = "NULL";
+								System::Diagnostics::Debug::WriteLine(String::Format("Return value of {0} on type {1} is {2}", methodInfo->Name, acmSplit[1], returnValue));
+								injected = true;
+							}
+							__except (EXCEPTION_EXECUTE_HANDLER)
+							{
+								System::Threading::Thread::Sleep(200);
+							}
+						}
 					}
 				}
 			}

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Windows;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,6 +17,12 @@ namespace Xunit
 			this.output = output;
 			//Tracer.Configuration.AddListener (Constants.TracerName, new TestOutpuTraceListwhen_succeeding_then_reportsener (output));
 			//Tracer.Configuration.SetTracingLevel (Constants.TracerName, SourceLevels.All);
+		}
+
+		[VsixFact]
+		public void when_executing_then_runs_on_main_thread ()
+		{
+			Assert.Equal (Application.Current.Dispatcher.Thread, Thread.CurrentThread);
 		}
 
 		[InlineData ("foo")]

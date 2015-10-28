@@ -275,7 +275,7 @@ namespace Xunit
 
 			// Add all currently loaded assemblies paths to the resolve paths.
 			var probingPaths = AppDomain.CurrentDomain.GetAssemblies ()
-				.Select (x => Path.GetDirectoryName (x.Location))
+				.Select (x => Path.GetDirectoryName (x.ManifestModule.FullyQualifiedName))
 				.Where (x => x.StartsWith (Environment.GetFolderPath (Environment.SpecialFolder.LocalApplicationData)))
 				.Concat (new[] { Directory.GetCurrentDirectory() })
 				.Distinct ()

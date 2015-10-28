@@ -19,9 +19,9 @@ using namespace System::Security::Permissions;
 [assembly:AssemblyTitleAttribute("Xunit.Vsx.Bootstrap")];
 [assembly:AssemblyDescriptionAttribute("")];
 [assembly:AssemblyConfigurationAttribute("")];
-[assembly:AssemblyCompanyAttribute("Xamarin")];
+[assembly:AssemblyCompanyAttribute("Mobile Essentials")];
 [assembly:AssemblyProductAttribute("Xunit.Vsx.Bootstrap")];
-[assembly:AssemblyCopyrightAttribute("Copyright (c) Xamarin 2015")];
+[assembly:AssemblyCopyrightAttribute("Copyright (c) Mobile Essentials 2015")];
 [assembly:AssemblyTrademarkAttribute("")];
 [assembly:AssemblyCultureAttribute("")];
 
@@ -36,7 +36,7 @@ using namespace System::Security::Permissions;
 // You can specify all the value or you can default the Revision and Build Numbers
 // by using the '*' as shown below:
 
-[assembly:AssemblyVersionAttribute("1.0.*")];
+[assembly:AssemblyVersionAttribute("1.0.0.0")];
 
 [assembly:ComVisible(false)];
 

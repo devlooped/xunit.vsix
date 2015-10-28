@@ -106,7 +106,7 @@ LRESULT __stdcall MessageHookProc(int nCode, WPARAM wparam, LPARAM lparam)
 						while (retry < maxRetries && !injected)
 						{
 							retry++;
-							__try
+							try
 							{
 								Object ^ returnValue = methodInfo->Invoke(nullptr, nullptr);
 								if (nullptr == returnValue)
@@ -114,7 +114,7 @@ LRESULT __stdcall MessageHookProc(int nCode, WPARAM wparam, LPARAM lparam)
 								System::Diagnostics::Debug::WriteLine(String::Format("Return value of {0} on type {1} is {2}", methodInfo->Name, acmSplit[1], returnValue));
 								injected = true;
 							}
-							__except (EXCEPTION_EXECUTE_HANDLER)
+							catch (std::exception)
 							{
 								System::Threading::Thread::Sleep(200);
 							}

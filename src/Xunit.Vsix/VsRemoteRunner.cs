@@ -25,6 +25,7 @@ namespace Xunit
 		IChannel channel;
 
 		Dictionary<Type, object> assemblyFixtureMappings = new Dictionary<Type, object>();
+		Dictionary<Type, object> collectionFixtureMappings = new Dictionary<Type, object>();
 		ConcurrentDictionary<ITestCollection, VsRemoteTestCollectionRunner> collectionRunnerMap = new ConcurrentDictionary<ITestCollection, VsRemoteTestCollectionRunner>();
 
 		public VsRemoteRunner ()
@@ -45,7 +46,7 @@ namespace Xunit
 		public VsixRunSummary Run (VsixTestCase testCase, IMessageBus messageBus)
 		{
 			var aggregator = new ExceptionAggregator ();
-			var runner = collectionRunnerMap.GetOrAdd(testCase.TestMethod.TestClass.TestCollection, tc => new VsRemoteTestCollectionRunner(tc, assemblyFixtureMappings));
+			var runner = collectionRunnerMap.GetOrAdd(testCase.TestMethod.TestClass.TestCollection, tc => new VsRemoteTestCollectionRunner(tc, assemblyFixtureMappings, collectionFixtureMappings));
 
 			var result = runner.RunAsync(testCase, messageBus, aggregator)
 					.Result
@@ -59,11 +60,19 @@ namespace Xunit
 
 		public void Dispose()
 		{
-			foreach (var disposable in assemblyFixtureMappings.Values.OfType<IDisposable>()) {
-				try {
-					disposable.Dispose ();
-				} catch { }
+			var aggregator = new ExceptionAggregator();
+			var tasks = collectionFixtureMappings.Values.OfType<IAsyncLifetime> ()
+				.Select(asyncFixture => aggregator.RunAsync(asyncFixture.DisposeAsync))
+				.Concat(assemblyFixtureMappings.Values.OfType<IAsyncLifetime>()
+				.Select(asyncFixture => aggregator.RunAsync(asyncFixture.DisposeAsync)))
+				.ToArray();
+
+			foreach (var disposable in assemblyFixtureMappings.Values.OfType<IDisposable>()
+				.Concat(collectionFixtureMappings.Values.OfType<IDisposable>())) {
+				aggregator.Run (disposable.Dispose);
 			}
+
+			Task.WaitAll (tasks);
 		}
 
 		/// <summary>
@@ -84,11 +93,12 @@ namespace Xunit
 		{
 			readonly Dictionary<Type, object> assemblyFixtureMappings;
 
-			public VsRemoteTestCollectionRunner (ITestCollection testCollection, Dictionary<Type, object> assemblyFixtureMappings)
+			public VsRemoteTestCollectionRunner (ITestCollection testCollection, Dictionary<Type, object> assemblyFixtureMappings, Dictionary<Type, object> collectionFixtureMappings)
 				: base (testCollection, Enumerable.Empty<IXunitTestCase>(), new NullMessageSink(), null,
 					  new DefaultTestCaseOrderer (new NullMessageSink ()), new ExceptionAggregator (), new CancellationTokenSource ())
 			{
 				this.assemblyFixtureMappings = assemblyFixtureMappings;
+				CollectionFixtureMappings = collectionFixtureMappings;
 			}
 
 			public Task<RunSummary> RunAsync (IXunitTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator)
@@ -100,6 +110,14 @@ namespace Xunit
 				return RunAsync ();
 			}
 
+			protected override Task BeforeTestCollectionFinishedAsync ()
+			{
+				// Prevent the automatic cleanup of the collection fixture mappings that happens via the base class,
+				// since our collection cleanup is exactly the same as the VS cleanup, since there's a 1>1 mapping
+				// of VS version+hive per collection.
+				return Task.FromResult (true);
+			}
+
 			protected override Task<RunSummary> RunTestClassAsync (ITestClass testClass, IReflectionTypeInfo @class, IEnumerable<IXunitTestCase> testCases)
 			{
 				foreach (var fixtureType in @class.Type.GetTypeInfo ().ImplementedInterfaces
@@ -109,9 +127,18 @@ namespace Xunit
 						.Where (i => !assemblyFixtureMappings.ContainsKey (i))) {
 					// ConcurrentDictionary's GetOrAdd does not lock around the value factory call, so we need
 					// to do it ourselves.
-					lock (assemblyFixtureMappings)
-						if (!assemblyFixtureMappings.ContainsKey (fixtureType))
-							Aggregator.Run (() => assemblyFixtureMappings.Add (fixtureType, Activator.CreateInstance (fixtureType)));
+					lock (assemblyFixtureMappings) {
+						if (!assemblyFixtureMappings.ContainsKey (fixtureType)) {
+							Aggregator.Run (() => {
+								var fixture = Activator.CreateInstance (fixtureType);
+								var asyncFixture = fixture as IAsyncLifetime;
+								if (asyncFixture != null)
+									Aggregator.RunAsync (asyncFixture.InitializeAsync);
+
+								assemblyFixtureMappings.Add (fixtureType, fixture);
+							});
+						}
+					}
 				}
 
 				// Don't want to use .Concat + .ToDictionary because of the possibility of overriding types,

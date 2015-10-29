@@ -19,7 +19,7 @@ namespace Xunit
 	[EditorBrowsable (EditorBrowsableState.Never)]
 	public static class VsStartup
 	{
-		static readonly ITracer tracer = Tracer.Get(Constants.TracerName);
+		static readonly TraceSource tracer = Constants.Tracer;
 		static VsRemoteRunner runner;
 
 		/// <summary>
@@ -29,17 +29,17 @@ namespace Xunit
 		public static bool Start ()
 		{
 			try {
-				tracer.Verbose (Strings.VsStartup.Starting);
+				tracer.TraceEvent(TraceEventType.Verbose, 0, Strings.VsStartup.Starting);
 				GlobalServices.Initialize ();
 
 				runner = new VsRemoteRunner ();
 				runner.Start ();
 
 				LocalResolver.Initialize (Directory.GetCurrentDirectory ());
-				tracer.Info (Strings.VsStartup.Started);
+				tracer.TraceInformation (Strings.VsStartup.Started);
 				return true;
 			} catch (Exception ex) {
-				tracer.Error (ex, Strings.VsStartup.Failed);
+				tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsStartup.Failed + Environment.NewLine + ex.ToString());
 				return false;
 			}
 		}

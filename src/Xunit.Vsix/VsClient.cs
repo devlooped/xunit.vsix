@@ -19,7 +19,7 @@ namespace Xunit
 {
 	class VsClient : IVsClient
 	{
-		static readonly ITracer tracer = Tracer.Get(Constants.TracerName);
+		static readonly TraceSource tracer = Constants.Tracer;
 		const string BindingPathKey = "{00000000-17C9-470C-AED2-2D4E97CC5686}";
 		const int MaxOperationRetries = 5;
 		const int RetryInterval = 200;
@@ -167,7 +167,7 @@ namespace Xunit
 				if (!started) {
 					Stop ();
 
-					tracer.Error (Strings.VsClient.FailedToStart (visualStudioVersion, rootSuffix));
+					tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToStart (visualStudioVersion, rootSuffix));
 					messageBus.QueueMessage (new TestFailed (new XunitTest (testCase, testCase.DisplayName), 0,
 						Strings.VsClient.FailedToStart (visualStudioVersion, rootSuffix),
 						new TimeoutException ()));
@@ -245,14 +245,14 @@ namespace Xunit
 								}
 							}
 						} catch (Exception ex) {
-							tracer.Warn (ex, Strings.VsClient.RetryAttach (retries, MaxOperationRetries));
+							tracer.TraceEvent(TraceEventType.Warning, 0, Strings.VsClient.RetryAttach (retries, MaxOperationRetries) + Environment.NewLine + ex.ToString());
 						}
 
 						Thread.Sleep (RetryInterval);
 					}
 
 					if (!attached)
-						tracer.Error (Strings.VsClient.FailedToAttach (visualStudioVersion, rootSuffix));
+						tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToAttach (visualStudioVersion, rootSuffix));
 				}
 			}
 
@@ -261,7 +261,7 @@ namespace Xunit
 					GetType ().Assembly.Location,
 					typeof (VsStartup).FullName, "Start");
 			} catch (Exception ex) {
-				tracer.Error (ex, Strings.VsClient.FailedToInject (Process.Id));
+				tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject (Process.Id) + Environment.NewLine + ex.ToString());
 				return false;
 			}
 

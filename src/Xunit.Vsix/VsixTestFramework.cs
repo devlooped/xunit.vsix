@@ -10,7 +10,7 @@ namespace Xunit
 {
 	class VsixTestFramework : XunitTestFramework
 	{
-		static ITracer tracer = Tracer.Get (Constants.TracerName);
+		static TraceSource tracer = Constants.Tracer;
 
 		public VsixTestFramework (IMessageSink messageSink) : base (messageSink)
 		{
@@ -20,13 +20,13 @@ namespace Xunit
 
 		void OnUnobservedTaskException (object sender, UnobservedTaskExceptionEventArgs e)
 		{
-			tracer.Error (e.Exception.Flatten ().InnerException, e.Exception.Message);
+			tracer.TraceEvent(TraceEventType.Error, 0, e.Exception.Flatten().InnerException.ToString());
 			e.SetObserved ();
 		}
 
 		void OnUnhandledException (object sender, UnhandledExceptionEventArgs e)
 		{
-			tracer.Error((Exception)e.ExceptionObject, ((Exception)e.ExceptionObject).Message);
+			tracer.TraceEvent (TraceEventType.Error, 0, ((Exception)e.ExceptionObject).ToString ());
 		}
 
 		protected override ITestFrameworkDiscoverer CreateDiscoverer (IAssemblyInfo assemblyInfo)

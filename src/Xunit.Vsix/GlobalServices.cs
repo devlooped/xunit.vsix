@@ -10,7 +10,7 @@ namespace Xunit
 	/// </summary>
 	public static class GlobalServices
 	{
-		static readonly ITracer tracer = Tracer.Get (Constants.TracerName);
+		static readonly TraceSource tracer = Constants.Tracer;
 		static IServiceProvider services;
 
 		static GlobalServices ()
@@ -19,16 +19,16 @@ namespace Xunit
 				var dte = RunningObjects.GetDTE(TimeSpan.FromSeconds(5));
 				if (dte == null) {
 					Debug.Fail (Strings.GlobalServices.NoDte);
-					tracer.Warn (Strings.GlobalServices.NoDte);
+					tracer.TraceEvent(TraceEventType.Warning, 0, Strings.GlobalServices.NoDte);
 					services = new NullServices ();
 				} else {
 					services = new Microsoft.VisualStudio.Shell.ServiceProvider (
 						(Microsoft.VisualStudio.OLE.Interop.IServiceProvider)dte);
-					tracer.Info (Strings.GlobalServices.InitializedDte (dte.Version));
+					tracer.TraceInformation (Strings.GlobalServices.InitializedDte (dte.Version));
 				}
 			} catch (NotSupportedException ex) {
 				Debug.Fail (Strings.GlobalServices.NoDte);
-				tracer.Warn (ex, Strings.GlobalServices.NoDte);
+				tracer.TraceEvent(TraceEventType.Warning, 0, Strings.GlobalServices.NoDte + Environment.NewLine + ex.ToString());
 				services = new NullServices ();
 			}
 		}

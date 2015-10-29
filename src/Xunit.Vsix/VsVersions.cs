@@ -10,7 +10,7 @@ namespace Xunit
 	/// </summary>
 	static class VsVersions
 	{
-		static readonly ITracer tracer = Tracer.Get (Constants.TracerName);
+		static readonly TraceSource tracer = Constants.Tracer;
 
 		static VsVersions ()
 		{
@@ -23,13 +23,13 @@ namespace Xunit
 
 
 			LatestVersion = InstalledVersions.LastOrDefault ();
-			tracer.Info (Strings.VsVersions.InstalledVersions (string.Join (", ", InstalledVersions)));
-			tracer.Info (Strings.VsVersions.LatestVersion (LatestVersion));
+			tracer.TraceInformation (Strings.VsVersions.InstalledVersions (string.Join (", ", InstalledVersions)));
+			tracer.TraceInformation (Strings.VsVersions.LatestVersion (LatestVersion));
 
 			var currentVersion = Environment.GetEnvironmentVariable("VisualStudioVersion");
 			if (!string.IsNullOrEmpty (currentVersion) && InstalledVersions.Contains(currentVersion)) {
 				CurrentVersion = currentVersion;
-				tracer.Info (Strings.VsVersions.CurrentVersion (currentVersion));
+				tracer.TraceInformation (Strings.VsVersions.CurrentVersion (currentVersion));
 			}
 		}
 

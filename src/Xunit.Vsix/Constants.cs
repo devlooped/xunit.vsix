@@ -1,4 +1,6 @@
 ﻿
+using System.Diagnostics;
+
 namespace Xunit
 {
 	static class Constants
@@ -8,5 +10,7 @@ namespace Xunit
 		public const string TracerName = "xunit.vsix";
 		public const string ServerChannelName = "xunit.vsix.server";
 		public const string ClientChannelName = "xunit.vsix.client-";
+
+		public static readonly TraceSource Tracer = new TraceSource(TracerName);
 	}
 }

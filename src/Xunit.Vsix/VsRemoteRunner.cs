@@ -10,6 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using Task = System.Threading.Tasks.Task;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -48,11 +51,14 @@ namespace Xunit
 			var aggregator = new ExceptionAggregator ();
 			var runner = collectionRunnerMap.GetOrAdd(testCase.TestMethod.TestClass.TestCollection, tc => new VsRemoteTestCollectionRunner(tc, assemblyFixtureMappings, collectionFixtureMappings));
 
-			var result = runner.RunAsync(testCase, messageBus, aggregator)
-					.Result
-					.ToVsixRunSummary();
+			if (SynchronizationContext.Current == null)
+				SynchronizationContext.SetSynchronizationContext (new SynchronizationContext ());
 
-			if (aggregator.HasExceptions)
+			VsixRunSummary result = runner.RunAsync (testCase, messageBus, aggregator)
+				.Result
+				.ToVsixRunSummary ();
+
+			if (aggregator.HasExceptions && result != null)
 				result.Exception = aggregator.ToException ();
 
 			return result;

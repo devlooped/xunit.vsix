@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <VisualStudioVersions Condition=" '$(Configuration)' == 'Release' ">All</VisualStudioVersions>
+    <VisualStudioVersions Condition=" '$(Configuration)' == 'Debug' ">$(VisualStudioVersion)</VisualStudioVersions>
+    <!-- Change the default hive to run on depending on CI vs local builds. -->
+    <RootSuffix Condition=" '$(IsLocalBuild)' == 'true' ">Exp</RootSuffix>
+    <RootSuffix Condition=" '$(IsCIBuild)' == 'true' "></RootSuffix>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedVersion Include="11.0;12.0;14.0" Condition=" '$(Configuration)' == 'Release' " />
+    <SupportedVersion Include="14.0" Condition=" '$(Configuration)' == 'Debug' " />
+    <Content Include="Content\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(IsLocalBuild)' == 'true' ">
+    <CoreCompileDependsOn>
+      $(CoreCompileDependsOn);
+      DeployVsixSdk
+    </CoreCompileDependsOn>
+  </PropertyGroup>
+  
+  <!-- Clones the CoreCompile inputs/outputs so that we only do this if the integration tests project 
+       has changed, meaning it will be likely re-run and would need updated VSIXes. -->
+  <Target Name="DeployVsixSdk"
+          Inputs="$(MSBuildAllProjects);
+                @(Compile);
+                @(_CoreCompileResourceInputs);
+                $(ApplicationIcon);
+                $(AssemblyOriginatorKeyFile);
+                @(ReferencePath);
+                @(CompiledLicenseFile);
+                @(LinkResource);
+                @(EmbeddedDocumentation);
+                $(Win32Resource);
+                $(Win32Manifest);
+                @(CustomAdditionalCompileInputs);
+                $(ResolvedCodeAnalysisRuleSet)"
+          Outputs="@(DocFileItem);
+                 @(IntermediateAssembly);
+                 @(_DebugSymbolsIntermediatePath);
+                 $(NonExistentFile);
+                 @(CustomAdditionalCompileOutputs)">
+    
+    <!-- Build the VSIX for supported VS versions that aren't the currently used VS -->
+    <Exec Command='"$(MSBuildBinPath)\MSBuild.exe" ..\Sdk.Vsix\Sdk.Vsix.csproj /p:VisualStudioVersion=%(SupportedVersion.Identity) /p:DeployExtension=True /t:DeployVsixExtensionFiles'
+          Condition=" '%(SupportedVersion.Identity)' != '$(VisualStudioVersion)'"
+          StandardErrorImportance='high'
+          StandardOutputImportance='low'
+          ConsoleToMSBuild='true'
+          ContinueOnError='false'/>
+
+    <!--
+    <ItemGroup>
+      <SupportedVersion>
+        <VSCommToolsVar>VS$([System.String]::new('%(Identity)').Replace('.', ''))COMNTOOLS</VSCommToolsVar>
+      </SupportedVersion>
+      <SupportedVersion>
+        <DevEnvDir>$([System.Environment]::ExpandEnvironmentVariables('%%(VSCommToolsVar)%'))..\IDE\</DevEnvDir>
+      </SupportedVersion>
+      <SupportedVersion>
+        <DevEnv>$([System.IO.Path]::GetFullPath('%(DevEnvDir)devenv.exe'))</DevEnv>
+      </SupportedVersion>
+    </ItemGroup>
+
+    <Message Importance="high" Text="DevEnv: %(SupportedVersion.DevEnvDir)" />
+
+    <Exec Command='"%(SupportedVersion.DevEnv)" /UpdateConfiguration'
+          StandardErrorImportance='high'
+          StandardOutputImportance='low'
+          ConsoleToMSBuild='true'
+          IgnoreExitCode='true'/>
+
+    <Exec Command='"%(SupportedVersion.DevEnv)" /ClearCache'
+          Condition=" '%(SupportedVersion.Identity)' &gt; '11.0' "
+          StandardErrorImportance='high'
+          StandardOutputImportance='low'
+          ConsoleToMSBuild='true'
+          IgnoreExitCode='true'/>
+    -->
+  </Target>
+  
+</Project>

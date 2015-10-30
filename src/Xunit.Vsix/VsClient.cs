@@ -139,7 +139,7 @@ namespace Xunit
 			if (!connected) {
 				Stop ();
 				var message = Strings.VsClient.FailedToConnect(testCase.VisualStudioVersion, testCase.RootSuffix);
-                messageBus.QueueMessage (new TestFailed (new XunitTest (testCase, testCase.DisplayName), 0, message, new InvalidOperationException (message)));
+				messageBus.QueueMessage (new TestFailed (new XunitTest (testCase, testCase.DisplayName), 0, message, new InvalidOperationException (message)));
 				return false;
 			}
 
@@ -154,7 +154,7 @@ namespace Xunit
 			return true;
 		}
 
-		bool EnsureStarted(VsixTestCase testCase, IMessageBus messageBus)
+		bool EnsureStarted (VsixTestCase testCase, IMessageBus messageBus)
 		{
 			if (Process == null) {
 				var retries = 0;
@@ -167,7 +167,7 @@ namespace Xunit
 				if (!started) {
 					Stop ();
 
-					tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToStart (visualStudioVersion, rootSuffix));
+					tracer.TraceEvent (TraceEventType.Error, 0, Strings.VsClient.FailedToStart (visualStudioVersion, rootSuffix));
 					messageBus.QueueMessage (new TestFailed (new XunitTest (testCase, testCase.DisplayName), 0,
 						Strings.VsClient.FailedToStart (visualStudioVersion, rootSuffix),
 						new TimeoutException ()));
@@ -245,14 +245,14 @@ namespace Xunit
 								}
 							}
 						} catch (Exception ex) {
-							tracer.TraceEvent(TraceEventType.Warning, 0, Strings.VsClient.RetryAttach (retries, MaxOperationRetries) + Environment.NewLine + ex.ToString());
+							tracer.TraceEvent (TraceEventType.Warning, 0, Strings.VsClient.RetryAttach (retries, MaxOperationRetries) + Environment.NewLine + ex.ToString ());
 						}
 
 						Thread.Sleep (RetryInterval);
 					}
 
 					if (!attached)
-						tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToAttach (visualStudioVersion, rootSuffix));
+						tracer.TraceEvent (TraceEventType.Error, 0, Strings.VsClient.FailedToAttach (visualStudioVersion, rootSuffix));
 				}
 			}
 
@@ -261,7 +261,7 @@ namespace Xunit
 					GetType ().Assembly.Location,
 					typeof (VsStartup).FullName, "Start");
 			} catch (Exception ex) {
-				tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject (Process.Id) + Environment.NewLine + ex.ToString());
+				tracer.TraceEvent (TraceEventType.Error, 0, Strings.VsClient.FailedToInject (Process.Id) + Environment.NewLine + ex.ToString ());
 				return false;
 			}
 

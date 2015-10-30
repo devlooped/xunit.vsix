@@ -42,7 +42,7 @@ namespace Xunit
 
 		public void AddListener (TraceListener listener)
 		{
-			if (Trace.Listeners.Contains(listener))
+			if (Trace.Listeners.Contains (listener))
 				Trace.Listeners.Add (listener);
 		}
 
@@ -54,17 +54,24 @@ namespace Xunit
 			if (SynchronizationContext.Current == null)
 				SynchronizationContext.SetSynchronizationContext (new SynchronizationContext ());
 
-			VsixRunSummary result = runner.RunAsync (testCase, messageBus, aggregator)
+			try {
+				VsixRunSummary result = runner.RunAsync (testCase, messageBus, aggregator)
 				.Result
 				.ToVsixRunSummary ();
 
-			if (aggregator.HasExceptions && result != null)
-				result.Exception = aggregator.ToException ();
+				if (aggregator.HasExceptions && result != null)
+					result.Exception = aggregator.ToException ();
 
-			return result;
+				return result;
+			} catch (AggregateException aex) {
+				return new VsixRunSummary {
+					Failed = 1,
+					Exception = aex.Flatten ().InnerException
+				};
+			}
 		}
 
-		public void Dispose()
+		public void Dispose ()
 		{
 			var aggregator = new ExceptionAggregator();
 			var tasks = collectionFixtureMappings.Values.OfType<IAsyncLifetime> ()
@@ -73,8 +80,8 @@ namespace Xunit
 				.Select(asyncFixture => aggregator.RunAsync(asyncFixture.DisposeAsync)))
 				.ToArray();
 
-			foreach (var disposable in assemblyFixtureMappings.Values.OfType<IDisposable>()
-				.Concat(collectionFixtureMappings.Values.OfType<IDisposable>())) {
+			foreach (var disposable in assemblyFixtureMappings.Values.OfType<IDisposable> ()
+				.Concat (collectionFixtureMappings.Values.OfType<IDisposable> ())) {
 				aggregator.Run (disposable.Dispose);
 			}
 
@@ -100,7 +107,7 @@ namespace Xunit
 			readonly Dictionary<Type, object> assemblyFixtureMappings;
 
 			public VsRemoteTestCollectionRunner (ITestCollection testCollection, Dictionary<Type, object> assemblyFixtureMappings, Dictionary<Type, object> collectionFixtureMappings)
-				: base (testCollection, Enumerable.Empty<IXunitTestCase>(), new NullMessageSink(), null,
+				: base (testCollection, Enumerable.Empty<IXunitTestCase> (), new NullMessageSink (), null,
 					  new DefaultTestCaseOrderer (new NullMessageSink ()), new ExceptionAggregator (), new CancellationTokenSource ())
 			{
 				this.assemblyFixtureMappings = assemblyFixtureMappings;
@@ -179,20 +186,73 @@ namespace Xunit
 				// We don't want to run the discovery again over the test method,
 				// generate new test cases and so on, since we already have received a single test case to run.
 				// Also, we want the test case to be run in the UI thread, which is what you typically want.
-				RunSummary summary = null;
-				await Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, (Action)(async () => {
-					summary = await new XunitTestCaseRunner (
-					testCases.Single (),
-					testCases.Single ().DisplayName,
-					testCases.Single ().SkipReason,
-					constructorArguments,
-					testCases.Single ().TestMethodArguments,
-					MessageBus,
-					Aggregator, new CancellationTokenSource ())
-					.RunAsync ();
-				}));
+				return await Application.Current.Dispatcher.InvokeAsync (() =>
+					new SyncTestCaseRunner (
+							testCases.Single (),
+							testCases.Single ().DisplayName,
+							testCases.Single ().SkipReason,
+							constructorArguments,
+							testCases.Single ().TestMethodArguments,
+							MessageBus,
+							Aggregator, new CancellationTokenSource ())
+						.RunAsync ()
+						.Result, DispatcherPriority.Background);
+			}
 
-				return summary;
+			class SyncTestCaseRunner : XunitTestCaseRunner
+			{
+				public SyncTestCaseRunner (IXunitTestCase testCase, string displayName, string skipReason, object[] constructorArguments, object[] testMethodArguments, IMessageBus messageBus, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
+					: base (testCase, displayName, skipReason, constructorArguments, testMethodArguments, messageBus, aggregator, cancellationTokenSource)
+				{
+				}
+
+				protected override Task<RunSummary> RunTestAsync ()
+				{
+					return new SyncTestRunner (new XunitTest (TestCase, DisplayName), MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, SkipReason, BeforeAfterAttributes, new ExceptionAggregator (Aggregator), CancellationTokenSource).RunAsync ();
+				}
+
+				class SyncTestRunner : XunitTestRunner
+				{
+					public SyncTestRunner (ITest test, IMessageBus messageBus, Type testClass, object[] constructorArguments, MethodInfo testMethod, object[] testMethodArguments, string skipReason, IReadOnlyList<BeforeAfterTestAttribute> beforeAfterAttributes, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
+						: base (test, messageBus, testClass, constructorArguments, testMethod, testMethodArguments, skipReason, beforeAfterAttributes, aggregator, cancellationTokenSource)
+					{
+					}
+
+					protected override Task<decimal> InvokeTestMethodAsync (ExceptionAggregator aggregator)
+					{
+						return new SyncTestInvoker (Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource).RunAsync ();
+					}
+
+					class SyncTestInvoker : XunitTestInvoker
+					{
+						public SyncTestInvoker (ITest test, IMessageBus messageBus, Type testClass, object[] constructorArguments, MethodInfo testMethod, object[] testMethodArguments, IReadOnlyList<BeforeAfterTestAttribute> beforeAfterAttributes, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
+							: base (test, messageBus, testClass, constructorArguments, testMethod, testMethodArguments, beforeAfterAttributes, aggregator, cancellationTokenSource)
+						{
+						}
+
+						protected override Task<decimal> InvokeTestMethodAsync (object testClassInstance)
+						{
+								Aggregator.Run (() => Timer.Aggregate (() => {
+									var parameterCount = TestMethod.GetParameters().Length;
+									var valueCount = TestMethodArguments == null ? 0 : TestMethodArguments.Length;
+									if (parameterCount != valueCount) {
+										Aggregator.Add (
+											new InvalidOperationException (
+												$"The test method expected {parameterCount} parameter value{(parameterCount == 1 ? "" : "s")}, but {valueCount} parameter value{(valueCount == 1 ? "" : "s")} {(valueCount == 1 ? "was" : "were")} provided."
+											)
+										);
+									} else {
+										var result = CallTestMethod(testClassInstance);
+										var task = result as Task;
+										if (task != null)
+											task.Wait ();
+									}
+								}));
+
+							return Task.FromResult(Timer.Total);
+						}
+					}
+				}
 			}
 		}
 	}

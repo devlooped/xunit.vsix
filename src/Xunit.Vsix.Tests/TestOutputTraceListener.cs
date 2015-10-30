@@ -8,11 +8,11 @@ using Xunit.Abstractions;
 
 namespace Xunit
 {
-	public class TestOutpuTraceListener : TraceListener
+	public class TestOutputTraceListener : TraceListener
 	{
 		ITestOutputHelper output;
 
-		public TestOutpuTraceListener (ITestOutputHelper output)
+		public TestOutputTraceListener (ITestOutputHelper output)
 		{
 			this.output = output;
 		}

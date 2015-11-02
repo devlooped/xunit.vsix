@@ -43,7 +43,7 @@ namespace Xunit
 		/// Converts the token values for All, Current and Latest to their actual
 		/// values, and returns a distinct list.
 		/// </summary>
-		public static string[] GetFinalVersions(string[] candidateVersions)
+		public static string[] GetFinalVersions(string[] candidateVersions, string minimumVersion, string maximumVersion)
 		{
 			// If no version is specified, we default to current or latest.
 			if (candidateVersions == null || candidateVersions.Length == 0)
@@ -63,6 +63,11 @@ namespace Xunit
 				vsVersions.Add (LatestVersion);
 				vsVersions.RemoveAll (vs => vs == VisualStudioVersion.Latest);
 			}
+
+			if (!string.IsNullOrEmpty (minimumVersion))
+				vsVersions.RemoveAll (vs => vs.CompareTo(minimumVersion) == -1);
+			if (!string.IsNullOrEmpty (maximumVersion))
+				vsVersions.RemoveAll (vs => vs.CompareTo (maximumVersion) == 1);
 
 			return vsVersions.Distinct().ToArray ();
 		}

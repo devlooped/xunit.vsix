@@ -25,7 +25,11 @@ namespace Xunit
 			if (skipReason != null)
 				return new[] { new XunitTestCase (diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault (), testMethod) };
 
-			var vsVersions = VsVersions.GetFinalVersions(testMethod.GetComputedProperty<string[]>(theoryAttribute, SpecialNames.VsixAttribute.VisualStudioVersions));
+			var vsVersions = VsVersions.GetFinalVersions(
+				testMethod.GetComputedProperty<string[]>(theoryAttribute, SpecialNames.VsixAttribute.VisualStudioVersions),
+                testMethod.GetComputedProperty<string>(theoryAttribute, SpecialNames.VsixAttribute.MinimumVisualStudioVersion),
+				testMethod.GetComputedProperty<string>(theoryAttribute, SpecialNames.VsixAttribute.MaximumVisualStudioVersion));
+
 			var validVsVersions = vsVersions.Where (v => VsVersions.InstalledVersions.Contains (v)).ToArray();
 
 			// Process VS-specific traits.

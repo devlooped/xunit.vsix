@@ -35,6 +35,18 @@ namespace Xunit
 		}
 
 		/// <summary>
+		/// Minimum Visual Studio to run the given test in. See
+		/// <see cref="VisualStudioVersion"/> for available well-known values.
+		/// </summary>
+		public string MinimumVisualStudioVersion { get; set; }
+
+		/// <summary>
+		/// Maximum Visual Studio to run the given test in. See
+		/// <see cref="VisualStudioVersion"/> for available well-known values.
+		/// </summary>
+		public string MaximumVisualStudioVersion { get; set; }
+
+		/// <summary>
 		/// Versions of Visual Studio to run the given test in. See
 		/// <see cref="VisualStudioVersion"/> for available well-known values.
 		/// </summary>

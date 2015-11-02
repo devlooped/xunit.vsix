@@ -72,5 +72,18 @@ namespace Xamarin.VisualStudio
 			Assert.Equal (solutionEmptyItem.HierarchyIdentity, solution1Item.HierarchyIdentity);
 			Assert.Equal (solution1Item.HierarchyIdentity, solution2Item.HierarchyIdentity);
 		}
+
+		[Fact]
+		public void when_comparing_versions_then_can_compare_greater_lower ()
+		{
+			Assert.Equal (-1, "11.0".CompareTo ("12.0"));
+			Assert.Equal (1, "14.0".CompareTo ("12.0"));
+
+			//if (!string.IsNullOrEmpty (minimumVersion))
+			//	vsVersions.RemoveAll (vs => vs.CompareTo (minimumVersion) == -1);
+			//if (!string.IsNullOrEmpty (maximumVersion))
+			//	vsVersions.RemoveAll (vs => vs.CompareTo (maximumVersion) == 1);
+
+		}
 	}
 }

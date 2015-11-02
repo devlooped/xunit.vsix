@@ -24,11 +24,23 @@ namespace Xunit
 
 		public static class VsixAttribute
 		{
-			///// <summary>
-			///// Trait for requesting the test to be run for one or more specific Visual Studio versions.
-			///// If not specified, defaults to the currently running version (if run from an IDE
-			///// integrated runner), or the latest version that has an installed VSSDK.
-			///// </summary>
+			/// <summary>
+			/// Minimum Visual Studio to run the given test in. See
+			/// <see cref="VisualStudioVersion"/> for available well-known values.
+			/// </summary>
+			public const string MinimumVisualStudioVersion = "MinimumVisualStudioVersion";
+
+			/// <summary>
+			/// Maximum Visual Studio to run the given test in. See
+			/// <see cref="VisualStudioVersion"/> for available well-known values.
+			/// </summary>
+			public const string MaximumVisualStudioVersion = "MaximumVisualStudioVersion";
+
+			/// <summary>
+			/// Trait for requesting the test to be run for one or more specific Visual Studio versions.
+			/// If not specified, defaults to the currently running version (if run from an IDE
+			/// integrated runner), or the latest version that has an installed VSSDK.
+			/// </summary>
 			public const string VisualStudioVersions = "VisualStudioVersions";
 
 			/// <summary>

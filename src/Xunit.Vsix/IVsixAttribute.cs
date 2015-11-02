@@ -24,9 +24,21 @@
 		int TimeoutSeconds { get; }
 
 		/// <summary>
-		/// Versions of Visual Studio to run the given test in. See
+		/// Specific versions of Visual Studio to run the given test in. See
 		/// <see cref="VisualStudioVersion"/> for available well-known values.
 		/// </summary>
 		string[] VisualStudioVersions { get; }
+
+		/// <summary>
+		/// Minimum Visual Studio to run the given test in. See
+		/// <see cref="VisualStudioVersion"/> for available well-known values.
+		/// </summary>
+		string MinimumVisualStudioVersion { get; }
+
+		/// <summary>
+		/// Maximum Visual Studio to run the given test in. See
+		/// <see cref="VisualStudioVersion"/> for available well-known values.
+		/// </summary>
+		string MaximumVisualStudioVersion { get; }
 	}
 }

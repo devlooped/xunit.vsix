@@ -24,7 +24,11 @@ namespace Xunit
 					new ExecutionErrorTestCase (messageSink, defaultMethodDisplay, testMethod,  "[VsixFact] methods are not allowed to have parameters.")
 				};
 			} else {
-				var vsVersions = VsVersions.GetFinalVersions(testMethod.GetComputedProperty<string[]>(factAttribute, SpecialNames.VsixAttribute.VisualStudioVersions));
+				var vsVersions = VsVersions.GetFinalVersions(
+					testMethod.GetComputedProperty<string[]>(factAttribute, SpecialNames.VsixAttribute.VisualStudioVersions),
+					testMethod.GetComputedProperty<string>(factAttribute, SpecialNames.VsixAttribute.MinimumVisualStudioVersion),
+					testMethod.GetComputedProperty<string>(factAttribute, SpecialNames.VsixAttribute.MaximumVisualStudioVersion));
+
 				// Process VS-specific traits.
 				var suffix = testMethod.GetComputedArgument<string>(factAttribute, SpecialNames.VsixAttribute.RootSuffix) ?? "Exp";
 				var newInstance = testMethod.GetComputedArgument<bool?>(factAttribute, SpecialNames.VsixAttribute.NewIdeInstance);

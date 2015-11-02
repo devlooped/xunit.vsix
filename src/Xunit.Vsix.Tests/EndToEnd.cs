@@ -103,16 +103,14 @@ namespace Xunit
 			Assert.True (dte.Solution.IsOpen);
 		}
 
-		[VsixFact (VisualStudioVersion.Latest)]
-		public void when_annotating_with_vsixattribute_then_can_set_all_vsversions ()
+		[VsixFact (MinimumVisualStudioVersion = VisualStudioVersion.VS2015, MaximumVisualStudioVersion = VisualStudioVersion.VS2015)]
+		public void when_annotating_with_minimum_and_maximum_then_excludes_other_versions ()
 		{
 			var dte = GlobalServices.GetService <EnvDTE.DTE>();
 
 			Assert.NotNull (dte);
 
-			dte.Solution.Open (Path.Combine (Directory.GetCurrentDirectory (), "Content\\ClassLibrary1\\ClassLibrary1.sln"));
-
-			Assert.True (dte.Solution.IsOpen);
+			Assert.Equal ("14.0", dte.Version);
 		}
 	}
 }

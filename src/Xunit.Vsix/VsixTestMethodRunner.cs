@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -21,10 +22,16 @@ namespace Xunit
 		protected override async Task<RunSummary> RunTestCaseAsync (IXunitTestCase testCase)
 		{
 			var vsixTest = (VsixTestCase)testCase;
+			// We don't apply retry behavior when a debugger is attached, since that
+			// typically means the developer is actually debugging a failing test.
+			if (Debugger.IsAttached || vsixTest.RecycleOnFailure == false) {
+				return await vsClient.RunAsync (vsixTest, MessageBus, Aggregator);
+			}
+
 			var bus = new BufferingMessageBus();
 			var summary = await vsClient.RunAsync(vsixTest, bus, Aggregator);
 
-			if (summary.Failed != 0 && vsixTest.RecycleOnFailure == true) {
+			if (summary.Failed != 0) {
 				vsClient.Recycle ();
 				summary = await vsClient.RunAsync (vsixTest, MessageBus, Aggregator);
 			} else {

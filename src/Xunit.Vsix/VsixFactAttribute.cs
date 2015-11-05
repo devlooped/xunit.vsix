@@ -70,5 +70,11 @@ namespace Xunit
 		/// time that it takes to launch VS and set up the test run context.
 		/// </summary>
 		public int TimeoutSeconds { get; set; }
+
+		/// <summary>
+		/// Whether to retry once in a clean Visual Studio instance a failing
+		/// test. Defaults to <see langword="false">false</see>.
+		/// </summary>
+		public bool RecycleOnFailure { get; set; }
 	}
 }

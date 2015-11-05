@@ -18,8 +18,8 @@ namespace Xunit
 		public VsixTheoryTestCase () { }
 
 		public VsixTheoryTestCase (IMessageSink diagnosticMessageSink, TestMethodDisplay testMethodDisplay, ITestMethod testMethod,
-			string vsVersion, string rootSuffix, bool? newIdeInstance, int timeoutSeconds)
-			: base (diagnosticMessageSink, testMethodDisplay, testMethod, vsVersion, rootSuffix, newIdeInstance, timeoutSeconds)
+			string vsVersion, string rootSuffix, bool? newIdeInstance, int timeoutSeconds, bool? recycleOnFailure)
+			: base (diagnosticMessageSink, testMethodDisplay, testMethod, vsVersion, rootSuffix, newIdeInstance, timeoutSeconds, recycleOnFailure)
 		{
 		}
 

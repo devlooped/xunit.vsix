@@ -88,7 +88,7 @@ namespace Xunit.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to connect to remote runner to running Visual Studio {0}{1}.
+        ///   Looks up a localized string similar to Failed to connect to remote runner on Visual Studio {0}{1}.
         /// </summary>
         internal static string VsClient_FailedToConnect {
             get {

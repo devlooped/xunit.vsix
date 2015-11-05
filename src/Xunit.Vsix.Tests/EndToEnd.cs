@@ -76,6 +76,12 @@ namespace Xunit
 			Thread.Sleep (TimeSpan.FromSeconds (3));
 		}
 
+		[VsixFact(VisualStudioVersion.VS2015, RecycleOnFailure = true)]
+		public void when_failed_and_recycle_then_runs_twice ()
+		{
+			Assert.Equal ("foo", "foobar");
+		}
+
 		[VsixFact]
 		public void when_failing_then_reports ()
 		{

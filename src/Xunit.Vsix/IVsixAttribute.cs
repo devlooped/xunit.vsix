@@ -40,5 +40,11 @@
 		/// <see cref="VisualStudioVersion"/> for available well-known values.
 		/// </summary>
 		string MaximumVisualStudioVersion { get; }
+
+		/// <summary>
+		/// Whether to retry once in a clean Visual Studio instance a failing
+		/// test. Defaults to <see langword="false">false</see>.
+		/// </summary>
+		bool RecycleOnFailure { get; }
 	}
 }

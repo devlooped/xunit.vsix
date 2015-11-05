@@ -60,6 +60,12 @@ namespace Xunit
 			/// The maximum timeout in seconds to wait for a VSX test to complete running.
 			/// </summary>
 			public const string TimeoutSeconds = "TimeoutSeconds";
+
+			/// <summary>
+			/// Whether to retry once in a clean Visual Studio instance a failing
+			/// test. Defaults to <see langword="false"/>.
+			/// </summary>
+			public const string RecycleOnFailure = "RecycleOnFailure";
 		}
 	}
 }

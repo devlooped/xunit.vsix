@@ -37,10 +37,9 @@ namespace Xunit
 		ConcurrentDictionary<IMessageBus, RemoteMessageBus> remoteBuses = new ConcurrentDictionary<IMessageBus, RemoteMessageBus>();
 		ConcurrentBag<MarshalByRefObject> remoteObjects = new ConcurrentBag<MarshalByRefObject> ();
 
-		public VsClient (string visualStudioVersion, string pipeName, string rootSuffix)
+		public VsClient (string visualStudioVersion, string rootSuffix)
 		{
 			this.visualStudioVersion = visualStudioVersion;
-			this.pipeName = pipeName;
 			this.rootSuffix = rootSuffix;
 
 			devEnvPath = GetDevEnvPath ();
@@ -120,6 +119,7 @@ namespace Xunit
 
 			var retries = 0;
 			var connected = false;
+			var sleep = RetryInterval;
 			while (retries++ < MaxOperationRetries && !(connected = TryPing (runner))) {
 				Stop ();
 				if (!EnsureStarted (testCase, messageBus))
@@ -133,7 +133,8 @@ namespace Xunit
 					runner = (IVsRemoteRunner)RemotingServices.Connect (typeof (IVsRemoteRunner), hostUrl);
 				}
 
-				Thread.Sleep (RetryInterval);
+				Thread.Sleep (sleep);
+				sleep = sleep * retries;
 			}
 
 			if (!connected) {
@@ -192,6 +193,8 @@ namespace Xunit
 		bool Start ()
 		{
 			AddBindingPaths ();
+
+			pipeName = Guid.NewGuid ().ToString ();
 
 			// This environment variable is used by the VsRemoveRunner to set up the right
 			// server channel named pipe, which is later used by the test runner to execute
@@ -285,53 +288,60 @@ namespace Xunit
 			// other deps to fail.
 			//var probingPaths = new [] { GetType().Assembly.ManifestModule.FullyQualifiedName };
 
-			var extensionsPath = Path.Combine (
-				Environment.GetFolderPath (Environment.SpecialFolder.LocalApplicationData),
-				@"Microsoft\VisualStudio",
-				visualStudioVersion + rootSuffix,
-				"Extensions");
-
-			var bindingPathKeyName = @"Software\Microsoft\VisualStudio\" +
-				visualStudioVersion + rootSuffix + @"_Config\BindingPaths\";
-
-			var pathsKey = Registry.CurrentUser.OpenSubKey (bindingPathKeyName, true);
-
-			try {
-				if (pathsKey == null) {
+			var rootKeyName = @"Software\Microsoft\VisualStudio";
+			using (var rootKey = Registry.CurrentUser.OpenSubKey (rootKeyName, true)) {
+				var bindingKeyMatch = visualStudioVersion + rootSuffix + @"_Config";
+				if (!rootKey.GetSubKeyNames ().Where (name => name.StartsWith (bindingKeyMatch)).Any ())
+					// Means VS was never run before for the given version + suffix, so we need to do it at
+					// least once so that VS can populate the _Config registry.
 					FirstRun ();
-					pathsKey = Registry.CurrentUser.OpenSubKey (bindingPathKeyName, true);
+
+				foreach (var hiveName in rootKey.GetSubKeyNames ().Where (name => name.StartsWith (bindingKeyMatch))) {
+					AddBindingPaths (rootKey, hiveName, probingPaths);
 				}
-
-				var bindingKey = pathsKey.OpenSubKey (BindingPathKey, true);
-				if (bindingKey == null)
-					bindingKey = pathsKey.CreateSubKey (BindingPathKey);
-
-				using (bindingKey) {
-					// Across multiple VsClient sessions within the same
-					// test run (i.e. tests that request their own clean
-					// instance of VS), these paths won't change.
-					var bindingPaths = new HashSet<string> (bindingKey.GetValueNames ());
-
-					if (probingPaths.Any (probingPath => !bindingPaths.Contains (probingPath))) {
-						// There was a change, meaning it's another run, and typically all
-						// assemblies change location because of shadow copying, so we
-						// have to refresh all of them.
-						foreach (var name in bindingKey.GetValueNames ()) {
-							bindingKey.DeleteValue (name);
-						}
-
-						foreach (var probingPath in probingPaths) {
-							bindingKey.SetValue (probingPath, "");
-						}
-					}
-				}
-
-			} finally {
-				if (pathsKey != null)
-					pathsKey.Dispose ();
 			}
 
 			initializedExtension = true;
+		}
+
+		void AddBindingPaths (RegistryKey rootKey, string hiveName, string[] probingPaths)
+		{
+			var bindingPathKeyName = Path.Combine(@"Software\Microsoft\VisualStudio\", hiveName, "BindingPaths");
+			using (var hiveKey = rootKey.OpenSubKey (hiveName, true)) {
+				using (var pathsKey = hiveKey.OpenSubKey ("BindingPaths", true)) {
+					if (pathsKey == null)
+						return;
+
+					var bindingKey = pathsKey.OpenSubKey (BindingPathKey, true);
+					if (bindingKey == null) {
+						try {
+							bindingKey = pathsKey.CreateSubKey (BindingPathKey);
+						} catch (Exception ex) {
+							bindingKey = pathsKey.CreateSubKey (BindingPathKey, RegistryKeyPermissionCheck.Default, RegistryOptions.Volatile);
+                        }
+					}
+
+					using (bindingKey) {
+						// Across multiple VsClient sessions within the same
+						// test run (i.e. tests that request their own clean
+						// instance of VS), these paths won't change.
+						var bindingPaths = new HashSet<string> (bindingKey.GetValueNames ());
+
+						if (probingPaths.Any (probingPath => !bindingPaths.Contains (probingPath))) {
+							// There was a change, meaning it's another run, and typically all
+							// assemblies change location because of shadow copying, so we
+							// have to refresh all of them.
+							foreach (var name in bindingKey.GetValueNames ()) {
+								bindingKey.DeleteValue (name);
+							}
+
+							foreach (var probingPath in probingPaths) {
+								bindingKey.SetValue (probingPath, "");
+							}
+						}
+					}
+				}
+			}
 		}
 
 		/// <summary>
@@ -367,10 +377,16 @@ namespace Xunit
 
 		void ClearBindingPaths ()
 		{
-			using (var pathsKey = Registry.CurrentUser.OpenSubKey (@"Software\Microsoft\VisualStudio\" +
-				visualStudioVersion + rootSuffix + @"_Config\BindingPaths\", true)) {
-				if (pathsKey != null)
-					pathsKey.DeleteSubKey (BindingPathKey, false);
+			var rootKeyName = @"Software\Microsoft\VisualStudio";
+			using (var rootKey = Registry.CurrentUser.OpenSubKey (rootKeyName, true)) {
+				var bindingKeyMatch = visualStudioVersion + rootSuffix + @"_Config";
+				foreach (var hiveName in rootKey.GetSubKeyNames ().Where (name => name.StartsWith (bindingKeyMatch))) {
+					using (var hiveKey = rootKey.OpenSubKey (hiveName, true))
+					using (var pathsKey = hiveKey.OpenSubKey ("BindingPaths", true)) {
+						if (pathsKey != null)
+							pathsKey.DeleteSubKey (BindingPathKey, false);
+					}
+				}
 			}
 		}
 

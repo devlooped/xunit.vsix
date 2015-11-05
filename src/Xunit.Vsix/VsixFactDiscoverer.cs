@@ -33,6 +33,7 @@ namespace Xunit
 				var suffix = testMethod.GetComputedArgument<string>(factAttribute, SpecialNames.VsixAttribute.RootSuffix) ?? "Exp";
 				var newInstance = testMethod.GetComputedArgument<bool?>(factAttribute, SpecialNames.VsixAttribute.NewIdeInstance);
 				var timeout = testMethod.GetComputedArgument<int?>(factAttribute, SpecialNames.VsixAttribute.TimeoutSeconds).GetValueOrDefault(XunitExtensions.DefaultTimeout);
+				var recycle = testMethod.GetComputedArgument<bool?>(factAttribute, SpecialNames.VsixAttribute.RecycleOnFailure);
 
 				var testCases = new List<IXunitTestCase>();
 
@@ -44,7 +45,7 @@ namespace Xunit
 
 				testCases.AddRange (vsVersions
 					.Where (v => VsVersions.InstalledVersions.Contains (v))
-					.Select (v => new VsixTestCase (messageSink, defaultMethodDisplay, testMethod, v, suffix, newInstance, timeout)));
+					.Select (v => new VsixTestCase (messageSink, defaultMethodDisplay, testMethod, v, suffix, newInstance, timeout, recycle)));
 
 				return testCases;
 			}

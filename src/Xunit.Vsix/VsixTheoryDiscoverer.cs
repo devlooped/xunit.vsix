@@ -36,6 +36,7 @@ namespace Xunit
 			var suffix = testMethod.GetComputedArgument<string>(theoryAttribute, SpecialNames.VsixAttribute.RootSuffix) ?? "Exp";
 			var newInstance = testMethod.GetComputedArgument<bool?>(theoryAttribute, SpecialNames.VsixAttribute.NewIdeInstance);
 			var timeout = testMethod.GetComputedArgument<int?>(theoryAttribute, SpecialNames.VsixAttribute.TimeoutSeconds).GetValueOrDefault(XunitExtensions.DefaultTimeout);
+			var recycle = testMethod.GetComputedArgument<bool?>(theoryAttribute, SpecialNames.VsixAttribute.RecycleOnFailure);
 
 			if (discoveryOptions.PreEnumerateTheoriesOrDefault ()) {
 				try {
@@ -52,7 +53,7 @@ namespace Xunit
 						var discovererAttribute = dataAttribute.GetCustomAttributes(typeof(DataDiscovererAttribute)).First();
 						var discoverer = ExtensibilityPointFactory.GetDataDiscoverer(diagnosticMessageSink, discovererAttribute);
 						if (!discoverer.SupportsDiscoveryEnumeration (dataAttribute, testMethod.Method))
-							return CreateTestCasesForTheory (discoveryOptions, testMethod, validVsVersions, suffix, newInstance, timeout).ToArray ();
+							return CreateTestCasesForTheory (discoveryOptions, testMethod, validVsVersions, suffix, newInstance, timeout, recycle).ToArray ();
 
 						// GetData may return null, but that's okay; we'll let the NullRef happen and then catch it
 						// down below so that we get the composite test case.
@@ -61,9 +62,9 @@ namespace Xunit
 							// identify a test and serialization is the best way to do that. If it's not serializable,
 							// this will throw and we will fall back to a single theory test case that gets its data at runtime.
 							if (!SerializationHelper.IsSerializable (dataRow))
-								return CreateTestCasesForTheory (discoveryOptions, testMethod, validVsVersions, suffix, newInstance, timeout).ToArray ();
+								return CreateTestCasesForTheory (discoveryOptions, testMethod, validVsVersions, suffix, newInstance, timeout, recycle).ToArray ();
 
-							var testCases = CreateTestCasesForDataRow(discoveryOptions, testMethod, validVsVersions, suffix, newInstance, timeout, dataRow);
+							var testCases = CreateTestCasesForDataRow(discoveryOptions, testMethod, validVsVersions, suffix, newInstance, timeout, recycle, dataRow);
 							results.AddRange (testCases);
 						}
 					}
@@ -78,17 +79,17 @@ namespace Xunit
 				} catch { }  // If something goes wrong, fall through to return just the XunitTestCase
 			}
 
-			return CreateTestCasesForTheory (discoveryOptions, testMethod, validVsVersions, suffix, newInstance, timeout).ToArray ();
+			return CreateTestCasesForTheory (discoveryOptions, testMethod, validVsVersions, suffix, newInstance, timeout, recycle).ToArray ();
 		}
 
-		IEnumerable<IXunitTestCase> CreateTestCasesForDataRow (ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, string[] vsVersions, string rootSuffix, bool? newIdeInstance, int timeoutSeconds, object[] dataRow)
+		IEnumerable<IXunitTestCase> CreateTestCasesForDataRow (ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, string[] vsVersions, string rootSuffix, bool? newIdeInstance, int timeoutSeconds, bool? RecycleOnFailure, object[] dataRow)
 		{
-			return vsVersions.Select (v => new VsixTestCase (diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault (), testMethod, v, rootSuffix, newIdeInstance, timeoutSeconds, dataRow));
+			return vsVersions.Select (v => new VsixTestCase (diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault (), testMethod, v, rootSuffix, newIdeInstance, timeoutSeconds, RecycleOnFailure, dataRow));
 		}
 
-		IEnumerable<IXunitTestCase> CreateTestCasesForTheory (ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, string[] vsVersions, string rootSuffix, bool? newIdeInstance, int timeoutSeconds)
+		IEnumerable<IXunitTestCase> CreateTestCasesForTheory (ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, string[] vsVersions, string rootSuffix, bool? newIdeInstance, int timeoutSeconds, bool? RecycleOnFailure)
 		{
-			return vsVersions.Select (v => new VsixTestCase (diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault (), testMethod, v, rootSuffix, newIdeInstance, timeoutSeconds));
+			return vsVersions.Select (v => new VsixTestCase (diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault (), testMethod, v, rootSuffix, newIdeInstance, timeoutSeconds, RecycleOnFailure));
 		}
 	}
 }

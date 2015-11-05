@@ -8,9 +8,9 @@ using Xunit.Sdk;
 namespace Xunit
 {
 	/// <summary>
-	/// A VSIX test collection represents the set of tests to run against 
-	/// a particular IDE/RootSuffix combination. This runner takes care 
-	/// of keeping that process running, recyling it when timeouts happen, 
+	/// A VSIX test collection represents the set of tests to run against
+	/// a particular IDE/RootSuffix combination. This runner takes care
+	/// of keeping that process running, recyling it when timeouts happen,
 	/// etc.
 	/// </summary>
 	class VsixTestCollectionRunner : XunitTestCollectionRunner, IDisposable
@@ -20,7 +20,7 @@ namespace Xunit
 		string rootSuffix;
 		IVsClient vs;
 
-		public VsixTestCollectionRunner (VsixTestCollection testCollection, IEnumerable<IXunitTestCase> testCases, IMessageSink diagnosticMessageSink, 
+		public VsixTestCollectionRunner (VsixTestCollection testCollection, IEnumerable<IXunitTestCase> testCases, IMessageSink diagnosticMessageSink,
 			IMessageBus messageBus, ITestCaseOrderer testCaseOrderer, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource) :
 			base (testCollection, testCases, diagnosticMessageSink, messageBus, testCaseOrderer, aggregator, cancellationTokenSource)
 		{
@@ -28,12 +28,12 @@ namespace Xunit
 
 			vsVersion = testCollection.VisualStudioVersion;
 			rootSuffix = testCollection.RootSuffix;
-			vs = new VsClient (vsVersion, Guid.NewGuid ().ToString (), rootSuffix);
+			vs = new VsClient (vsVersion, rootSuffix);
 		}
 
 		protected override Task<RunSummary> RunTestClassAsync (ITestClass testClass, IReflectionTypeInfo @class, IEnumerable<IXunitTestCase> testCases)
 		{
-            return new VsixTestClassRunner(vs, testClass, @class, testCases, diagnosticMessageSink, MessageBus, TestCaseOrderer, 
+            return new VsixTestClassRunner(vs, testClass, @class, testCases, diagnosticMessageSink, MessageBus, TestCaseOrderer,
 				Aggregator, CancellationTokenSource, CollectionFixtureMappings).RunAsync();
 		}
 

@@ -173,6 +173,8 @@
     <Compile Include="TaskExtensions.cs" />
     <Compile Include="VisualStudioVersion.cs" />
     <Compile Include="VsClient.cs" />
+    <Compile Include="VsixRunnerAttribute.cs" />
+    <Compile Include="VsixRunnerSettings.cs" />
     <Compile Include="VsixTheoryAttribute.cs" />
     <Compile Include="VsixTheoryDiscoverer.cs" />
     <Compile Include="VsixTheoryTestCase.cs" />

@@ -21,8 +21,6 @@ namespace Xunit
 	{
 		static readonly TraceSource tracer = Constants.Tracer;
 		const string BindingPathKey = "{00000000-17C9-470C-AED2-2D4E97CC5686}";
-		const int MaxOperationRetries = 2;
-		const int RetryInterval = 200;
 
 		bool initializedExtension;
 		string visualStudioVersion;
@@ -32,14 +30,16 @@ namespace Xunit
 
 		IChannel clientChannel;
 		IVsRemoteRunner runner;
+		VsixRunnerSettings settings;
 
 		ConcurrentDictionary<IMessageBus, RemoteMessageBus> remoteBuses = new ConcurrentDictionary<IMessageBus, RemoteMessageBus>();
 		ConcurrentBag<MarshalByRefObject> remoteObjects = new ConcurrentBag<MarshalByRefObject> ();
 
-		public VsClient (string visualStudioVersion, string rootSuffix)
+		public VsClient (string visualStudioVersion, string rootSuffix, VsixRunnerSettings settings)
 		{
 			this.visualStudioVersion = visualStudioVersion;
 			this.rootSuffix = rootSuffix;
+			this.settings = settings;
 
 			devEnvPath = GetDevEnvPath ();
 		}
@@ -141,8 +141,8 @@ namespace Xunit
 
 			var retries = 0;
 			var connected = false;
-			var sleep = RetryInterval;
-			while (retries++ < MaxOperationRetries && !(connected = TryPing (runner))) {
+			var sleep = settings.RetrySleepInterval;
+			while (retries++ <= settings.RemoteConnectionRetries && !(connected = TryPing (runner))) {
 				Stop ();
 				if (!EnsureStarted (testCase, messageBus))
 					return false;
@@ -180,11 +180,13 @@ namespace Xunit
 		bool EnsureStarted (VsixTestCase testCase, IMessageBus messageBus)
 		{
 			if (Process == null) {
+				var sleep = settings.RetrySleepInterval;
 				var retries = 0;
 				var started = false;
-				while (retries++ < MaxOperationRetries && !(started = Start ())) {
+				while (retries++ < settings.ProcessStartRetries && !(started = Start ())) {
 					Stop ();
-					Thread.Sleep (RetryInterval);
+					Thread.Sleep (sleep);
+					sleep = sleep * retries;
 				}
 
 				if (!started) {
@@ -256,8 +258,8 @@ namespace Xunit
 				if (!string.IsNullOrEmpty (mainWindow)) {
 					var attached = false;
 					var retries = 0;
-
-					while (retries++ < MaxOperationRetries && !attached) {
+					var sleep = settings.RetrySleepInterval;
+					while (retries++ < settings.DebuggerAttachRetries && !attached) {
 						try {
 							var mainHWnd = int.Parse (mainWindow);
 							var mainDte = GetAllDtes ().FirstOrDefault (x => x.MainWindow.HWnd == mainHWnd);
@@ -270,10 +272,11 @@ namespace Xunit
 								}
 							}
 						} catch (Exception ex) {
-							tracer.TraceEvent (TraceEventType.Warning, 0, Strings.VsClient.RetryAttach (retries, MaxOperationRetries) + Environment.NewLine + ex.ToString ());
+							tracer.TraceEvent (TraceEventType.Warning, 0, Strings.VsClient.RetryAttach (retries, settings.DebuggerAttachRetries) + Environment.NewLine + ex.ToString ());
 						}
 
-						Thread.Sleep (RetryInterval);
+						Thread.Sleep (sleep);
+						sleep = sleep * retries;
 					}
 
 					if (!attached)

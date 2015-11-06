@@ -31,7 +31,17 @@ namespace Xunit
 		public static bool Start ()
 		{
 			AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
-			localAssemblyNames = GetLocalAssemblyNames (Path.GetDirectoryName(typeof(VsStartup).Assembly.ManifestModule.FullyQualifiedName));
+
+			// Determine if the current directory contains the assemblies to resolve, or if we
+			// should locate the current assembly directory instead.
+			var thisFileName = Path.GetFileName(typeof(VsStartup).Assembly.ManifestModule.FullyQualifiedName);
+			var resolveDir = Directory.GetCurrentDirectory();
+			if (!File.Exists(Path.Combine(Directory.GetCurrentDirectory(), thisFileName))) {
+				resolveDir = Path.GetDirectoryName(typeof(VsStartup).Assembly.ManifestModule.FullyQualifiedName);
+				Directory.SetCurrentDirectory (resolveDir);
+			}
+
+			localAssemblyNames = GetLocalAssemblyNames (resolveDir);
 			try {
 				tracer.TraceEvent (TraceEventType.Verbose, 0, Strings.VsStartup.Starting);
 				GlobalServices.Initialize ();

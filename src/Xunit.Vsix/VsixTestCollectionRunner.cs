@@ -28,7 +28,7 @@ namespace Xunit
 
 			vsVersion = testCollection.VisualStudioVersion;
 			rootSuffix = testCollection.RootSuffix;
-			vs = new VsClient (vsVersion, rootSuffix);
+			vs = new VsClient (vsVersion, rootSuffix, testCollection.Settings);
 		}
 
 		protected override Task<RunSummary> RunTestClassAsync (ITestClass testClass, IReflectionTypeInfo @class, IEnumerable<IXunitTestCase> testCases)

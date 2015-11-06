@@ -52,6 +52,9 @@ namespace Xunit
 				// Always run at least with one thread per VS version.
 				if (executionOptions.MaxParallelThreadsOrDefault () < VsVersions.InstalledVersions.Length)
 					executionOptions.SetValue ("xunit.execution.MaxParallelThreads", VsVersions.InstalledVersions.Length);
+				// If debugger is attached, don't run multiple instances simultaneously since that makes debugging much harder.
+				if (Debugger.IsAttached)
+					executionOptions.SetValue ("xunit.execution.MaxParallelThreads", 1);
 
 				// This is the implementation of the base XunitTestFrameworkExecutor
 				using (var assemblyRunner = new VsixTestAssemblyRunner (TestAssembly, testCases, DiagnosticMessageSink, executionMessageSink, executionOptions))

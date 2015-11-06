@@ -23,7 +23,7 @@ namespace Xunit
 			item = manager.GetHierarchyItem (GlobalServices.GetService<SVsSolution, IVsHierarchy>(), (uint)VSConstants.VSITEMID.Root);
 		}
 
-		[VsixFact(VisualStudioVersion.VS2015)]
+		[VsixFact]
 		public void when_retrieving_solution_then_succeeds ()
 		{
 			Assert.NotNull (item);
@@ -102,7 +102,7 @@ namespace Xunit
 
 			Assert.NotNull (dte);
 
-			var sln = Path.GetFullPath(@"..\..\..\Xunit.Vsix.sln");
+			var sln = Path.GetFullPath(@"Content\\Blank.sln");
 
 			dte.Solution.Open (sln);
 

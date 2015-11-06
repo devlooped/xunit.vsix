@@ -38,8 +38,6 @@ namespace Xunit
 		public EndToEnd (ITestOutputHelper output)
 		{
 			this.output = output;
-			//Tracer.Configuration.AddListener (Constants.TracerName, new TestOutpuTraceListwhen_succeeding_then_reportsener (output));
-			//Tracer.Configuration.SetTracingLevel (Constants.TracerName, SourceLevels.All);
 		}
 
 		[VsixFact]

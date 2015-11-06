@@ -220,21 +220,18 @@ namespace Xunit
 
 			pipeName = Guid.NewGuid ().ToString ();
 
+			var info = new ProcessStartInfo(devEnvPath, string.IsNullOrEmpty (rootSuffix) ? "" : "/RootSuffix " + rootSuffix)
+			{
+				UseShellExecute = false,
+				WorkingDirectory = Directory.GetCurrentDirectory (),
+			};
+
 			// This environment variable is used by the VsRemoveRunner to set up the right
 			// server channel named pipe, which is later used by the test runner to execute
 			// tests in the VS app domain.
-			Environment.SetEnvironmentVariable (Constants.PipeNameEnvironmentVariable, pipeName);
+			info.EnvironmentVariables.Add (Constants.PipeNameEnvironmentVariable, pipeName);
 
-			Process = new Process {
-				StartInfo = {
-					FileName = devEnvPath,
-					Arguments = string.IsNullOrEmpty (rootSuffix) ? "" : "/RootSuffix " + rootSuffix,
-					UseShellExecute = false,
-					WorkingDirectory = Directory.GetCurrentDirectory (),
-				},
-			};
-
-			Process.Start ();
+			Process = Process.Start (info);
 
 			// This forces us to wait until VS is fully started.
 			var dte = RunningObjects.GetDTE (visualStudioVersion, Process.Id, TimeSpan.FromMinutes (1));

@@ -12,6 +12,7 @@
 bin
 obj
 .vs
+*.boltdata
 /lib
 /TestResults
 local.properties

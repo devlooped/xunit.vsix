@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Security;
 using Xunit.Properties;
 
 namespace Xunit
@@ -32,20 +33,17 @@ namespace Xunit
 			AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
 			localAssemblyNames = GetLocalAssemblyNames (Path.GetDirectoryName(typeof(VsStartup).Assembly.ManifestModule.FullyQualifiedName));
 			try {
-				tracer.TraceEvent(TraceEventType.Verbose, 0, Strings.VsStartup.Starting);
+				tracer.TraceEvent (TraceEventType.Verbose, 0, Strings.VsStartup.Starting);
 				GlobalServices.Initialize ();
 
 				runner = new VsRemoteRunner ();
 				runner.Start ();
 
-				LocalResolver.Initialize (Directory.GetCurrentDirectory ());
 				tracer.TraceInformation (Strings.VsStartup.Started);
 				return true;
 			} catch (Exception ex) {
-				tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsStartup.Failed + Environment.NewLine + ex.ToString());
+				tracer.TraceEvent (TraceEventType.Error, 0, Strings.VsStartup.Failed + Environment.NewLine + ex.ToString ());
 				return false;
-			} finally {
-				AppDomain.CurrentDomain.AssemblyResolve -= OnAssemblyResolve;
 			}
 		}
 
@@ -55,7 +53,7 @@ namespace Xunit
 			foreach (var file in Directory.EnumerateFiles (localDirectory, "*.dll")) {
 				try {
 					names.Add (AssemblyName.GetAssemblyName (file).FullName, file);
-				} catch (System.Security.SecurityException) {
+				} catch (SecurityException) {
 				} catch (BadImageFormatException) {
 				} catch (FileLoadException) {
 				}
@@ -73,48 +71,6 @@ namespace Xunit
 				return Assembly.LoadFrom (localAssemblyNames[args.Name]);
 
 			return null;
-		}
-
-		static class LocalResolver
-		{
-			/// <summary>
-			/// Initializes the resolver to lookup assemblies from the
-			/// specified local directory.
-			/// </summary>
-			/// <param name="localDirectory">The local directory to add to the
-			/// assembly resolve probing.</param>
-			public static void Initialize (string localDirectory)
-			{
-				var assemblyNames = LoadAssemblyNames (localDirectory);
-
-				AppDomain.CurrentDomain.AssemblyResolve += (sender, args) => {
-					// NOTE: since we load our full names only in the local assembly set,
-					// we will only return our assembly version if it matches exactly the
-					// full name of the received arguments.
-					if (assemblyNames.ContainsKey (args.Name)) {
-						//var asm = Assembly.Load (assemblyNames[args.Name]);
-						var asm = Assembly.LoadFrom (assemblyNames[args.Name].Item2);
-						return asm;
-					}
-
-					return null;
-				};
-			}
-
-			private static Dictionary<string, Tuple<AssemblyName, string>> LoadAssemblyNames (string localDirectory)
-			{
-				var names = new Dictionary<string, Tuple<AssemblyName, string>> ();
-				foreach (var file in Directory.EnumerateFiles (localDirectory, "*.dll")) {
-					try {
-						names.Add (AssemblyName.GetAssemblyName (file).FullName, Tuple.Create (AssemblyName.GetAssemblyName (file), file));
-					} catch (System.Security.SecurityException) {
-					} catch (BadImageFormatException) {
-					} catch (FileLoadException) {
-					}
-				}
-
-				return names;
-			}
 		}
 	}
 }

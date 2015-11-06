@@ -52,7 +52,30 @@ namespace Xunit
 			Stop ();
 		}
 
-		public async Task<RunSummary> RunAsync (VsixTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator)
+		public async Task<RunSummary> RunAsync (VsixTestCase vsixTest, IMessageBus messageBus, ExceptionAggregator aggregator)
+		{
+			// We don't apply retry behavior when a debugger is attached, since that
+			// typically means the developer is actually debugging a failing test.
+			if (Debugger.IsAttached || vsixTest.RecycleOnFailure == false) {
+				return await RunAsyncCore (vsixTest, messageBus, aggregator);
+			}
+
+			var bufferBus = new BufferingMessageBus();
+			var summary = await RunAsyncCore (vsixTest, bufferBus, aggregator);
+
+			if (summary.Failed != 0) {
+				Recycle ();
+				aggregator.Clear ();
+				summary = await RunAsyncCore (vsixTest, messageBus, aggregator);
+			} else {
+				// Dispatch messages from the first run to actual bus.
+				bufferBus.messages.ForEach (msg => messageBus.QueueMessage (msg));
+			}
+
+			return summary;
+		}
+
+		async Task<RunSummary> RunAsyncCore (VsixTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator)
 		{
 			if (!EnsureConnected (testCase, messageBus)) {
 				return new RunSummary {
@@ -318,7 +341,7 @@ namespace Xunit
 							bindingKey = pathsKey.CreateSubKey (BindingPathKey);
 						} catch (Exception ex) {
 							bindingKey = pathsKey.CreateSubKey (BindingPathKey, RegistryKeyPermissionCheck.Default, RegistryOptions.Volatile);
-                        }
+						}
 					}
 
 					using (bindingKey) {
@@ -462,6 +485,19 @@ namespace Xunit
 					}
 				}
 			}
+		}
+
+		class BufferingMessageBus : IMessageBus
+		{
+			public List<IMessageSinkMessage> messages = new List<IMessageSinkMessage>();
+
+			public bool QueueMessage (IMessageSinkMessage message)
+			{
+				messages.Add (message);
+				return true;
+			}
+
+			public void Dispose () { }
 		}
 	}
 }

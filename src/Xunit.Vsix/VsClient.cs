@@ -305,7 +305,6 @@ namespace Xunit
 			var probingPaths = AppDomain.CurrentDomain.GetAssemblies ()
 				.Select (x => Path.GetDirectoryName (x.ManifestModule.FullyQualifiedName))
 				.Where (x => x.StartsWith (Environment.GetFolderPath (Environment.SpecialFolder.LocalApplicationData)))
-				.Concat (new[] { Directory.GetCurrentDirectory() })
 				.Distinct ()
 				.ToArray ();
 

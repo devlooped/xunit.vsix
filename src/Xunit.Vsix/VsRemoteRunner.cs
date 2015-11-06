@@ -183,6 +183,9 @@ namespace Xunit
 
 			protected override async Task<RunSummary> RunTestMethodAsync (ITestMethod testMethod, IReflectionMethodInfo method, IEnumerable<IXunitTestCase> testCases, object[] constructorArguments)
 			{
+				var vsixTest = testCases.OfType<VsixTestCase>().Single();
+				var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(vsixTest.TimeoutSeconds));
+
 				// We don't want to run the discovery again over the test method,
 				// generate new test cases and so on, since we already have received a single test case to run.
 				// Also, we want the test case to be run in the UI thread, which is what you typically want.
@@ -196,7 +199,7 @@ namespace Xunit
 							MessageBus,
 							Aggregator, new CancellationTokenSource ())
 						.RunAsync ()
-						.Result, DispatcherPriority.Background);
+						.Result, DispatcherPriority.Background, cancellation.Token);
 			}
 
 			class SyncTestCaseRunner : XunitTestCaseRunner

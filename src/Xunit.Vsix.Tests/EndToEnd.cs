@@ -23,7 +23,7 @@ namespace Xunit
 			item = manager.GetHierarchyItem (GlobalServices.GetService<SVsSolution, IVsHierarchy>(), (uint)VSConstants.VSITEMID.Root);
 		}
 
-		[VsixFact]
+		[VsixFact(VisualStudioVersion.VS2015)]
 		public void when_retrieving_solution_then_succeeds ()
 		{
 			Assert.NotNull (item);

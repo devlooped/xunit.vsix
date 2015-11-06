@@ -49,6 +49,10 @@ namespace Xunit
 
 			protected override async void RunTestCases (IEnumerable<IXunitTestCase> testCases, IMessageSink executionMessageSink, ITestFrameworkExecutionOptions executionOptions)
 			{
+				// Always run at least with one thread per VS version.
+				if (executionOptions.MaxParallelThreadsOrDefault () < VsVersions.InstalledVersions.Length)
+					executionOptions.SetValue ("xunit.execution.MaxParallelThreads", VsVersions.InstalledVersions.Length);
+
 				// This is the implementation of the base XunitTestFrameworkExecutor
 				using (var assemblyRunner = new VsixTestAssemblyRunner (TestAssembly, testCases, DiagnosticMessageSink, executionMessageSink, executionOptions))
 					await assemblyRunner.RunAsync ();

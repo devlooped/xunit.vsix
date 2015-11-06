@@ -21,11 +21,10 @@ namespace Xunit
 	{
 		static readonly TraceSource tracer = Constants.Tracer;
 		const string BindingPathKey = "{00000000-17C9-470C-AED2-2D4E97CC5686}";
-		const int MaxOperationRetries = 5;
+		const int MaxOperationRetries = 2;
 		const int RetryInterval = 200;
 
 		bool initializedExtension;
-
 		string visualStudioVersion;
 		string pipeName;
 		string rootSuffix;
@@ -339,7 +338,7 @@ namespace Xunit
 					if (bindingKey == null) {
 						try {
 							bindingKey = pathsKey.CreateSubKey (BindingPathKey);
-						} catch (Exception ex) {
+						} catch (IOException) {
 							bindingKey = pathsKey.CreateSubKey (BindingPathKey, RegistryKeyPermissionCheck.Default, RegistryOptions.Volatile);
 						}
 					}

@@ -12,7 +12,7 @@ namespace Xunit
 		[Obsolete ("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes")]
 		public VsixTestCase () { }
 
-		public VsixTestCase (IMessageSink messageSink, Xunit.Sdk.TestMethodDisplay defaultMethodDisplay, ITestMethod testMethod,
+		public VsixTestCase (IMessageSink messageSink, TestMethodDisplay defaultMethodDisplay, ITestMethod testMethod,
 			string vsVersion, string rootSuffix, bool? newIdeInstance, int timeoutSeconds, bool? recycleOnFailure, object[] testMethodArguments = null)
 			: base (messageSink, defaultMethodDisplay, testMethod, testMethodArguments)
 		{
@@ -37,15 +37,19 @@ namespace Xunit
 		{
 			base.Initialize ();
 
-			DisplayName += " > vs" + VisualStudioVersion;
-
 			// Register VS version as a trait, so that it can be used to group runs.
 			Traits["VisualStudioVersion"] = new List<string> (new[] { VisualStudioVersion });
+			Traits["RootSuffix"] = new List<string> (new[] { RootSuffix });
+		}
+
+		protected override string GetDisplayName (IAttributeInfo factAttribute, string displayName)
+		{
+			return base.GetDisplayName (factAttribute, displayName) + " > vs" + VisualStudioVersion;
 		}
 
 		protected override string GetUniqueID ()
 		{
-			return base.GetUniqueID () + "-" + VisualStudioVersion;
+			return base.GetUniqueID () + "-" + VisualStudioVersion + RootSuffix;
 		}
 
 		public override void Serialize (IXunitSerializationInfo data)
@@ -55,6 +59,7 @@ namespace Xunit
 			data.AddValue (SpecialNames.VsixAttribute.RootSuffix, RootSuffix);
 			data.AddValue (SpecialNames.VsixAttribute.NewIdeInstance, NewIdeInstance);
 			data.AddValue (SpecialNames.VsixAttribute.TimeoutSeconds, TimeoutSeconds);
+			data.AddValue (SpecialNames.VsixAttribute.RecycleOnFailure, RecycleOnFailure);
 		}
 
 		/// <inheritdoc/>
@@ -65,6 +70,7 @@ namespace Xunit
 			RootSuffix = data.GetValue<string> (SpecialNames.VsixAttribute.RootSuffix);
 			NewIdeInstance = data.GetValue<bool?> (SpecialNames.VsixAttribute.NewIdeInstance);
 			TimeoutSeconds = data.GetValue<int> (SpecialNames.VsixAttribute.TimeoutSeconds);
+			RecycleOnFailure = data.GetValue<bool?> (SpecialNames.VsixAttribute.RecycleOnFailure);
 		}
 	}
 }

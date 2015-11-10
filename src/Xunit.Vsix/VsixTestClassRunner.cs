@@ -39,7 +39,7 @@ namespace Xunit
 		protected override object[] CreateTestClassConstructorArguments ()
 		{
 			// NOTE: we never create these arguments in the calling app domain. The VsRemoteRunner uses the XunitTestClassRunner
-			// in the remove VS instance to do this automatically on the proper site.
+			// in the remote VS instance to do this automatically on the proper site.
 			return new object[0];
 		}
 	}

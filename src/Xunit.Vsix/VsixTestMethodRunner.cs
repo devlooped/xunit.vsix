@@ -21,7 +21,10 @@ namespace Xunit
 
 		protected override Task<RunSummary> RunTestCaseAsync (IXunitTestCase testCase)
 		{
-			return vsClient.RunAsync ((VsixTestCase)testCase, MessageBus, Aggregator);
+			if (!CancellationTokenSource.IsCancellationRequested)
+				return vsClient.RunAsync ((VsixTestCase)testCase, MessageBus, Aggregator);
+			else
+				return Task.FromResult (new RunSummary ());
 		}
 
 		protected override void BeforeTestMethodFinished ()

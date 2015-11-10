@@ -9,9 +9,7 @@ namespace Xunit
 {
 	/// <summary>
 	/// A VSIX test collection represents the set of tests to run against
-	/// a particular IDE/RootSuffix combination. This runner takes care
-	/// of keeping that process running, recyling it when timeouts happen,
-	/// etc.
+	/// a particular IDE/RootSuffix combination.
 	/// </summary>
 	class VsixTestCollectionRunner : XunitTestCollectionRunner, IDisposable
 	{

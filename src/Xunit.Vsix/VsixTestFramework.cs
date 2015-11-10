@@ -31,12 +31,12 @@ namespace Xunit
 
 		protected override ITestFrameworkDiscoverer CreateDiscoverer (IAssemblyInfo assemblyInfo)
 		{
-			return new XunitTestFrameworkDiscoverer (assemblyInfo, base.SourceInformationProvider, base.DiagnosticMessageSink, null);
+			return new XunitTestFrameworkDiscoverer (assemblyInfo, SourceInformationProvider, DiagnosticMessageSink, null);
 		}
 
 		protected override ITestFrameworkExecutor CreateExecutor (AssemblyName assemblyName)
 		{
-			return new VsixTestFrameworkExecutor (assemblyName, base.SourceInformationProvider, base.DiagnosticMessageSink);
+			return new VsixTestFrameworkExecutor (assemblyName, SourceInformationProvider, DiagnosticMessageSink);
 		}
 
 		class VsixTestFrameworkExecutor : XunitTestFrameworkExecutor

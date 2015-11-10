@@ -242,7 +242,7 @@ namespace Xunit
 									var valueCount = TestMethodArguments == null ? 0 : TestMethodArguments.Length;
 									if (parameterCount != valueCount) {
 										Aggregator.Add (
-											new InvalidOperationException (
+											new ArgumentException (
 												$"The test method expected {parameterCount} parameter value{(parameterCount == 1 ? "" : "s")}, but {valueCount} parameter value{(valueCount == 1 ? "" : "s")} {(valueCount == 1 ? "was" : "were")} provided."
 											)
 										);

@@ -90,16 +90,7 @@ namespace Xunit
 					remoteObjects.Add (instance);
 					return instance;
 				});
-
-				var outputBus = new InterceptingMessageBus (remoteBus, message => {
-					var resultMessage = message as ITestResultMessage;
-					if (resultMessage != null) {
-						Trace.WriteLine (resultMessage.Output);
-						Debugger.Log (0, "", resultMessage.Output);
-						Console.WriteLine (resultMessage.Output);
-					}
-				});
-
+				var outputBus = new TraceOutputMessageBus (remoteBus);
 				var summary = await Task.Run (
 					() => runner.Run (testCase, outputBus))
 					.TimeoutAfter (testCase.TimeoutSeconds * 1000);
@@ -496,6 +487,37 @@ namespace Xunit
 			}
 
 			public void Dispose () { }
+		}
+
+		class TraceOutputMessageBus : LongLivedMarshalByRefObject, IMessageBus
+		{
+			IMessageBus innerBus;
+
+			public TraceOutputMessageBus (IMessageBus innerBus)
+			{
+				this.innerBus = innerBus;
+			}
+
+			public void Dispose ()
+			{
+				try {
+					innerBus.Dispose ();
+				} catch (ObjectDisposedException) {
+					// Others consuming the inner bus could dispose it before us.
+				}
+			}
+
+			public bool QueueMessage (IMessageSinkMessage message)
+			{
+				var resultMessage = message as ITestResultMessage;
+				if (resultMessage != null) {
+					Trace.WriteLine (resultMessage.Output);
+					Debugger.Log (0, "", resultMessage.Output);
+					Console.WriteLine (resultMessage.Output);
+				}
+
+				return innerBus.QueueMessage (message);
+			}
 		}
 	}
 }

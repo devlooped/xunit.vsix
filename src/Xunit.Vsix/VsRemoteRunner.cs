@@ -55,7 +55,7 @@ namespace Xunit
 				SynchronizationContext.SetSynchronizationContext (new SynchronizationContext ());
 
 			try {
-				VsixRunSummary result = runner.RunAsync (testCase, messageBus, aggregator)
+				VsixRunSummary result = runner.RunAsync (testCase, new TestMessageOnlyBus(messageBus), aggregator)
 				.Result
 				.ToVsixRunSummary ();
 
@@ -258,6 +258,29 @@ namespace Xunit
 						}
 					}
 				}
+			}
+		}
+
+		class TestMessageOnlyBus : IMessageBus
+		{
+			IMessageBus innerBus;
+
+			public TestMessageOnlyBus (IMessageBus innerBus)
+			{
+				this.innerBus = innerBus;
+			}
+
+			public void Dispose ()
+			{
+				innerBus.Dispose ();
+			}
+
+			public bool QueueMessage (IMessageSinkMessage message)
+			{
+				if (message is ITestMethodMessage)
+					return innerBus.QueueMessage (message);
+
+				return true;
 			}
 		}
 	}

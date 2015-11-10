@@ -100,7 +100,7 @@ namespace Xunit
 
 				return summary.ToRunSummary ();
 			} catch (Exception ex) {
-				if (ex is RemotingException)
+				if (ex is RemotingException || ex is TimeoutException)
 					Stop ();
 
 				aggregator.Add (ex);

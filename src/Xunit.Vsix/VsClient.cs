@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -222,6 +223,10 @@ namespace Xunit
 			// tests in the VS app domain.
 			info.EnvironmentVariables.Add (Constants.PipeNameEnvironmentVariable, pipeName);
 
+			// Propagate profiling values to support OpenCover or any third party profiler
+			// already attached to the current process.
+			PropagateProfilingVariables (info);
+
 			Process = Process.Start (info);
 
 			// This forces us to wait until VS is fully started.
@@ -284,7 +289,19 @@ namespace Xunit
 			return true;
 		}
 
-		void AddBindingPaths ()
+		void PropagateProfilingVariables (ProcessStartInfo info)
+		{
+			foreach (var envVar in Process.GetCurrentProcess ().StartInfo
+				.EnvironmentVariables
+				.OfType<DictionaryEntry> ()
+				.Select (x => new KeyValuePair<string, string> ((string)x.Key, (string)x.Value))
+				.Where (x => x.Key.StartsWith ("Cor_") || x.Key.StartsWith ("CorClr_") || x.Key.StartsWith ("CoreClr_") || x.Key.StartsWith ("OpenCover_"))
+				.Where (x => !info.EnvironmentVariables.ContainsKey(x.Key))) {
+				info.EnvironmentVariables.Add (envVar.Key, envVar.Value);
+			}
+	}
+
+	void AddBindingPaths ()
 		{
 			if (initializedExtension)
 				return;

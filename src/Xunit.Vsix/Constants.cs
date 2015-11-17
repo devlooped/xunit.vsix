@@ -1,10 +1,20 @@
-﻿
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Xunit
 {
 	static class Constants
 	{
+		/// <summary>
+		/// This assembly name, for use in Xunit attributes that need to specify an
+		/// assembly name.
+		/// </summary>
+		public const string ThisAssembly = "xunit.vsix";
+
+		/// <summary>
+		/// The root namespace of this assembly.
+		/// </summary>
+		public const string RootNamespace = "Xunit";
+
 		public const string PipeNameEnvironmentVariable = "xunit.vsix.pipe";
 
 		public const string TracerName = "xunit.vsix";

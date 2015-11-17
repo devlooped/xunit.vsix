@@ -15,6 +15,30 @@ namespace Xunit
 		/// </summary>
 		public const int DefaultTimeout = 60;
 
+		public static IVsixAttribute GetVsixAttribute(this ITestMethod testMethod, IAttributeInfo vsixAttribute)
+		{
+			var vsVersions = testMethod.GetComputedProperty<string[]>(vsixAttribute, nameof(IVsixAttribute.VisualStudioVersions));
+			var minVersion = testMethod.GetComputedProperty<string>(vsixAttribute, nameof(IVsixAttribute.MinimumVisualStudioVersion));
+			var maxVersion = testMethod.GetComputedProperty<string>(vsixAttribute, nameof(IVsixAttribute.MaximumVisualStudioVersion));
+
+			var finalVersions = VsVersions.GetFinalVersions(vsVersions, minVersion, maxVersion);
+
+			// Process VS-specific traits.
+			var suffix = testMethod.GetComputedArgument<string>(vsixAttribute, nameof(IVsixAttribute.RootSuffix)) ?? "Exp";
+			var newInstance = testMethod.GetComputedArgument<bool?>(vsixAttribute, nameof(IVsixAttribute.NewIdeInstance));
+			var timeout = testMethod.GetComputedArgument<int?>(vsixAttribute, nameof(IVsixAttribute.TimeoutSeconds)).GetValueOrDefault(DefaultTimeout);
+			var recycle = testMethod.GetComputedArgument<bool?>(vsixAttribute, nameof(IVsixAttribute.RecycleOnFailure));
+
+			return new VsixAttribute (finalVersions) {
+				MinimumVisualStudioVersion = minVersion,
+				MaximumVisualStudioVersion = maxVersion,
+				RootSuffix = suffix,
+				NewIdeInstance = newInstance.GetValueOrDefault (),
+				TimeoutSeconds = timeout,
+				RecycleOnFailure = recycle.GetValueOrDefault ()
+			};
+		}
+
 		public static T GetComputedProperty<T>(this ITestMethod testMethod, string argumentName)
 		{
 			return GetComputedProperty<T> (testMethod, testMethod.Method.GetCustomAttributes (typeof (IVsixAttribute)).FirstOrDefault (), argumentName);

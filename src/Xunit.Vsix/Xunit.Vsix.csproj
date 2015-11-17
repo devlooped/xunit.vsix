@@ -175,7 +175,6 @@
     <Compile Include="VsStartup.cs" />
     <Compile Include="XunitExtensions.cs" />
     <Compile Include="VsixFactAttribute.cs" />
-    <Compile Include="SpecialNames.cs" />
     <Compile Include="VsixAttribute.cs" />
     <Compile Include="VsixFactDiscoverer.cs" />
     <Compile Include="VsixRunSummary.cs" />

@@ -7,7 +7,7 @@ namespace Xunit
 	/// Attribute that is applied to a method to indicate that it is a Visual Studio
 	/// integration fact that should be run by the test runner.
 	/// </summary>
-	[XunitTestCaseDiscoverer (nameof(VsixFactDiscoverer), SpecialNames.ThisAssembly)]
+	[XunitTestCaseDiscoverer (Constants.RootNamespace + "." + nameof (VsixFactDiscoverer), Constants.ThisAssembly)]
 	[AttributeUsage (AttributeTargets.Method, AllowMultiple = false)]
 	public class VsixFactAttribute : FactAttribute, IVsixAttribute
 	{

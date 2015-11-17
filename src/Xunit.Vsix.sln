@@ -14,6 +14,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Vsix", "Xunit.Vsix\Xunit.Vsix.csproj", "{EA6250CB-F20A-4B92-AC35-365D902C225F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8072B47B-5611-4BAB-8EF4-CB3125D676A5} = {8072B47B-5611-4BAB-8EF4-CB3125D676A5}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Vsix.Tests", "Xunit.Vsix.Tests\Xunit.Vsix.Tests.csproj", "{D1B1C34C-EF09-463A-9C55-CCCC249F9BBE}"
 EndProject

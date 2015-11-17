@@ -1,30 +1,38 @@
 <?xml version="1.0"?>
 <package>
-    <metadata>
-        <id>xunit.vsix</id>
-        <version>0.2.2</version>
-        <title>xUnit.net [VsixFact and VsixTheory]</title>
-        <authors>Mobile Essentials</authors>
-        <licenseUrl>https://github.com/kzu/xunit.vsix/blob/master/LICENSE</licenseUrl>
-        <projectUrl>https://github.com/kzu/xunit.vsix</projectUrl>
-        <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Allows creating reliable, flexible and fast VS SDK integration (VSIX) tests that run using any xUnit capable runner, such as Visual Studio built-in Test Explorer or TestDriven.NET.</description>
-        <copyright>Copyright 2015</copyright>
-        <tags>xunit vssdk testing</tags>
+	<metadata>
+		<id>xunit.vsix</id>
+		<version>0.2.2</version>
+		<title>xUnit.net [VsixFact and VsixTheory]</title>
+		<authors>Mobile Essentials</authors>
+		<licenseUrl>https://github.com/kzu/xunit.vsix/blob/master/LICENSE</licenseUrl>
+		<projectUrl>https://github.com/kzu/xunit.vsix</projectUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>Allows creating reliable, flexible and fast VS SDK integration (VSIX) tests that run using any xUnit capable runner, such as Visual Studio built-in Test Explorer or TestDriven.NET.</description>
+		<copyright>Copyright 2015</copyright>
+		<tags>xunit vssdk testing</tags>
 		<dependencies>
-		  <dependency id="xunit.abstractions" version="2.0.0" />
-		  <dependency id="xunit.extensibility.core" version="2.1.0" />
-		  <dependency id="xunit.extensibility.execution" version="2.1.0" />
-      <dependency id="xunit.runner.visualstudio" version="2.1.0" />
+			<dependency id="xunit.abstractions" version="2.0.0" />
+			<dependency id="xunit.extensibility.core" version="2.1.0" />
+			<dependency id="xunit.extensibility.execution" version="2.1.0" />
+			<dependency id="xunit.runner.visualstudio" version="2.1.0" />
 		</dependencies>
-    </metadata>
+	</metadata>
 	<files>
+		<file src="build\xunit.vsix.props" target="build" />
+		<file src="build\xunit.vsix.targets" target="build" />
 		<file src="..\Xunit.Vsix\bin\xunit.vsix.dll" target="lib\net45" />
 		<file src="..\Xunit.Vsix\bin\xunit.vsix.pdb" target="lib\net45" />
 		<file src="..\Xunit.Vsix\bin\xunit.vsix.xml" target="lib\net45" />
 		<file src="..\Xunit.Vsix.Bootstrap\bin\xunit.vsix.bootstrap.dll" target="lib\net45" />
-    <file src="..\Xunit.Vsix.Bootstrap\bin\xunit.vsix.bootstrap.pdb" target="lib\net45" />
-    <file src="build\xunit.vsix.props" target="build" />
-		<file src="build\xunit.vsix.targets" target="build" />
+		<file src="..\Xunit.Vsix.Bootstrap\bin\xunit.vsix.bootstrap.pdb" target="lib\net45" />
+
+		<file src="..\Xunit.Vsix\**\*.cs" target="src\Xunit.Vsix" exclude="**\bin\**\*.*;**\obj\**\*.*" />
+		<file src="..\Xunit.Vsix\**\*.csproj" target="src\Xunit.Vsix" />
+		<file src="..\Xunit.Vsix\**\*.nuspec" target="src\Xunit.Vsix" />
+		<file src="..\Xunit.Vsix\**\*.config" target="src\Xunit.Vsix" />
+		<file src="..\Xunit.Vsix\**\*.resx" target="src\Xunit.Vsix" />
+		<file src="..\Xunit.Vsix.Bootstrap\bin\xunit.vsix.bootstrap.dll" target="src\Xunit.Vsix.Bootstrap\bin" />
+		<file src="..\Xunit.Vsix.Bootstrap\bin\xunit.vsix.bootstrap.pdb" target="src\Xunit.Vsix.Bootstrap\bin" />
 	</files>
 </package>

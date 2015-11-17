@@ -19,13 +19,9 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
     <PlatformTarget>x86</PlatformTarget>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
     <AssemblyOriginatorKeyFile>..\Xunit.Vsix.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
@@ -199,12 +195,7 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Xunit.Vsix.Bootstrap\Xunit.Vsix.Bootstrap.vcxproj">
-      <Project>{8072b47b-5611-4bab-8ef4-cb3125d676a5}</Project>
-      <Name>Xunit.Vsix.Bootstrap</Name>
-    </ProjectReference>
+    <None Include="Xunit.Vsix.props" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -213,6 +204,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="Xunit.Vsix.props" />
   <Import Project="..\Xunit.Vsix.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

@@ -8,12 +8,15 @@ namespace Xunit
 {
 	internal class VsixRunnerSettings
 	{
-		public VsixRunnerSettings (int? debuggerAttachRetries = null, int? remoteConnectionRetries = null, int? processStartRetries = null, int? retrySleepInterval = null)
+		public VsixRunnerSettings (int? debuggerAttachRetries = null, int? remoteConnectionRetries = null,
+			int? processStartRetries = null, int? retrySleepInterval = null,
+			int? startupTimeout = null)
 		{
 			DebuggerAttachRetries = debuggerAttachRetries ?? 5;
 			RemoteConnectionRetries = remoteConnectionRetries ?? 2;
 			ProcessStartRetries = processStartRetries ?? 1;
 			RetrySleepInterval = retrySleepInterval ?? 200;
+			StartupTimeout = startupTimeout ?? 120;
 		}
 
 		/// <summary>
@@ -38,5 +41,11 @@ namespace Xunit
 		/// retry.
 		/// </summary>
 		public int RetrySleepInterval { get; private set; }
+
+		/// <summary>
+		/// The timeout in seconds to wait for Visual Studio to
+		/// start and initialize its DTE automation model.
+		/// </summary>
+		public int StartupTimeout { get; private set; }
 	}
 }

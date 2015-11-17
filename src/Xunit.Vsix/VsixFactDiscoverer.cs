@@ -25,15 +25,15 @@ namespace Xunit
 				};
 			} else {
 				var vsVersions = VsVersions.GetFinalVersions(
-					testMethod.GetComputedProperty<string[]>(factAttribute, SpecialNames.VsixAttribute.VisualStudioVersions),
-					testMethod.GetComputedProperty<string>(factAttribute, SpecialNames.VsixAttribute.MinimumVisualStudioVersion),
-					testMethod.GetComputedProperty<string>(factAttribute, SpecialNames.VsixAttribute.MaximumVisualStudioVersion));
+					testMethod.GetComputedProperty<string[]>(factAttribute, nameof(IVsixAttribute.VisualStudioVersions)),
+					testMethod.GetComputedProperty<string>(factAttribute, nameof(IVsixAttribute.MinimumVisualStudioVersion)),
+					testMethod.GetComputedProperty<string>(factAttribute, nameof(IVsixAttribute.MaximumVisualStudioVersion)));
 
 				// Process VS-specific traits.
-				var suffix = testMethod.GetComputedArgument<string>(factAttribute, SpecialNames.VsixAttribute.RootSuffix) ?? "Exp";
-				var newInstance = testMethod.GetComputedArgument<bool?>(factAttribute, SpecialNames.VsixAttribute.NewIdeInstance);
-				var timeout = testMethod.GetComputedArgument<int?>(factAttribute, SpecialNames.VsixAttribute.TimeoutSeconds).GetValueOrDefault(XunitExtensions.DefaultTimeout);
-				var recycle = testMethod.GetComputedArgument<bool?>(factAttribute, SpecialNames.VsixAttribute.RecycleOnFailure);
+				var suffix = testMethod.GetComputedArgument<string>(factAttribute, nameof(IVsixAttribute.RootSuffix)) ?? "Exp";
+				var newInstance = testMethod.GetComputedArgument<bool?>(factAttribute, nameof(IVsixAttribute.NewIdeInstance));
+				var timeout = testMethod.GetComputedArgument<int?>(factAttribute, nameof(IVsixAttribute.TimeoutSeconds)).GetValueOrDefault(XunitExtensions.DefaultTimeout);
+				var recycle = testMethod.GetComputedArgument<bool?>(factAttribute, nameof(IVsixAttribute.RecycleOnFailure));
 
 				var testCases = new List<IXunitTestCase>();
 
@@ -41,7 +41,7 @@ namespace Xunit
 				testCases.AddRange (vsVersions
 					.Where (v => !VsVersions.InstalledVersions.Contains (v))
 					.Select (v => new ExecutionErrorTestCase (messageSink, defaultMethodDisplay, testMethod,
-						string.Format ("Cannot execute test for specified {0}={1} because there is no VSSDK installed for that version.", SpecialNames.VsixAttribute.VisualStudioVersions, v))));
+						string.Format ("Cannot execute test for specified {0}={1} because there is no VSSDK installed for that version.", nameof(IVsixAttribute.VisualStudioVersions), v))));
 
 				testCases.AddRange (vsVersions
 					.Where (v => VsVersions.InstalledVersions.Contains (v))

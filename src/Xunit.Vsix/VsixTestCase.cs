@@ -57,10 +57,10 @@ namespace Xunit
 		{
 			base.Serialize (data);
 			data.AddValue ("VisualStudioVersion", VisualStudioVersion);
-			data.AddValue (SpecialNames.VsixAttribute.RootSuffix, RootSuffix);
-			data.AddValue (SpecialNames.VsixAttribute.NewIdeInstance, NewIdeInstance);
-			data.AddValue (SpecialNames.VsixAttribute.TimeoutSeconds, TimeoutSeconds);
-			data.AddValue (SpecialNames.VsixAttribute.RecycleOnFailure, RecycleOnFailure);
+			data.AddValue (nameof(IVsixAttribute.RootSuffix), RootSuffix);
+			data.AddValue (nameof(IVsixAttribute.NewIdeInstance), NewIdeInstance);
+			data.AddValue (nameof(IVsixAttribute.TimeoutSeconds), TimeoutSeconds);
+			data.AddValue (nameof(IVsixAttribute.RecycleOnFailure), RecycleOnFailure);
 		}
 
 		/// <inheritdoc/>
@@ -68,10 +68,10 @@ namespace Xunit
 		{
 			base.Deserialize (data);
 			VisualStudioVersion = data.GetValue<string> ("VisualStudioVersion");
-			RootSuffix = data.GetValue<string> (SpecialNames.VsixAttribute.RootSuffix);
-			NewIdeInstance = data.GetValue<bool?> (SpecialNames.VsixAttribute.NewIdeInstance);
-			TimeoutSeconds = data.GetValue<int> (SpecialNames.VsixAttribute.TimeoutSeconds);
-			RecycleOnFailure = data.GetValue<bool?> (SpecialNames.VsixAttribute.RecycleOnFailure);
+			RootSuffix = data.GetValue<string> (nameof(IVsixAttribute.RootSuffix));
+			NewIdeInstance = data.GetValue<bool?> (nameof(IVsixAttribute.NewIdeInstance));
+			TimeoutSeconds = data.GetValue<int> (nameof(IVsixAttribute.TimeoutSeconds));
+			RecycleOnFailure = data.GetValue<bool?> (nameof(IVsixAttribute.RecycleOnFailure));
 		}
 	}
 }

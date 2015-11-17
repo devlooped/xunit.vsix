@@ -26,17 +26,17 @@ namespace Xunit
 				return new[] { new XunitTestCase (diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault (), testMethod) };
 
 			var vsVersions = VsVersions.GetFinalVersions(
-				testMethod.GetComputedProperty<string[]>(theoryAttribute, SpecialNames.VsixAttribute.VisualStudioVersions),
-				testMethod.GetComputedProperty<string>(theoryAttribute, SpecialNames.VsixAttribute.MinimumVisualStudioVersion),
-				testMethod.GetComputedProperty<string>(theoryAttribute, SpecialNames.VsixAttribute.MaximumVisualStudioVersion));
+				testMethod.GetComputedProperty<string[]>(theoryAttribute, nameof(IVsixAttribute.VisualStudioVersions)),
+				testMethod.GetComputedProperty<string>(theoryAttribute, nameof(IVsixAttribute.MinimumVisualStudioVersion)),
+				testMethod.GetComputedProperty<string>(theoryAttribute, nameof(IVsixAttribute.MaximumVisualStudioVersion)));
 
 			var validVsVersions = vsVersions.Where (v => VsVersions.InstalledVersions.Contains (v)).ToArray();
 
 			// Process VS-specific traits.
-			var suffix = testMethod.GetComputedArgument<string>(theoryAttribute, SpecialNames.VsixAttribute.RootSuffix) ?? "Exp";
-			var newInstance = testMethod.GetComputedArgument<bool?>(theoryAttribute, SpecialNames.VsixAttribute.NewIdeInstance);
-			var timeout = testMethod.GetComputedArgument<int?>(theoryAttribute, SpecialNames.VsixAttribute.TimeoutSeconds).GetValueOrDefault(XunitExtensions.DefaultTimeout);
-			var recycle = testMethod.GetComputedArgument<bool?>(theoryAttribute, SpecialNames.VsixAttribute.RecycleOnFailure);
+			var suffix = testMethod.GetComputedArgument<string>(theoryAttribute, nameof(IVsixAttribute.RootSuffix)) ?? "Exp";
+			var newInstance = testMethod.GetComputedArgument<bool?>(theoryAttribute, nameof(IVsixAttribute.NewIdeInstance));
+			var timeout = testMethod.GetComputedArgument<int?>(theoryAttribute, nameof(IVsixAttribute.TimeoutSeconds)).GetValueOrDefault(XunitExtensions.DefaultTimeout);
+			var recycle = testMethod.GetComputedArgument<bool?>(theoryAttribute, nameof(IVsixAttribute.RecycleOnFailure));
 
 			// We always pre-enumerate theories, since that's how we build the concrete test cases.
 			try {
@@ -73,7 +73,7 @@ namespace Xunit
 				results.AddRange (vsVersions
 					.Where (v => !VsVersions.InstalledVersions.Contains (v))
 					.Select (v => new ExecutionErrorTestCase (diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault (), testMethod,
-						string.Format ("Cannot execute test for specified {0}={1} because there is no VSSDK installed for that version.", SpecialNames.VsixAttribute.VisualStudioVersions, v))));
+						string.Format ("Cannot execute test for specified {0}={1} because there is no VSSDK installed for that version.", nameof(IVsixAttribute.VisualStudioVersions), v))));
 
 				return results;
 			} catch { }  // If something goes wrong, fall through to return just the XunitTestCase

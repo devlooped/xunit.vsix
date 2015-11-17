@@ -34,5 +34,11 @@ namespace Xunit
 		/// retry.
 		/// </summary>
 		public int RetrySleepInterval { get; set; }
+
+		/// <summary>
+		/// The timeout in seconds to wait for Visual Studio to
+		/// start and initialize its DTE automation model.
+		/// </summary>
+		public int StartupTimeout { get; set; }
 	}
 }

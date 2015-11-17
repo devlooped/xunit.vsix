@@ -11,7 +11,7 @@ namespace Xunit
 	/// derive from <see cref="DataAttribute"/> (notably, <see cref="InlineDataAttribute"/> and
 	/// <see cref="MemberDataAttribute"/>).
 	/// </summary>
-	[XunitTestCaseDiscoverer (SpecialNames.VsixTheoryDiscoverer, SpecialNames.ThisAssembly)]
+	[XunitTestCaseDiscoverer (nameof(VsixTheoryDiscoverer), SpecialNames.ThisAssembly)]
 	[AttributeUsage (AttributeTargets.Method, AllowMultiple = false)]
 	public class VsixTheoryAttribute : VsixFactAttribute
 	{

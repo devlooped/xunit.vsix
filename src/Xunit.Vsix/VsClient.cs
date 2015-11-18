@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Packaging;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Remoting;
@@ -21,7 +22,6 @@ namespace Xunit
 	class VsClient : IVsClient
 	{
 		static readonly TraceSource tracer = Constants.Tracer;
-		const string BindingPathKey = "{00000000-17C9-470C-AED2-2D4E97CC5686}";
 
 		bool initializedExtension;
 		string visualStudioVersion;
@@ -115,7 +115,6 @@ namespace Xunit
 		public void Dispose ()
 		{
 			Stop ();
-			ClearBindingPaths ();
 		}
 
 		bool EnsureConnected (VsixTestCase testCase, IMessageBus messageBus)
@@ -208,7 +207,7 @@ namespace Xunit
 
 		bool Start ()
 		{
-			AddBindingPaths ();
+			InitializeExtension ();
 
 			pipeName = Guid.NewGuid ().ToString ();
 
@@ -296,81 +295,19 @@ namespace Xunit
 				.OfType<DictionaryEntry> ()
 				.Select (x => new KeyValuePair<string, string> ((string)x.Key, (string)x.Value))
 				.Where (x => x.Key.StartsWith ("Cor_") || x.Key.StartsWith ("CorClr_") || x.Key.StartsWith ("CoreClr_") || x.Key.StartsWith ("OpenCover_"))
-				.Where (x => !info.EnvironmentVariables.ContainsKey(x.Key))) {
+				.Where (x => !info.EnvironmentVariables.ContainsKey (x.Key))) {
 				info.EnvironmentVariables.Add (envVar.Key, envVar.Value);
 			}
-	}
+		}
 
-	void AddBindingPaths ()
+		void InitializeExtension ()
 		{
 			if (initializedExtension)
 				return;
 
-			// Add all currently loaded assemblies paths to the resolve paths.
-			var probingPaths = AppDomain.CurrentDomain.GetAssemblies ()
-				.Select (x => Path.GetDirectoryName (x.ManifestModule.FullyQualifiedName))
-				.Where (x => x.StartsWith (Environment.GetFolderPath (Environment.SpecialFolder.LocalApplicationData)))
-				.Distinct ()
-				.ToArray ();
-
-			// Loading just the current path into the VS binding paths causes all
-			// other deps to fail.
-			//var probingPaths = new [] { GetType().Assembly.ManifestModule.FullyQualifiedName };
-
-			var rootKeyName = @"Software\Microsoft\VisualStudio";
-			using (var rootKey = Registry.CurrentUser.OpenSubKey (rootKeyName, true)) {
-				var bindingKeyMatch = visualStudioVersion + rootSuffix + @"_Config";
-				if (!rootKey.GetSubKeyNames ().Where (name => name.StartsWith (bindingKeyMatch)).Any ())
-					// Means VS was never run before for the given version + suffix, so we need to do it at
-					// least once so that VS can populate the _Config registry.
-					FirstRun ();
-
-				foreach (var hiveName in rootKey.GetSubKeyNames ().Where (name => name.StartsWith (bindingKeyMatch))) {
-					AddBindingPaths (rootKey, hiveName, probingPaths);
-				}
-			}
+			VsixInstaller.Initialize (Path.GetDirectoryName (devEnvPath), visualStudioVersion, rootSuffix);
 
 			initializedExtension = true;
-		}
-
-		void AddBindingPaths (RegistryKey rootKey, string hiveName, string[] probingPaths)
-		{
-			var bindingPathKeyName = Path.Combine(@"Software\Microsoft\VisualStudio\", hiveName, "BindingPaths");
-			using (var hiveKey = rootKey.OpenSubKey (hiveName, true)) {
-				using (var pathsKey = hiveKey.OpenSubKey ("BindingPaths", true)) {
-					if (pathsKey == null)
-						return;
-
-					var bindingKey = pathsKey.OpenSubKey (BindingPathKey, true);
-					if (bindingKey == null) {
-						try {
-							bindingKey = pathsKey.CreateSubKey (BindingPathKey);
-						} catch (IOException) {
-							bindingKey = pathsKey.CreateSubKey (BindingPathKey, RegistryKeyPermissionCheck.Default, RegistryOptions.Volatile);
-						}
-					}
-
-					using (bindingKey) {
-						// Across multiple VsClient sessions within the same
-						// test run (i.e. tests that request their own clean
-						// instance of VS), these paths won't change.
-						var bindingPaths = new HashSet<string> (bindingKey.GetValueNames ());
-
-						if (probingPaths.Any (probingPath => !bindingPaths.Contains (probingPath))) {
-							// There was a change, meaning it's another run, and typically all
-							// assemblies change location because of shadow copying, so we
-							// have to refresh all of them.
-							foreach (var name in bindingKey.GetValueNames ()) {
-								bindingKey.DeleteValue (name);
-							}
-
-							foreach (var probingPath in probingPaths) {
-								bindingKey.SetValue (probingPath, "");
-							}
-						}
-					}
-				}
-			}
 		}
 
 		/// <summary>
@@ -401,21 +338,6 @@ namespace Xunit
 					process.Kill ();
 			} else {
 				process.Kill ();
-			}
-		}
-
-		void ClearBindingPaths ()
-		{
-			var rootKeyName = @"Software\Microsoft\VisualStudio";
-			using (var rootKey = Registry.CurrentUser.OpenSubKey (rootKeyName, true)) {
-				var bindingKeyMatch = visualStudioVersion + rootSuffix + @"_Config";
-				foreach (var hiveName in rootKey.GetSubKeyNames ().Where (name => name.StartsWith (bindingKeyMatch))) {
-					using (var hiveKey = rootKey.OpenSubKey (hiveName, true))
-					using (var pathsKey = hiveKey.OpenSubKey ("BindingPaths", true)) {
-						if (pathsKey != null)
-							pathsKey.DeleteSubKey (BindingPathKey, false);
-					}
-				}
 			}
 		}
 
@@ -461,9 +383,10 @@ namespace Xunit
 
 			// Path is like: C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\Tools\..\IDE\devenv.exe
 			// We need to move up one level and down to IDE for the final devenv path.
-			var path = Path.Combine (varValue, @"..\IDE\devenv.exe");
+			var path = Path.GetFullPath (Path.Combine (varValue, @"..\IDE\devenv.exe"));
 			if (!File.Exists (path))
 				throw new ArgumentException (string.Format ("Visual Studio Version '{0}' executable was not found at the expected location '{1}' according to the environment variable '{2}'.", visualStudioVersion, path, varName));
+
 			return path;
 		}
 

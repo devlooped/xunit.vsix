@@ -72,5 +72,4 @@ static class NativeMethods
     {
         return hr < 0;
     }
-
 }

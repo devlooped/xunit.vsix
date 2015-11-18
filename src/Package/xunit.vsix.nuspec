@@ -21,6 +21,7 @@
 	<files>
 		<file src="build\xunit.vsix.props" target="build" />
 		<file src="build\xunit.vsix.targets" target="build" />
+    
 		<file src="..\Xunit.Vsix\bin\xunit.vsix.dll" target="lib\net45" />
 		<file src="..\Xunit.Vsix\bin\xunit.vsix.pdb" target="lib\net45" />
 		<file src="..\Xunit.Vsix\bin\xunit.vsix.xml" target="lib\net45" />

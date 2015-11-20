@@ -15,7 +15,7 @@ namespace Xunit
 	{
 		static TraceSource tracer = Constants.Tracer;
 
-		public VsixTestFramework (IMessageSink messageSink) : base (new TracingMessageSink(messageSink, tracer))
+		public VsixTestFramework (IMessageSink messageSink) : base (new TracingMessageSink (messageSink, tracer))
 		{
 			tracer.Switch.Level = SourceLevels.Error;
 			Trace.AutoFlush = true;
@@ -54,17 +54,18 @@ namespace Xunit
 				.GetValueOrDefault (SourceLevels.Error) ?? SourceLevels.Error;
 
 			var logFile = Path.ChangeExtension (assemblyInfo.AssemblyPath, ".log");
-			if (File.Exists(logFile)) {
+			if (File.Exists (logFile)) {
 				try {
 					File.Delete (logFile);
 				} catch (IOException) {
 				}
 			}
 
-			if (!tracer.Listeners.OfType<TraceListener> ().Any (x => x.Name == assemblyInfo.Name))
-				tracer.Listeners.Add (new TextWriterTraceListener (logFile, assemblyInfo.Name));
-
-			tracer.Flush ();
+			if (!tracer.Listeners.OfType<TraceListener> ().Any (x => x.Name == assemblyInfo.Name)) {
+				var listener = new TextWriterTraceListener (logFile, assemblyInfo.Name);
+                tracer.Listeners.Add (listener);
+				Trace.Listeners.Add (listener);
+			}
 		}
 
 		class TracingMessageSink : IMessageSink
@@ -101,14 +102,18 @@ namespace Xunit
 				SetupTracing (TestAssembly.Assembly);
 
 				// Always run at least with one thread per VS version.
-				if (executionOptions.MaxParallelThreadsOrDefault () < VsVersions.InstalledVersions.Length)
+				if (executionOptions.MaxParallelThreadsOrDefault () < VsVersions.InstalledVersions.Length && !Debugger.IsAttached) {
 					executionOptions.SetValue ("xunit.execution.MaxParallelThreads", VsVersions.InstalledVersions.Length);
+					Constants.Tracer.TraceEvent (TraceEventType.Verbose, 0, Strings.VsixTestFramework.SettingMaxThreads (VsVersions.InstalledVersions.Length));
+				}
 				// If debugger is attached, don't run multiple instances simultaneously since that makes debugging much harder.
-				if (Debugger.IsAttached)
+				if (Debugger.IsAttached) {
 					executionOptions.SetValue ("xunit.execution.MaxParallelThreads", 1);
+					Constants.Tracer.TraceEvent (TraceEventType.Verbose, 0, Strings.VsixTestFramework.DebugMaxThreads);
+				}
 
 				// This is the implementation of the base XunitTestFrameworkExecutor
-				using (var assemblyRunner = new VsixTestAssemblyRunner (TestAssembly, testCases, DiagnosticMessageSink, executionMessageSink, executionOptions))
+				using (var assemblyRunner = new VsixTestAssemblyRunner (TestAssembly, testCases, DiagnosticMessageSink, new TracingMessageSink (executionMessageSink, Constants.Tracer), executionOptions))
 					await assemblyRunner.RunAsync ();
 
 				tracer.Flush ();

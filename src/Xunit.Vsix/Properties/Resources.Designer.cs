@@ -189,11 +189,20 @@ namespace Xunit.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Tracing initialized..
+        ///   Looks up a localized string similar to Setting configured max threads to 1 for debugging.
         /// </summary>
-        internal static string VsixTestFramework_TraceInitialized {
+        internal static string VsixTestFramework_DebugMaxThreads {
             get {
-                return ResourceManager.GetString("VsixTestFramework_TraceInitialized", resourceCulture);
+                return ResourceManager.GetString("VsixTestFramework_DebugMaxThreads", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Overriding configured max threads to match the number of detected installed Visual Studio versions: {0}.
+        /// </summary>
+        internal static string VsixTestFramework_SettingMaxThreads {
+            get {
+                return ResourceManager.GetString("VsixTestFramework_SettingMaxThreads", resourceCulture);
             }
         }
         

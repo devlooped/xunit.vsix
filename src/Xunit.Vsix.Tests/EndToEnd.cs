@@ -10,6 +10,8 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Xunit;
 using Xunit.Abstractions;
 
+[assembly: VsixRunner(TraceLevel = SourceLevels.All)]
+
 namespace Xunit
 {
 	public class SolutionTests
@@ -26,6 +28,7 @@ namespace Xunit
 		[VsixFact(VisualStudioVersion.Current, RootSuffix = "Exp")]
 		public void when_retrieving_solution_then_succeeds ()
 		{
+			Trace.WriteLine ("Hello world!");
 			Assert.NotNull (item);
 			Assert.True (item.HierarchyIdentity.IsRoot);
 		}

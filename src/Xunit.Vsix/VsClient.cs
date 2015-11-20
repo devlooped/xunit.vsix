@@ -84,6 +84,7 @@ namespace Xunit
 			}
 
 			var xunitTest = new XunitTest (testCase, testCase.DisplayName);
+			//messageBus.QueueMessage (new DiagnosticMessage ("Running {0}", testCase.DisplayName));
 
 			try {
 				var remoteBus = remoteBuses.GetOrAdd(messageBus, bus => {
@@ -157,15 +158,7 @@ namespace Xunit
 				return false;
 			}
 
-			// If successfully connected, attach trace listeners to remote runner.
-			if (Debugger.IsAttached) {
-				// Add default trace listeners to the remote process.
-				foreach (var listener in Trace.Listeners.OfType<TraceListener> ()) {
-					runner.AddListener (listener);
-				}
-			}
-
-			string[][] remoteVars = runner.GetEnvironment();
+			var remoteVars = runner.GetEnvironment();
 
 			Constants.Tracer.TraceEvent (TraceEventType.Verbose, 0, Strings.VsClient.RemoteEnvVars (string.Join (Environment.NewLine,
 				remoteVars.Select (x => "    " + x[0] + "=" + x[1]))));

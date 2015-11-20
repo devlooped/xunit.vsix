@@ -167,6 +167,7 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="xunit.runner.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xunit.Vsix\Xunit.Vsix.csproj">

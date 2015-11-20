@@ -16,6 +16,8 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 using System.Collections;
+using Xunit.Properties;
+using System.IO;
 
 namespace Xunit
 {
@@ -54,14 +56,10 @@ namespace Xunit
 
 		public void Ping () { }
 
-		public void AddListener (TraceListener listener)
-		{
-			if (Trace.Listeners.Contains (listener))
-				Trace.Listeners.Add (listener);
-		}
-
 		public VsixRunSummary Run (VsixTestCase testCase, IMessageBus messageBus)
 		{
+			messageBus.QueueMessage(new DiagnosticMessage("Running {0}", testCase.DisplayName));
+
 			var aggregator = new ExceptionAggregator ();
 			var runner = collectionRunnerMap.GetOrAdd(testCase.TestMethod.TestClass.TestCollection, tc => new VsRemoteTestCollectionRunner(tc, assemblyFixtureMappings, collectionFixtureMappings));
 
@@ -69,14 +67,16 @@ namespace Xunit
 				SynchronizationContext.SetSynchronizationContext (new SynchronizationContext ());
 
 			try {
-				VsixRunSummary result = runner.RunAsync (testCase, new TestMessageOnlyBus(messageBus), aggregator)
-				.Result
-				.ToVsixRunSummary ();
+				using (var bus = new TestMessageOnlyBus (messageBus)) {
+					var result = runner.RunAsync (testCase, new TestMessageOnlyBus(messageBus), aggregator)
+						.Result
+						.ToVsixRunSummary ();
 
-				if (aggregator.HasExceptions && result != null)
-					result.Exception = aggregator.ToException ();
+					if (aggregator.HasExceptions && result != null)
+						result.Exception = aggregator.ToException ();
 
-				return result;
+					return result;
+				}
 			} catch (AggregateException aex) {
 				return new VsixRunSummary {
 					Failed = 1,
@@ -98,6 +98,9 @@ namespace Xunit
 				.Concat (collectionFixtureMappings.Values.OfType<IDisposable> ())) {
 				aggregator.Run (disposable.Dispose);
 			}
+
+			Trace.Listeners.Clear ();
+			Constants.Tracer.Listeners.Clear ();
 
 			Task.WaitAll (tasks);
 		}
@@ -261,10 +264,15 @@ namespace Xunit
 											)
 										);
 									} else {
-										var result = CallTestMethod(testClassInstance);
-										var task = result as Task;
-										if (task != null)
-											task.Wait ();
+										((TestMessageOnlyBus)MessageBus).EnableTracing ();
+										try {
+											var result = CallTestMethod(testClassInstance);
+											var task = result as Task;
+											if (task != null)
+												task.Wait ();
+										} finally {
+											((TestMessageOnlyBus)MessageBus).DisableTracing ();
+										}
 									}
 								}));
 
@@ -279,18 +287,48 @@ namespace Xunit
 		{
 			IMessageBus innerBus;
 
+			StringWriter buffer = new StringWriter();
+			TraceListener listener;
+
 			public TestMessageOnlyBus (IMessageBus innerBus)
 			{
 				this.innerBus = innerBus;
+				listener = new TextWriterTraceListener (buffer);
+			}
+
+			public void EnableTracing()
+			{
+				Trace.Listeners.Add (listener);
+			}
+
+			public void DisableTracing ()
+			{
+				Trace.Listeners.Remove (listener);
 			}
 
 			public void Dispose ()
 			{
 				innerBus.Dispose ();
+				Trace.Listeners.Remove (listener);
 			}
 
 			public bool QueueMessage (IMessageSinkMessage message)
 			{
+				listener.Flush ();
+				var output = buffer.ToString();
+
+				var passed = message as ITestPassed;
+				var failed = message as ITestFailed;
+
+				if (passed != null && !string.IsNullOrEmpty(output))
+					return innerBus.QueueMessage (new TestPassed (passed.Test, passed.ExecutionTime,
+						string.IsNullOrEmpty(passed.Output) ? output : passed.Output + Environment.NewLine + output));
+
+				if (failed != null && !string.IsNullOrEmpty(output))
+					return innerBus.QueueMessage (new TestFailed (failed.Test, failed.ExecutionTime,
+						string.IsNullOrEmpty(failed.Output) ? output : failed.Output + Environment.NewLine + output,
+						failed.ExceptionTypes, failed.Messages, failed.StackTraces, failed.ExceptionParentIndices));
+
 				if (message is ITestMethodMessage)
 					return innerBus.QueueMessage (message);
 

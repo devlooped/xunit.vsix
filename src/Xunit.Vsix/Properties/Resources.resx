@@ -179,7 +179,10 @@
   <data name="VsixInstaller_InstallingExtension" xml:space="preserve">
     <value>File {0} not found found in extensions path {1}. Extension will be created and installed</value>
   </data>
-  <data name="VsixTestFramework_TraceInitialized" xml:space="preserve">
-    <value>Tracing initialized.</value>
+  <data name="VsixTestFramework_SettingMaxThreads" xml:space="preserve">
+    <value>Overriding configured max threads to match the number of detected installed Visual Studio versions: {0}</value>
+  </data>
+  <data name="VsixTestFramework_DebugMaxThreads" xml:space="preserve">
+    <value>Setting configured max threads to 1 for debugging</value>
   </data>
 </root>

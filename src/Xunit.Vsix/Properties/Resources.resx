@@ -138,6 +138,14 @@
   <data name="VsClient_RetryAttach" xml:space="preserve">
     <value>Failed to attach debugger. Attempt {0} of {1}</value>
   </data>
+  <data name="VsClient_RemoteEnvVars" xml:space="preserve">
+    <value>Environment variables from Visual Studio process:
+{0}</value>
+  </data>
+  <data name="VsClient_RunnerEnvVars" xml:space="preserve">
+    <value>Environment variables from test runner process:
+{0}</value>
+  </data>
   <data name="VsixInstaller_MissingExtensionManager" xml:space="preserve">
     <value>Failed to find Extension Manager implementation assembly at {0}</value>
   </data>
@@ -164,5 +172,14 @@
   </data>
   <data name="VsixInstaller_MissingSettingsManager" xml:space="preserve">
     <value>Failed to find Settings Manager SDK assembly at {0}</value>
+  </data>
+  <data name="VsixInstaller_InstalledExtension" xml:space="preserve">
+    <value>Extension {0} was successfully registered with Visual Studio {1}</value>
+  </data>
+  <data name="VsixInstaller_InstallingExtension" xml:space="preserve">
+    <value>File {0} not found found in extensions path {1}. Extension will be created and installed</value>
+  </data>
+  <data name="VsixTestFramework_TraceInitialized" xml:space="preserve">
+    <value>Tracing initialized.</value>
   </data>
 </root>

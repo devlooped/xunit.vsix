@@ -115,11 +115,49 @@ namespace Xunit.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Environment variables from Visual Studio process:
+        ///{0}.
+        /// </summary>
+        internal static string VsClient_RemoteEnvVars {
+            get {
+                return ResourceManager.GetString("VsClient_RemoteEnvVars", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to attach debugger. Attempt {0} of {1}.
         /// </summary>
         internal static string VsClient_RetryAttach {
             get {
                 return ResourceManager.GetString("VsClient_RetryAttach", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Environment variables from test runner process:
+        ///{0}.
+        /// </summary>
+        internal static string VsClient_RunnerEnvVars {
+            get {
+                return ResourceManager.GetString("VsClient_RunnerEnvVars", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Extension {0} was successfully registered with Visual Studio {1}.
+        /// </summary>
+        internal static string VsixInstaller_InstalledExtension {
+            get {
+                return ResourceManager.GetString("VsixInstaller_InstalledExtension", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File {0} not found found in extensions path {1}. Extension will be created and installed.
+        /// </summary>
+        internal static string VsixInstaller_InstallingExtension {
+            get {
+                return ResourceManager.GetString("VsixInstaller_InstallingExtension", resourceCulture);
             }
         }
         
@@ -147,6 +185,15 @@ namespace Xunit.Properties {
         internal static string VsixInstaller_MissingVSSDK {
             get {
                 return ResourceManager.GetString("VsixInstaller_MissingVSSDK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tracing initialized..
+        /// </summary>
+        internal static string VsixTestFramework_TraceInitialized {
+            get {
+                return ResourceManager.GetString("VsixTestFramework_TraceInitialized", resourceCulture);
             }
         }
         

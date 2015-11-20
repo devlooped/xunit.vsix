@@ -20,7 +20,7 @@ namespace Xunit
 		{
 			// Special case Skip, because we want a single Skip (not one per data item); plus, a skipped test may
 			// not actually have any data (which is quasi-legal, since it's skipped).
-			var skipReason = theoryAttribute.GetNamedArgument<string>("Skip");
+			var skipReason = theoryAttribute.GetInitializedArgument<string>("Skip");
 			if (skipReason != null)
 				return new[] { new XunitTestCase (diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault (), testMethod) };
 

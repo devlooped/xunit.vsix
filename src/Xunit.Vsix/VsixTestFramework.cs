@@ -5,6 +5,9 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
+using System.Linq;
+using System.IO;
+using Xunit.Properties;
 
 namespace Xunit
 {
@@ -12,15 +15,17 @@ namespace Xunit
 	{
 		static TraceSource tracer = Constants.Tracer;
 
-		public VsixTestFramework (IMessageSink messageSink) : base (messageSink)
+		public VsixTestFramework (IMessageSink messageSink) : base (new TracingMessageSink(messageSink, tracer))
 		{
+			tracer.Switch.Level = SourceLevels.Error;
+			Trace.AutoFlush = true;
 			AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 			TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 		}
 
 		void OnUnobservedTaskException (object sender, UnobservedTaskExceptionEventArgs e)
 		{
-			tracer.TraceEvent(TraceEventType.Error, 0, e.Exception.Flatten().InnerException.ToString());
+			tracer.TraceEvent (TraceEventType.Error, 0, e.Exception.Flatten ().InnerException.ToString ());
 			e.SetObserved ();
 		}
 
@@ -31,12 +36,56 @@ namespace Xunit
 
 		protected override ITestFrameworkDiscoverer CreateDiscoverer (IAssemblyInfo assemblyInfo)
 		{
+			SetupTracing (assemblyInfo);
+
 			return new XunitTestFrameworkDiscoverer (assemblyInfo, SourceInformationProvider, DiagnosticMessageSink, null);
 		}
 
 		protected override ITestFrameworkExecutor CreateExecutor (AssemblyName assemblyName)
 		{
 			return new VsixTestFrameworkExecutor (assemblyName, SourceInformationProvider, DiagnosticMessageSink);
+		}
+
+		static void SetupTracing (IAssemblyInfo assemblyInfo)
+		{
+			var attr = assemblyInfo.GetCustomAttributes (typeof (VsixRunnerAttribute)).FirstOrDefault ();
+			tracer.Switch.Level = attr?
+				.GetInitializedArgument<SourceLevels?> (nameof (VsixRunnerAttribute.TraceLevel))
+				.GetValueOrDefault (SourceLevels.Error) ?? SourceLevels.Error;
+
+			var logFile = Path.ChangeExtension (assemblyInfo.AssemblyPath, ".log");
+			if (File.Exists(logFile)) {
+				try {
+					File.Delete (logFile);
+				} catch (IOException) {
+				}
+			}
+
+			if (!tracer.Listeners.OfType<TraceListener> ().Any (x => x.Name == assemblyInfo.Name))
+				tracer.Listeners.Add (new TextWriterTraceListener (logFile, assemblyInfo.Name));
+
+			tracer.Flush ();
+		}
+
+		class TracingMessageSink : IMessageSink
+		{
+			IMessageSink innerSink;
+			TraceSource tracer;
+
+			public TracingMessageSink (IMessageSink innerSink, TraceSource tracer)
+			{
+				this.innerSink = innerSink;
+				this.tracer = tracer;
+			}
+
+			public bool OnMessage (IMessageSinkMessage message)
+			{
+				var diagnostic = message as IDiagnosticMessage;
+				if (diagnostic != null)
+					tracer.TraceEvent (TraceEventType.Verbose, 0, diagnostic.Message);
+
+				return innerSink.OnMessage (message);
+			}
 		}
 
 		class VsixTestFrameworkExecutor : XunitTestFrameworkExecutor
@@ -49,6 +98,8 @@ namespace Xunit
 
 			protected override async void RunTestCases (IEnumerable<IXunitTestCase> testCases, IMessageSink executionMessageSink, ITestFrameworkExecutionOptions executionOptions)
 			{
+				SetupTracing (TestAssembly.Assembly);
+
 				// Always run at least with one thread per VS version.
 				if (executionOptions.MaxParallelThreadsOrDefault () < VsVersions.InstalledVersions.Length)
 					executionOptions.SetValue ("xunit.execution.MaxParallelThreads", VsVersions.InstalledVersions.Length);
@@ -59,166 +110,168 @@ namespace Xunit
 				// This is the implementation of the base XunitTestFrameworkExecutor
 				using (var assemblyRunner = new VsixTestAssemblyRunner (TestAssembly, testCases, DiagnosticMessageSink, executionMessageSink, executionOptions))
 					await assemblyRunner.RunAsync ();
+
+				tracer.Flush ();
 			}
 		}
 
-/***********************************************
- * Showcases how to change [Fact] execution
- * without even having to inherit the attribute
- * *********************************************
+		/***********************************************
+		 * Showcases how to change [Fact] execution
+		 * without even having to inherit the attribute
+		 * *********************************************
 
-		class VsxTestFrameworkDiscoverer : XunitTestFrameworkDiscoverer
-		{
-			public VsxTestFrameworkDiscoverer (IAssemblyInfo assemblyInfo,
-												ISourceInformationProvider sourceProvider,
-												IMessageSink diagnosticMessageSink,
-												IXunitTestCollectionFactory collectionFactory = null)
-				: base (assemblyInfo, sourceProvider, diagnosticMessageSink, collectionFactory)
-			{ }
-
-			protected override bool FindTestsForMethod (ITestMethod testMethod, bool includeSourceInformation, IMessageBus messageBus, ITestFrameworkDiscoveryOptions discoveryOptions)
-			{
-				if (testMethod.Method.GetCustomAttributes (typeof(TheoryAttribute)).Any ())
-					return base.FindTestsForMethod (testMethod, includeSourceInformation, messageBus, discoveryOptions);
-				else
-					return base.FindTestsForMethod (new VsxTestMethod (testMethod), includeSourceInformation, messageBus, discoveryOptions);
-			}
-
-			[DebuggerDisplay(@"\{ class = {TestClass.Class.Name}, method = {Method.Name} \}")]
-			class VsxTestMethod : LongLivedMarshalByRefObject, ITestMethod
-			{
-				ITestMethod testMethod;
-				IMethodInfo methodInfo;
-
-				public VsxTestMethod (ITestMethod testMethod)
+				class VsxTestFrameworkDiscoverer : XunitTestFrameworkDiscoverer
 				{
-					this.testMethod = testMethod;
-					this.methodInfo = new VsxMethodInfo (testMethod.Method);
-				}
+					public VsxTestFrameworkDiscoverer (IAssemblyInfo assemblyInfo,
+														ISourceInformationProvider sourceProvider,
+														IMessageSink diagnosticMessageSink,
+														IXunitTestCollectionFactory collectionFactory = null)
+						: base (assemblyInfo, sourceProvider, diagnosticMessageSink, collectionFactory)
+					{ }
 
-				public IMethodInfo Method { get { return methodInfo; } }
-
-				public ITestClass TestClass { get { return testMethod.TestClass; } }
-
-				public void Deserialize (IXunitSerializationInfo info)
-				{
-					this.testMethod.Deserialize (info);
-				}
-
-				public void Serialize (IXunitSerializationInfo info)
-				{
-					this.testMethod.Serialize (info);
-				}
-
-				class VsxMethodInfo : LongLivedMarshalByRefObject, IMethodInfo, IReflectionMethodInfo
-				{
-					IMethodInfo method;
-					MethodInfo info;
-
-					public VsxMethodInfo (IMethodInfo method)
+					protected override bool FindTestsForMethod (ITestMethod testMethod, bool includeSourceInformation, IMessageBus messageBus, ITestFrameworkDiscoveryOptions discoveryOptions)
 					{
-						this.method = method;
-						var reflection = method as IReflectionMethodInfo;
-						if (reflection != null)
-							info = reflection.MethodInfo;
-					}
-					public IEnumerable<IAttributeInfo> GetCustomAttributes (string assemblyQualifiedAttributeTypeName)
-					{
-						if (assemblyQualifiedAttributeTypeName == typeof(FactAttribute).AssemblyQualifiedName) {
-							var fact = method.GetCustomAttributes(assemblyQualifiedAttributeTypeName).FirstOrDefault();
-							if (fact != null)
-								return new IAttributeInfo[] { new VsxFactAttributeInfo (fact) };
-							else
-								return Enumerable.Empty<IAttributeInfo> ();
-						}
-
-						return method.GetCustomAttributes (assemblyQualifiedAttributeTypeName);
+						if (testMethod.Method.GetCustomAttributes (typeof(TheoryAttribute)).Any ())
+							return base.FindTestsForMethod (testMethod, includeSourceInformation, messageBus, discoveryOptions);
+						else
+							return base.FindTestsForMethod (new VsxTestMethod (testMethod), includeSourceInformation, messageBus, discoveryOptions);
 					}
 
-					public bool IsAbstract { get { return method.IsAbstract; } }
-
-					public bool IsGenericMethodDefinition { get { return method.IsGenericMethodDefinition; } }
-
-					public bool IsPublic { get { return method.IsPublic; } }
-
-					public bool IsStatic { get { return method.IsStatic; } }
-
-					public string Name { get { return method.Name; } }
-
-					public ITypeInfo ReturnType { get { return method.ReturnType; } }
-
-					public ITypeInfo Type { get { return method.Type; } }
-
-					public MethodInfo MethodInfo { get { return info; } }
-
-					public IEnumerable<ITypeInfo> GetGenericArguments ()
+					[DebuggerDisplay(@"\{ class = {TestClass.Class.Name}, method = {Method.Name} \}")]
+					class VsxTestMethod : LongLivedMarshalByRefObject, ITestMethod
 					{
-						return method.GetGenericArguments ();
-					}
+						ITestMethod testMethod;
+						IMethodInfo methodInfo;
 
-					public IEnumerable<IParameterInfo> GetParameters ()
-					{
-						return method.GetParameters ();
-					}
-
-					public IMethodInfo MakeGenericMethod (params ITypeInfo[] typeArguments)
-					{
-						return method.MakeGenericMethod (typeArguments);
-					}
-
-					class VsxFactAttributeInfo : LongLivedMarshalByRefObject, IAttributeInfo
-					{
-						private IAttributeInfo fact;
-
-						public VsxFactAttributeInfo (IAttributeInfo fact)
+						public VsxTestMethod (ITestMethod testMethod)
 						{
-							this.fact = fact;
+							this.testMethod = testMethod;
+							this.methodInfo = new VsxMethodInfo (testMethod.Method);
 						}
 
-						public IEnumerable<object> GetConstructorArguments ()
+						public IMethodInfo Method { get { return methodInfo; } }
+
+						public ITestClass TestClass { get { return testMethod.TestClass; } }
+
+						public void Deserialize (IXunitSerializationInfo info)
 						{
-							return fact.GetConstructorArguments ();
+							this.testMethod.Deserialize (info);
 						}
 
-						public IEnumerable<IAttributeInfo> GetCustomAttributes (string assemblyQualifiedAttributeTypeName)
+						public void Serialize (IXunitSerializationInfo info)
 						{
-							if (assemblyQualifiedAttributeTypeName == typeof(XunitTestCaseDiscovererAttribute).AssemblyQualifiedName) {
-								return new IAttributeInfo[] { new VsxDiscovererAttribute () };
-							}
-
-							return fact.GetCustomAttributes (assemblyQualifiedAttributeTypeName);
+							this.testMethod.Serialize (info);
 						}
 
-						public TValue GetNamedArgument<TValue>(string argumentName)
+						class VsxMethodInfo : LongLivedMarshalByRefObject, IMethodInfo, IReflectionMethodInfo
 						{
-							return fact.GetNamedArgument<TValue> (argumentName);
-						}
+							IMethodInfo method;
+							MethodInfo info;
 
-						class VsxDiscovererAttribute : LongLivedMarshalByRefObject, IAttributeInfo
-						{
-							public IEnumerable<object> GetConstructorArguments ()
+							public VsxMethodInfo (IMethodInfo method)
 							{
-								return new[] {
-									typeof(VsxFactDiscoverer).FullName,
-									typeof(VsxFactDiscoverer).Assembly.GetName().Name,
-								};
+								this.method = method;
+								var reflection = method as IReflectionMethodInfo;
+								if (reflection != null)
+									info = reflection.MethodInfo;
 							}
-
 							public IEnumerable<IAttributeInfo> GetCustomAttributes (string assemblyQualifiedAttributeTypeName)
 							{
-								yield break;
+								if (assemblyQualifiedAttributeTypeName == typeof(FactAttribute).AssemblyQualifiedName) {
+									var fact = method.GetCustomAttributes(assemblyQualifiedAttributeTypeName).FirstOrDefault();
+									if (fact != null)
+										return new IAttributeInfo[] { new VsxFactAttributeInfo (fact) };
+									else
+										return Enumerable.Empty<IAttributeInfo> ();
+								}
+
+								return method.GetCustomAttributes (assemblyQualifiedAttributeTypeName);
 							}
 
-							public TValue GetNamedArgument<TValue>(string argumentName)
+							public bool IsAbstract { get { return method.IsAbstract; } }
+
+							public bool IsGenericMethodDefinition { get { return method.IsGenericMethodDefinition; } }
+
+							public bool IsPublic { get { return method.IsPublic; } }
+
+							public bool IsStatic { get { return method.IsStatic; } }
+
+							public string Name { get { return method.Name; } }
+
+							public ITypeInfo ReturnType { get { return method.ReturnType; } }
+
+							public ITypeInfo Type { get { return method.Type; } }
+
+							public MethodInfo MethodInfo { get { return info; } }
+
+							public IEnumerable<ITypeInfo> GetGenericArguments ()
 							{
-								return default(TValue);
+								return method.GetGenericArguments ();
+							}
+
+							public IEnumerable<IParameterInfo> GetParameters ()
+							{
+								return method.GetParameters ();
+							}
+
+							public IMethodInfo MakeGenericMethod (params ITypeInfo[] typeArguments)
+							{
+								return method.MakeGenericMethod (typeArguments);
+							}
+
+							class VsxFactAttributeInfo : LongLivedMarshalByRefObject, IAttributeInfo
+							{
+								private IAttributeInfo fact;
+
+								public VsxFactAttributeInfo (IAttributeInfo fact)
+								{
+									this.fact = fact;
+								}
+
+								public IEnumerable<object> GetConstructorArguments ()
+								{
+									return fact.GetConstructorArguments ();
+								}
+
+								public IEnumerable<IAttributeInfo> GetCustomAttributes (string assemblyQualifiedAttributeTypeName)
+								{
+									if (assemblyQualifiedAttributeTypeName == typeof(XunitTestCaseDiscovererAttribute).AssemblyQualifiedName) {
+										return new IAttributeInfo[] { new VsxDiscovererAttribute () };
+									}
+
+									return fact.GetCustomAttributes (assemblyQualifiedAttributeTypeName);
+								}
+
+								public TValue GetNamedArgument<TValue>(string argumentName)
+								{
+									return fact.GetNamedArgument<TValue> (argumentName);
+								}
+
+								class VsxDiscovererAttribute : LongLivedMarshalByRefObject, IAttributeInfo
+								{
+									public IEnumerable<object> GetConstructorArguments ()
+									{
+										return new[] {
+											typeof(VsxFactDiscoverer).FullName,
+											typeof(VsxFactDiscoverer).Assembly.GetName().Name,
+										};
+									}
+
+									public IEnumerable<IAttributeInfo> GetCustomAttributes (string assemblyQualifiedAttributeTypeName)
+									{
+										yield break;
+									}
+
+									public TValue GetNamedArgument<TValue>(string argumentName)
+									{
+										return default(TValue);
+									}
+								}
 							}
 						}
 					}
 				}
-			}
-		}
- */
+		 */
 
 	}
 }

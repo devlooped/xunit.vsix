@@ -45,7 +45,7 @@ namespace Xunit
 
 		protected override string GetDisplayName (IAttributeInfo factAttribute, string displayName)
 		{
-			return base.GetDisplayName (factAttribute, displayName) + " > vs" + VisualStudioVersion;
+			return base.GetDisplayName (factAttribute, displayName) + " > vs" + VisualStudioVersion + RootSuffix;
 		}
 
 		protected override string GetUniqueID ()

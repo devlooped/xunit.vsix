@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Xunit.Abstractions;
 using Xunit.Sdk;
+using System.Collections;
 
 namespace Xunit
 {
@@ -36,6 +37,19 @@ namespace Xunit
 			pipeName = Environment.GetEnvironmentVariable (Constants.PipeNameEnvironmentVariable);
 
 			RemotingServices.Marshal (this, RemotingUtil.HostName);
+		}
+
+		public string[][] GetEnvironment()
+		{
+			return Environment
+				.GetEnvironmentVariables ()
+				.OfType<DictionaryEntry> ()
+				.OrderBy (x => x.Key.ToString ())
+				.Where (x =>
+					!((string)x.Key).Equals ("path", StringComparison.OrdinalIgnoreCase) &&
+					!((string)x.Key).Equals ("pathbackup", StringComparison.OrdinalIgnoreCase))
+				.Select (x => new[] { x.Key.ToString (), x.Value?.ToString () })
+				.ToArray();
 		}
 
 		public void Ping () { }

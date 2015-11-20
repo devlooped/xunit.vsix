@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -40,5 +41,10 @@ namespace Xunit
 		/// start and initialize its DTE automation model.
 		/// </summary>
 		public int StartupTimeout { get; set; }
+
+		/// <summary>
+		/// Specifies the tracing level for runner diagnostics.
+		/// </summary>
+		public SourceLevels TraceLevel { get; set; }
 	}
 }

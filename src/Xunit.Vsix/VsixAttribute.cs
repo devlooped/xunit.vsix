@@ -30,7 +30,9 @@ namespace Xunit
 		/// </summary>
 		public VsixAttribute (params string[] visualStudioVersions)
 		{
-			VisualStudioVersions = visualStudioVersions;
+			if (visualStudioVersions != null && visualStudioVersions.Length != 0)
+				VisualStudioVersions = visualStudioVersions;
+
 			TimeoutSeconds = -1;
 		}
 

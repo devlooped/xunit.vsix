@@ -165,6 +165,11 @@ namespace Xunit
 				}
 			}
 
+			string[][] remoteVars = runner.GetEnvironment();
+
+			Constants.Tracer.TraceEvent (TraceEventType.Verbose, 0, Strings.VsClient.RemoteEnvVars (string.Join (Environment.NewLine,
+				remoteVars.Select (x => "    " + x[0] + "=" + x[1]))));
+
 			return true;
 		}
 
@@ -174,7 +179,7 @@ namespace Xunit
 				var sleep = settings.RetrySleepInterval;
 				var retries = 0;
 				var started = false;
-				while (retries++ < settings.ProcessStartRetries && !(started = Start ())) {
+				while (retries++ <= settings.ProcessStartRetries && !(started = Start ())) {
 					Stop ();
 					Thread.Sleep (sleep);
 					sleep = sleep * retries;
@@ -225,6 +230,15 @@ namespace Xunit
 			// Propagate profiling values to support OpenCover or any third party profiler
 			// already attached to the current process.
 			PropagateProfilingVariables (info);
+
+			Constants.Tracer.TraceEvent (TraceEventType.Verbose, 0, Strings.VsClient.RunnerEnvVars (string.Join (Environment.NewLine, Environment
+				.GetEnvironmentVariables ()
+				.OfType<DictionaryEntry> ()
+				.OrderBy(x => (string)x.Key)
+				.Where (x =>
+					!((string)x.Key).Equals ("path", StringComparison.OrdinalIgnoreCase) &&
+					!((string)x.Key).Equals ("pathbackup", StringComparison.OrdinalIgnoreCase))
+				.Select (x => "    " + x.Key + "=" + x.Value))));
 
 			Process = Process.Start (info);
 
@@ -290,11 +304,16 @@ namespace Xunit
 
 		void PropagateProfilingVariables (ProcessStartInfo info)
 		{
-			foreach (var envVar in Process.GetCurrentProcess ().StartInfo
-				.EnvironmentVariables
+			var allVars = Environment.GetEnvironmentVariables()
 				.OfType<DictionaryEntry> ()
 				.Select (x => new KeyValuePair<string, string> ((string)x.Key, (string)x.Value))
-				.Where (x => x.Key.StartsWith ("Cor_") || x.Key.StartsWith ("CorClr_") || x.Key.StartsWith ("CoreClr_") || x.Key.StartsWith ("OpenCover_"))
+				.ToList ();
+
+			foreach (var envVar in allVars
+				.Where (x => x.Key.StartsWith ("Cor_", StringComparison.OrdinalIgnoreCase) ||
+					x.Key.StartsWith ("CorClr_", StringComparison.OrdinalIgnoreCase) ||
+					x.Key.StartsWith ("CoreClr_", StringComparison.OrdinalIgnoreCase) ||
+					x.Key.StartsWith ("OpenCover_", StringComparison.OrdinalIgnoreCase))
 				.Where (x => !info.EnvironmentVariables.ContainsKey (x.Key))) {
 				info.EnvironmentVariables.Add (envVar.Key, envVar.Value);
 			}

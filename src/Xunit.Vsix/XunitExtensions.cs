@@ -78,7 +78,7 @@ namespace Xunit
 
 		public static T GetComputedArgument<T>(this ITestMethod testMethod, IAttributeInfo factAttribute, string argumentName)
 		{
-			var value = factAttribute == null ? default(T) : GetNamedArgument<T>(factAttribute, argumentName);
+			var value = factAttribute == null ? default(T) : GetInitializedArgument<T>(factAttribute, argumentName);
 			if (!Object.Equals (value, default (T)))
 				return value;
 
@@ -88,7 +88,7 @@ namespace Xunit
 			while (testClass != null && testClass.Name != typeof (object).FullName) {
 				vsixAttr = testClass.GetCustomAttributes (typeof (IVsixAttribute)).FirstOrDefault ();
 				if (vsixAttr != null) {
-					value = GetNamedArgument<T> (vsixAttr, argumentName);
+					value = GetInitializedArgument<T> (vsixAttr, argumentName);
 
 					if (!Object.Equals (value, default (T)))
 						return value;
@@ -99,7 +99,7 @@ namespace Xunit
 			// Finally assembly level.
 			vsixAttr = testMethod.TestClass.Class.Assembly.GetCustomAttributes (typeof (IVsixAttribute)).FirstOrDefault ();
 			if (vsixAttr != null) {
-				value = GetNamedArgument<T> (vsixAttr, argumentName);
+				value = GetInitializedArgument<T> (vsixAttr, argumentName);
 
 				if (!Object.Equals (value, default (T)))
 					return value;
@@ -108,15 +108,25 @@ namespace Xunit
 			return default (T);
 		}
 
-		private static T GetNamedArgument<T>(IAttributeInfo attribute, string argumentOrProperty)
+		/// <summary>
+		/// Gets an explicitly initialized attribute argument, using named argument
+		/// syntax for attributes (not constructor arguments). Behaves like you
+		/// would expect <see cref="IAttributeInfo.GetNamedArgument{TValue}(string)"/>
+		/// to behave.
+		/// </summary>
+		public static T GetInitializedArgument<T>(this IAttributeInfo attribute, string argumentName)
 		{
 			var reflected = attribute as ReflectionAttributeInfo;
 			if (reflected == null)
 				throw new NotSupportedException ("Non reflection-based attribute information is not supported.");
 
-			var argument = reflected.AttributeData.NamedArguments.FirstOrDefault (x => x.MemberName == argumentOrProperty);
-			if (argument == null)
+			if (!reflected.AttributeData.NamedArguments.Any (x => x.MemberName == argumentName))
 				return default (T);
+
+			var argument = reflected.AttributeData.NamedArguments.First (x => x.MemberName == argumentName);
+
+			if (argument.TypedValue.ArgumentType.IsEnum)
+				return (T)Enum.ToObject (argument.TypedValue.ArgumentType, argument.TypedValue.Value);
 
 			return (T)argument.TypedValue.Value;
 		}

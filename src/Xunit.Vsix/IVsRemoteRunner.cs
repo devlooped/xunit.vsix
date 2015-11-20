@@ -6,9 +6,11 @@ namespace Xunit
 {
 	interface IVsRemoteRunner : IDisposable
 	{
-		void Ping ();
-
 		void AddListener (TraceListener listener);
+
+		string[][] GetEnvironment ();
+
+		void Ping ();
 
 		VsixRunSummary Run (VsixTestCase testCase, IMessageBus messageBus);
 	}

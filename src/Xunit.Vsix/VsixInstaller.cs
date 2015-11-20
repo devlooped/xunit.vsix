@@ -37,6 +37,8 @@ namespace Xunit
 			// Touch file so that configuration is refreshed.
 			var pkgFile = Directory.EnumerateFiles(extensionsPath, "xunit.vsix.pkgdef", SearchOption.AllDirectories).FirstOrDefault();
 			if (!File.Exists (pkgFile)) {
+				Constants.Tracer.TraceInformation (Strings.VsixInstaller.InstallingExtension ("xunit.vsix.pkgdef", extensionsPath));
+
 				var outDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 				Directory.CreateDirectory (outDir);
 				try {
@@ -58,7 +60,7 @@ namespace Xunit
 							}
 						}
 						Install (vsixFile, devEnvDir, visualStudioVersion, rootSuffix);
-                    } finally {
+					} finally {
 						try {
 							File.Delete (vsixFile);
 						} catch (IOException) { }
@@ -110,6 +112,8 @@ namespace Xunit
 
 			dynamic service = Activator.CreateInstance(extensionManagerService, settings);
 			dynamic reason = service.Install (extension, false);
+
+			Constants.Tracer.TraceInformation (Strings.VsixInstaller.InstalledExtension ((string)extension.Header.Identifier, visualStudioVersion + rootSuffix));
 		}
 
 		const string PkgTemplate = @"[$RootKey$\BindingPaths\{FFFFFFFF-EEEE-DDDD-CCCC-BBBBBBAAAAAA}]

@@ -18,11 +18,11 @@ namespace Xunit
 				Settings = new VsixRunnerSettings ();
 			else
 				Settings = new VsixRunnerSettings (
-					settingsAttribute.GetNamedArgument<int?> (nameof (VsixRunnerSettings.DebuggerAttachRetries)),
-					settingsAttribute.GetNamedArgument<int?> (nameof (VsixRunnerSettings.RemoteConnectionRetries)),
-					settingsAttribute.GetNamedArgument<int?> (nameof (VsixRunnerSettings.ProcessStartRetries)),
-					settingsAttribute.GetNamedArgument<int?> (nameof (VsixRunnerSettings.RetrySleepInterval)),
-					settingsAttribute.GetNamedArgument<int?> (nameof (VsixRunnerSettings.StartupTimeout)));
+					settingsAttribute.GetInitializedArgument<int?> (nameof (VsixRunnerSettings.DebuggerAttachRetries)),
+					settingsAttribute.GetInitializedArgument<int?> (nameof (VsixRunnerSettings.RemoteConnectionRetries)),
+					settingsAttribute.GetInitializedArgument<int?> (nameof (VsixRunnerSettings.ProcessStartRetries)),
+					settingsAttribute.GetInitializedArgument<int?> (nameof (VsixRunnerSettings.RetrySleepInterval)),
+					settingsAttribute.GetInitializedArgument<int?> (nameof (VsixRunnerSettings.StartupTimeout)));
 		}
 
 		public string VisualStudioVersion { get; private set; }

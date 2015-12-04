@@ -208,8 +208,9 @@ namespace Xunit
 				// We don't want to run the discovery again over the test method,
 				// generate new test cases and so on, since we already have received a single test case to run.
 				// Also, we want the test case to be run in the UI thread, which is what you typically want.
-				return await Application.Current.Dispatcher.InvokeAsync (() =>
-					new SyncTestCaseRunner (
+
+				var result = await Application.Current.Dispatcher.InvokeAsync (async () =>
+					await new SyncTestCaseRunner (
 							testCases.Single (),
 							testCases.Single ().DisplayName,
 							testCases.Single ().SkipReason,
@@ -217,8 +218,9 @@ namespace Xunit
 							testCases.Single ().TestMethodArguments,
 							MessageBus,
 							Aggregator, new CancellationTokenSource ())
-						.RunAsync ()
-						.Result, DispatcherPriority.Background, cancellation);
+						.RunAsync (), DispatcherPriority.Background, cancellation);
+
+				return await result;
 			}
 
 			class SyncTestCaseRunner : XunitTestCaseRunner

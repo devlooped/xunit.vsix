@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Windows;
+using System.Windows.Threading;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
@@ -25,7 +26,16 @@ namespace Xunit
 			item = manager.GetHierarchyItem (GlobalServices.GetService<SVsSolution, IVsHierarchy>(), (uint)VSConstants.VSITEMID.Root);
 		}
 
-		[VsixFact(VisualStudioVersion.Current, RootSuffix = "Exp")]
+		[VsixFact (VisualStudioVersion.Current, RootSuffix = "Exp")]
+		public async void when_executing_then_runs_on_UI_thread ()
+		{
+			var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+			var uiThreadId = await Application.Current.Dispatcher.InvokeAsync (() => Thread.CurrentThread.ManagedThreadId);
+
+			Assert.Equal (currentThreadId, uiThreadId);
+		}
+
+		[VsixFact (VisualStudioVersion.Current, RootSuffix = "Exp")]
 		public void when_retrieving_solution_then_succeeds ()
 		{
 			Trace.WriteLine ("Hello world!");

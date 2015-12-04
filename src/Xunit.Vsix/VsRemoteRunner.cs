@@ -202,13 +202,24 @@ namespace Xunit
 			{
 				var vsixTest = testCases.OfType<VsixTestCase>().Single();
 				var cancellation = Debugger.IsAttached ?
-					new CancellationTokenSource(TimeSpan.FromSeconds(vsixTest.TimeoutSeconds)).Token :
-					CancellationToken.None;
+					new CancellationTokenSource(TimeSpan.FromSeconds(vsixTest.TimeoutSeconds)) :
+					new CancellationTokenSource();
 
 				// We don't want to run the discovery again over the test method,
 				// generate new test cases and so on, since we already have received a single test case to run.
-				// Also, we want the test case to be run in the UI thread, which is what you typically want.
 
+				if (!vsixTest.RunOnUIThread.GetValueOrDefault())
+					return await new XunitTestCaseRunner (
+								testCases.Single (),
+								testCases.Single ().DisplayName,
+								testCases.Single ().SkipReason,
+								constructorArguments,
+								testCases.Single ().TestMethodArguments,
+								MessageBus,
+								Aggregator, cancellation)
+							.RunAsync ();
+
+				// If the UI thread was requested, switch to the main dispatcher.
 				var result = await Application.Current.Dispatcher.InvokeAsync (async () =>
 					await new SyncTestCaseRunner (
 							testCases.Single (),
@@ -218,7 +229,7 @@ namespace Xunit
 							testCases.Single ().TestMethodArguments,
 							MessageBus,
 							Aggregator, new CancellationTokenSource ())
-						.RunAsync (), DispatcherPriority.Background, cancellation);
+						.RunAsync (), DispatcherPriority.Background, cancellation.Token);
 
 				return await result;
 			}

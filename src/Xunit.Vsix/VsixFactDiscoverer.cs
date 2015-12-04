@@ -34,7 +34,7 @@ namespace Xunit
 
 				testCases.AddRange (vsix.VisualStudioVersions
 					.Where (version => VsVersions.InstalledVersions.Contains (version))
-					.Select (version => new VsixTestCase (messageSink, defaultMethodDisplay, testMethod, version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure)));
+					.Select (version => new VsixTestCase (messageSink, defaultMethodDisplay, testMethod, version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread)));
 
 				return testCases;
 			}

@@ -13,7 +13,7 @@ namespace Xunit
 		public VsixTestCase () { }
 
 		public VsixTestCase (IMessageSink messageSink, TestMethodDisplay defaultMethodDisplay, ITestMethod testMethod,
-			string vsVersion, string rootSuffix, bool? newIdeInstance, int timeoutSeconds, bool? recycleOnFailure, object[] testMethodArguments = null)
+			string vsVersion, string rootSuffix, bool? newIdeInstance, int timeoutSeconds, bool? recycleOnFailure, bool? runOnUIThread, object[] testMethodArguments = null)
 			: base (messageSink, defaultMethodDisplay, testMethod, testMethodArguments)
 		{
 			VisualStudioVersion = vsVersion;
@@ -21,6 +21,7 @@ namespace Xunit
 			NewIdeInstance = newIdeInstance;
 			TimeoutSeconds = timeoutSeconds;
 			RecycleOnFailure = recycleOnFailure;
+			RunOnUIThread = runOnUIThread;
 		}
 
 		public string VisualStudioVersion { get; private set; }
@@ -32,6 +33,8 @@ namespace Xunit
 		public int TimeoutSeconds { get; private set; }
 
 		public bool? RecycleOnFailure { get; private set; }
+
+		public bool? RunOnUIThread { get; private set; }
 
 		protected override void Initialize ()
 		{
@@ -61,6 +64,7 @@ namespace Xunit
 			data.AddValue (nameof(IVsixAttribute.NewIdeInstance), NewIdeInstance);
 			data.AddValue (nameof(IVsixAttribute.TimeoutSeconds), TimeoutSeconds);
 			data.AddValue (nameof(IVsixAttribute.RecycleOnFailure), RecycleOnFailure);
+			data.AddValue (nameof (IVsixAttribute.RunOnUIThread), RunOnUIThread);
 		}
 
 		/// <inheritdoc/>
@@ -72,6 +76,7 @@ namespace Xunit
 			NewIdeInstance = data.GetValue<bool?> (nameof(IVsixAttribute.NewIdeInstance));
 			TimeoutSeconds = data.GetValue<int> (nameof(IVsixAttribute.TimeoutSeconds));
 			RecycleOnFailure = data.GetValue<bool?> (nameof(IVsixAttribute.RecycleOnFailure));
+			RunOnUIThread = data.GetValue<bool?> (nameof (IVsixAttribute.RunOnUIThread));
 		}
 	}
 }

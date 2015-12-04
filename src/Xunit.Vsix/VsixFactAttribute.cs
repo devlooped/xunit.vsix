@@ -76,5 +76,11 @@ namespace Xunit
 		/// test. Defaults to <see langword="false">false</see>.
 		/// </summary>
 		public bool RecycleOnFailure { get; set; }
+
+		/// <summary>
+		/// Whether to run the tests in the UI thread.
+		/// Defaults to <see langword="false">false</see>.
+		/// </summary>
+		public bool RunOnUIThread { get; set; }
 	}
 }

@@ -26,13 +26,22 @@ namespace Xunit
 			item = manager.GetHierarchyItem (GlobalServices.GetService<SVsSolution, IVsHierarchy>(), (uint)VSConstants.VSITEMID.Root);
 		}
 
-		[VsixFact (VisualStudioVersion.Current, RootSuffix = "Exp")]
-		public async void when_executing_then_runs_on_UI_thread ()
+		[VsixFact (VisualStudioVersion.Current, RootSuffix = "Exp", RunOnUIThread = true)]
+		public async void when_requesting_ui_thread_then_runs_on_UI_thread ()
 		{
 			var currentThreadId = Thread.CurrentThread.ManagedThreadId;
 			var uiThreadId = await Application.Current.Dispatcher.InvokeAsync (() => Thread.CurrentThread.ManagedThreadId);
 
 			Assert.Equal (currentThreadId, uiThreadId);
+		}
+
+		[VsixFact (VisualStudioVersion.Current, RootSuffix = "Exp")]
+		public async void when_executing_then_does_not_run_on_UI_thread ()
+		{
+			var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+			var uiThreadId = await Application.Current.Dispatcher.InvokeAsync (() => Thread.CurrentThread.ManagedThreadId);
+
+			Assert.NotEqual (currentThreadId, uiThreadId);
 		}
 
 		[VsixFact (VisualStudioVersion.Current, RootSuffix = "Exp")]

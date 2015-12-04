@@ -46,5 +46,11 @@
 		/// test. Defaults to <see langword="false">false</see>.
 		/// </summary>
 		bool RecycleOnFailure { get; }
+
+		/// <summary>
+		/// Whether to run the tests in the UI thread.
+		/// Defaults to <see langword="false">false</see>.
+		/// </summary>
+		bool RunOnUIThread { get; }
 	}
 }

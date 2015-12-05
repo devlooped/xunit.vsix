@@ -85,7 +85,7 @@ namespace Xunit
 		public override void Dispose ()
 		{
 			base.Dispose ();
-			foreach (var disposable in disposables) {
+			foreach (var disposable in disposables.ToArray()) {
 				try {
 					disposable.Dispose ();
 				} catch  {  }

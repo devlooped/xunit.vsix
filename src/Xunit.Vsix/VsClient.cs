@@ -56,14 +56,28 @@ namespace Xunit
 		{
 			// We don't apply retry behavior when a debugger is attached, since that
 			// typically means the developer is actually debugging a failing test.
-			if (Debugger.IsAttached || vsixTest.RecycleOnFailure == false) {
+			if (Debugger.IsAttached) {
 				return await RunAsyncCore (vsixTest, messageBus, aggregator);
 			}
 
 			var bufferBus = new BufferingMessageBus();
 			var summary = await RunAsyncCore (vsixTest, bufferBus, aggregator);
 
-			if (summary.Failed != 0) {
+			// Special case for MEF cache corruption, clear cache and restart the test.
+			if (summary.Failed != 0 && aggregator.HasExceptions &&
+				aggregator.ToException().GetType().FullName == "Microsoft.VisualStudio.ExtensibilityHosting.InvalidMEFCacheException") {
+				Recycle ();
+				try {
+					var path = Environment.ExpandEnvironmentVariables(@"%LocalAppData%\Microsoft\VisualStudio");
+					path = Path.Combine (path, visualStudioVersion + rootSuffix, "ComponentModelCache");
+					if (Directory.Exists (path))
+						Directory.Delete (path, true);
+				} catch (IOException) {
+					tracer.TraceEvent (TraceEventType.Warning, 0, "Failed to clear MEF cache after a failed test caused by an InvalidMEFCacheException.");
+				}
+			}
+
+			if (summary.Failed != 0 && vsixTest.RecycleOnFailure == true) {
 				Recycle ();
 				aggregator.Clear ();
 				summary = await RunAsyncCore (vsixTest, messageBus, aggregator);
@@ -227,7 +241,7 @@ namespace Xunit
 			Constants.Tracer.TraceEvent (TraceEventType.Verbose, 0, Strings.VsClient.RunnerEnvVars (string.Join (Environment.NewLine, Environment
 				.GetEnvironmentVariables ()
 				.OfType<DictionaryEntry> ()
-				.OrderBy(x => (string)x.Key)
+				.OrderBy (x => (string)x.Key)
 				.Where (x =>
 					!((string)x.Key).Equals ("path", StringComparison.OrdinalIgnoreCase) &&
 					!((string)x.Key).Equals ("pathbackup", StringComparison.OrdinalIgnoreCase))

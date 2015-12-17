@@ -56,17 +56,23 @@ namespace Xunit
 		{
 			// We don't apply retry behavior when a debugger is attached, since that
 			// typically means the developer is actually debugging a failing test.
+#if !DEBUG
 			if (Debugger.IsAttached) {
 				return await RunAsyncCore (vsixTest, messageBus, aggregator);
 			}
+#endif
 
-			var bufferBus = new BufferingMessageBus();
+			var bufferBus = new InterceptingMessageBus();
 			var summary = await RunAsyncCore (vsixTest, bufferBus, aggregator);
 
+			var shouldRecycle = vsixTest.RecycleOnFailure.GetValueOrDefault();
+
 			// Special case for MEF cache corruption, clear cache and restart the test.
-			if (summary.Failed != 0 && aggregator.HasExceptions &&
-				aggregator.ToException().GetType().FullName == "Microsoft.VisualStudio.ExtensibilityHosting.InvalidMEFCacheException") {
-				Recycle ();
+			if (summary.Failed != 0 && (
+				(aggregator.HasExceptions && aggregator.ToException().GetType().FullName == "Microsoft.VisualStudio.ExtensibilityHosting.InvalidMEFCacheException") ||
+				(bufferBus.Messages.OfType<IFailureInformation>().Where(fail => fail.ExceptionTypes.Any(type => type == "Microsoft.VisualStudio.ExtensibilityHosting.InvalidMEFCacheException")).Any())
+				)) {
+				shouldRecycle = true;
 				try {
 					var path = Environment.ExpandEnvironmentVariables(@"%LocalAppData%\Microsoft\VisualStudio");
 					path = Path.Combine (path, visualStudioVersion + rootSuffix, "ComponentModelCache");
@@ -77,13 +83,15 @@ namespace Xunit
 				}
 			}
 
-			if (summary.Failed != 0 && vsixTest.RecycleOnFailure == true) {
+			if (summary.Failed != 0 && shouldRecycle) {
 				Recycle ();
 				aggregator.Clear ();
 				summary = await RunAsyncCore (vsixTest, messageBus, aggregator);
 			} else {
 				// Dispatch messages from the first run to actual bus.
-				bufferBus.messages.ForEach (msg => messageBus.QueueMessage (msg));
+				foreach (var msg in bufferBus.Messages) {
+					messageBus.QueueMessage (msg);
+				}
 			}
 
 			return summary;
@@ -98,7 +106,6 @@ namespace Xunit
 			}
 
 			var xunitTest = new XunitTest (testCase, testCase.DisplayName);
-			//messageBus.QueueMessage (new DiagnosticMessage ("Running {0}", testCase.DisplayName));
 
 			try {
 				var remoteBus = remoteBuses.GetOrAdd(messageBus, bus => {
@@ -442,19 +449,6 @@ namespace Xunit
 			}
 		}
 
-		class BufferingMessageBus : IMessageBus
-		{
-			public List<IMessageSinkMessage> messages = new List<IMessageSinkMessage>();
-
-			public bool QueueMessage (IMessageSinkMessage message)
-			{
-				messages.Add (message);
-				return true;
-			}
-
-			public void Dispose () { }
-		}
-
 		class TraceOutputMessageBus : LongLivedMarshalByRefObject, IMessageBus
 		{
 			IMessageBus innerBus;
@@ -476,10 +470,14 @@ namespace Xunit
 			public bool QueueMessage (IMessageSinkMessage message)
 			{
 				var resultMessage = message as ITestResultMessage;
-				if (resultMessage != null) {
-					Trace.WriteLine (resultMessage.Output);
-					Debugger.Log (0, "", resultMessage.Output);
-					Console.WriteLine (resultMessage.Output);
+				var traceMessage = message as TraceOutputMessage;
+
+				var output = resultMessage?.Output ?? traceMessage?.Message;
+
+				if (!string.IsNullOrEmpty(output)) {
+					Trace.WriteLine (output);
+					Debugger.Log (0, "", output);
+					Console.WriteLine (output);
 				}
 
 				return innerBus.QueueMessage (message);

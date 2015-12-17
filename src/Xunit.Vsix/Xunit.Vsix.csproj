@@ -141,6 +141,7 @@
     <Compile Include="ErrorHandler.cs" />
     <Compile Include="ExceptionExtensions.cs" />
     <Compile Include="IAssemblyFixture.cs" />
+    <Compile Include="InterceptingMessageBus.cs" />
     <Compile Include="IVsClient.cs" />
     <Compile Include="IVsRemoteRunner.cs" />
     <Compile Include="IVsixAttribute.cs" />
@@ -164,6 +165,7 @@
     <Compile Include="SerializationHelper.cs" />
     <Compile Include="ServiceProvider.cs" />
     <Compile Include="TaskExtensions.cs" />
+    <Compile Include="TraceOutputMessage.cs" />
     <Compile Include="VisualStudioVersion.cs" />
     <Compile Include="VsClient.cs" />
     <Compile Include="VsixInstaller.cs" />

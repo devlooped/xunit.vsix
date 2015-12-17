@@ -150,6 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="MefExceptionRecycles.cs" />
     <Compile Include="Misc.cs" />
     <Compile Include="SolutionHierarchyFixture.cs" />
     <Compile Include="TestOutputTraceListener.cs" />

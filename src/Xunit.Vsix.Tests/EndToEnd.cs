@@ -24,6 +24,7 @@ namespace Xunit
 			var components = GlobalServices.GetService<SComponentModel, IComponentModel>();
 			var manager = components.GetService<IVsHierarchyItemManager>();
 			item = manager.GetHierarchyItem (GlobalServices.GetService<SVsSolution, IVsHierarchy>(), (uint)VSConstants.VSITEMID.Root);
+			Trace.WriteLine ("SolutionTests Created");
 		}
 
 		[VsixFact (VisualStudioVersion.Current, RootSuffix = "Exp", RunOnUIThread = true)]

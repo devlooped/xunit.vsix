@@ -368,7 +368,8 @@ namespace Xunit
 					.Where (line =>
 						!line.StartsWith ("Web method ", StringComparison.OrdinalIgnoreCase) &&
 						!line.StartsWith ("Resolving assembly ", StringComparison.OrdinalIgnoreCase) &&
-						!line.StartsWith ("Entering ", StringComparison.OrdinalIgnoreCase)
+						!line.StartsWith ("Entering ", StringComparison.OrdinalIgnoreCase) &&
+						!line.StartsWith ("devenv.exe ", StringComparison.OrdinalIgnoreCase)
 					));
 			}
 		}

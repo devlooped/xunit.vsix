@@ -322,7 +322,7 @@ namespace Xunit
 			{
 				// If anything remains in the buffer, send it as a diagnostics message.
 				listener.Flush ();
-				var output = buffer.ToString();
+				string output = GetActualOutput ();
 
 				if (output.Length > 0)
 					innerBus.QueueMessage (new TraceOutputMessage (output));
@@ -334,9 +334,7 @@ namespace Xunit
 			public bool QueueMessage (IMessageSinkMessage message)
 			{
 				listener.Flush ();
-				var output = string.Join(Environment.NewLine,
-					buffer.ToString().Split(new [] { Environment.NewLine }, StringSplitOptions.None)
-					.Where(line => !line.StartsWith("Web method ")));
+				var output = GetActualOutput();
 
 				// Inject Trace.WriteLine calls that might have happened as the test output.
 				if (message is ITestResultMessage && !string.IsNullOrEmpty (output)) {
@@ -361,6 +359,17 @@ namespace Xunit
 					return innerBus.QueueMessage (message);
 
 				return true;
+			}
+
+			string GetActualOutput ()
+			{
+				return string.Join (Environment.NewLine,
+					buffer.ToString ().Split (new[] { Environment.NewLine }, StringSplitOptions.None)
+					.Where (line =>
+						!line.StartsWith ("Web method ", StringComparison.OrdinalIgnoreCase) &&
+						!line.StartsWith ("Resolving assembly ", StringComparison.OrdinalIgnoreCase) &&
+						!line.StartsWith ("Entering ", StringComparison.OrdinalIgnoreCase)
+					));
 			}
 		}
 	}

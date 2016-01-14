@@ -11,6 +11,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using Xunit.Abstractions;
@@ -24,6 +25,7 @@ namespace Xunit
 		static readonly TraceSource tracer = Constants.Tracer;
 
 		bool initializedExtension;
+		bool detectedFirstRun;
 		string visualStudioVersion;
 		string pipeName;
 		string rootSuffix;
@@ -257,20 +259,24 @@ namespace Xunit
 			Process = Process.Start (info);
 
 			// This forces us to wait until VS is fully started.
-			var dte = RunningObjects.GetDTE (visualStudioVersion, Process.Id, TimeSpan.FromMinutes (1));
+			var dte = RunningObjects.GetDTE (visualStudioVersion, Process.Id, TimeSpan.FromSeconds (settings.StartupTimeout));
 			if (dte == null)
 				return false;
 
 			var services = new Microsoft.VisualStudio.Shell.ServiceProvider ((Microsoft.VisualStudio.OLE.Interop.IServiceProvider)dte);
 			IVsShell shell;
 			while ((shell = (IVsShell)services.GetService (typeof (SVsShell))) == null) {
-				Thread.Sleep (100);
+				Thread.Sleep (settings.RetrySleepInterval);
 			}
 
 			object zombie;
 			while ((int?)(zombie = shell.GetProperty ((int)__VSSPROPID.VSSPROPID_Zombie, out zombie)) != 0) {
-				Thread.Sleep (100);
+				Thread.Sleep (settings.RetrySleepInterval);
 			}
+
+			// Retrieve the component model service, which could also now take time depending on new
+			// extensions being installed or updated before the first launch.
+			var components = services.GetService<SComponentModel, object> ();
 
 			if (Debugger.IsAttached) {
 				// When attached via TD.NET, there will be an environment variable named DTE_MainWindow=2296172
@@ -341,37 +347,6 @@ namespace Xunit
 			VsixInstaller.Initialize (Path.GetDirectoryName (devEnvPath), visualStudioVersion, rootSuffix);
 
 			initializedExtension = true;
-		}
-
-		/// <summary>
-		/// If the given VS vesion + hive hasn't been run ever before, we need
-		/// to do it once to give VS a chance to create the _Config registry
-		/// key populated from available extensions.
-		/// </summary>
-		void FirstRun ()
-		{
-			var process = new Process {
-				StartInfo = {
-					FileName = devEnvPath,
-					Arguments = string.IsNullOrEmpty (rootSuffix) ? "" : "/RootSuffix " + rootSuffix,
-					UseShellExecute = false,
-					WorkingDirectory = Directory.GetCurrentDirectory (),
-				},
-			};
-
-			process.Start ();
-
-			// This forces us to wait until VS is fully started.
-			var dte = RunningObjects.GetDTE (visualStudioVersion, process.Id, TimeSpan.FromMinutes(2));
-			if (dte != null) {
-				dte.ExecuteCommand ("File.Exit");
-				var timeout = SpinWait.SpinUntil (() => process.HasExited, TimeSpan.FromSeconds(15));
-
-				if (timeout && !process.HasExited)
-					process.Kill ();
-			} else {
-				process.Kill ();
-			}
 		}
 
 		void Stop ()

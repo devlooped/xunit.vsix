@@ -45,7 +45,7 @@ namespace Xunit
 			Assert.NotEqual (currentThreadId, uiThreadId);
 		}
 
-		[VsixFact (VisualStudioVersion.Current, RootSuffix = "Exp")]
+		[VsixFact (VisualStudioVersion.Current, RootSuffix = "")]
 		public void when_retrieving_solution_then_succeeds ()
 		{
 			Trace.WriteLine ("Hello world!");

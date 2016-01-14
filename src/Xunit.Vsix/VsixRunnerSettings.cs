@@ -16,7 +16,7 @@ namespace Xunit
 			RemoteConnectionRetries = remoteConnectionRetries ?? 2;
 			ProcessStartRetries = processStartRetries ?? 1;
 			RetrySleepInterval = retrySleepInterval ?? 200;
-			StartupTimeout = startupTimeout ?? 120;
+			StartupTimeout = startupTimeout ?? 300;
 		}
 
 		/// <summary>

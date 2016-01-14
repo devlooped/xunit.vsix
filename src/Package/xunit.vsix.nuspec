@@ -30,6 +30,8 @@
 
 		<file src="..\Xunit.Vsix\**\*.cs" target="src\Xunit.Vsix" exclude="**\bin\**\*.*;**\obj\**\*.*" />
 		<file src="..\Xunit.Vsix\**\*.csproj" target="src\Xunit.Vsix" />
+		<file src="..\Xunit.Vsix\**\*.props" target="src\Xunit.Vsix" />
+		<file src="..\Xunit.Vsix\**\*.targets" target="src\Xunit.Vsix" />
 		<file src="..\Xunit.Vsix\**\*.nuspec" target="src\Xunit.Vsix" />
 		<file src="..\Xunit.Vsix\**\*.config" target="src\Xunit.Vsix" />
 		<file src="..\Xunit.Vsix\**\*.resx" target="src\Xunit.Vsix" />

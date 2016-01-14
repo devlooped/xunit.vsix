@@ -76,13 +76,14 @@ namespace Xunit
 				// Notify VS of the configuration changes
 				File.WriteAllText (Path.Combine (extensionsPath, "extensions.configurationchanged"), "");
 				using (var key = Registry.CurrentUser.OpenSubKey (@"Software\Microsoft\VisualStudio\" + visualStudioVersion + rootSuffix, true)) {
-					key.SetValue ("ConfigurationChanged", DateTime.UtcNow.ToFileTimeUtc (), RegistryValueKind.QWord);
+					var changedDate = DateTime.UtcNow.ToFileTimeUtc ();
+					key.SetValue ("ConfigurationChanged", changedDate, RegistryValueKind.QWord);
 				}
 			}
 		}
 
 		/// <summary>
-		/// Ensures the xunit.vsix is installed. Returns whether it was installed or not.
+		/// Ensures the xunit.vsix is installed.
 		/// </summary>
 		static void Install (string vsixFile, string devEnvDir, string visualStudioVersion, string rootSuffix)
 		{

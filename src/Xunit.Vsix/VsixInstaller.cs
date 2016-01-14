@@ -113,8 +113,6 @@ namespace Xunit
 
 			dynamic service = Activator.CreateInstance(extensionManagerService, settings);
 			dynamic reason = service.Install (extension, false);
-
-			Constants.Tracer.TraceInformation (Strings.VsixInstaller.InstalledExtension ((string)extension.Header.Identifier, visualStudioVersion + rootSuffix));
 		}
 
 		const string PkgTemplate = @"[$RootKey$\BindingPaths\{FFFFFFFF-EEEE-DDDD-CCCC-BBBBBBAAAAAA}]

@@ -25,10 +25,10 @@ namespace Xunit
 					settingsAttribute.GetInitializedArgument<int?> (nameof (VsixRunnerSettings.StartupTimeout)));
 		}
 
-		public string VisualStudioVersion { get; private set; }
+		public string VisualStudioVersion { get; }
 
-		public string RootSuffix { get; private set; }
+		public string RootSuffix { get; }
 
-		public VsixRunnerSettings Settings { get; private set; }
+		public VsixRunnerSettings Settings { get; }
 	}
 }

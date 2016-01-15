@@ -1,15 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<!-- When $(GenerateAssemblyVsixAttribute) == 'true', these attributes affect an 
+		 [assembly: Xunit.Vsix(...)] that is generated at build time. 
+		 
+		 This attribute provides assembly-level defaults that can be overriden by 
+		 specific test classes or even test methods. It's useful to avoid repetition 
+		 of those defaults across your entire test suite (i.e. if all your tests 
+		 require a minimum VS version of '11.0'.
+	-->
 
-  <PropertyGroup>
-    <!-- Specify 'All' to set the assembly-level default to use all installed VS versions. -->
-    <!-- Specify a semicolon-separated list for specific versions. -->
-    <!-- Default is current VS version being used to build -->
-    <VisualStudioVersions Condition=" '$(VisualStudioVersions)' == '' ">$(VisualStudioVersion)</VisualStudioVersions>
-    <!-- Allows customizing the assembly-level default value for the hive to use to run tests. Defaults to 'Exp' (VS experimental instance) -->
-    <RootSuffix Condition=" '$(RootSuffix)' == '' ">Exp</RootSuffix>
-    <!-- If you want to avoid generating the [assembly: Vsix(..)] attribute altogether, set this to false -->
-    <GenerateAssemblyVsixAttribute Condition=" '$(GenerateAssemblyVsixAttribute)' == '' ">true</GenerateAssemblyVsixAttribute>
-  </PropertyGroup>
+	<PropertyGroup>
+		<!-- Whether to generate assembly-level defaults from MSBuild properties. -->
+		<GenerateAssemblyVsixAttribute Condition=" '$(GenerateAssemblyVsixAttribute)' == '' ">true</GenerateAssemblyVsixAttribute>
+
+		<!-- Specify 'All' to set the assembly-level default to use all installed VS versions. -->
+		<!-- Specify a semicolon-separated list for specific versions, such as '11.0, 12.0' . -->
+		<!-- Default is current VS version being used to build -->
+		<VisualStudioVersions Condition=" '$(VisualStudioVersions)' == '' ">$(VisualStudioVersion)</VisualStudioVersions>
+
+		<!-- The following two values are useful in combination with All for $(VisualStudioVersion) -->
+		<!-- Optionally specify the defautl minimum version required by tests in this assembly -->
+		<MinimumVisualStudioVersion />
+		<!-- As well as the maximum version. -->
+		<MaximumVisualStudioVersion />
+
+		<!-- The root suffix for Visual Studio, like "Exp" (the default). Specify '.' (a dot) to explicitly choose the regular VS instance/hive. -->
+		<RootSuffix />
+
+		<!-- Whether to start a new instance of Visual Studio for each test run (defaults to false). -->
+		<NewIdeInstance />
+
+		<!-- Timeout in seconds for the test to complete its run, excluding the
+			 time that it takes to launch VS and set up the test run context (defaults to 60 seconds). -->
+		<TimeoutSeconds />
+
+		<!-- Whether to retry once in a clean Visual Studio instance a failing
+			 test. Defaults to false. -->
+		<RecycleOnFailure />
+
+		<!-- Whether to run the tests in the UI thread. Defaults to false. -->
+		<RunOnUIThread />
+	</PropertyGroup>
 
 </Project>

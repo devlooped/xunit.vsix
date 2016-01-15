@@ -61,13 +61,14 @@ namespace Xunit
 
 		/// <summary>
 		/// Whether to start a new instance of Visual Studio for each
-		/// test run.
+		/// test run. Default is false.
 		/// </summary>
 		public bool NewIdeInstance { get; set; }
 
 		/// <summary>
 		/// Timeout in seconds for the test to complete its run, excluding the
-		/// time that it takes to launch VS and set up the test run context.
+		/// time that it takes to launch VS and set up the test run context. 
+		/// Default is 60 seconds.
 		/// </summary>
 		public int TimeoutSeconds { get; set; }
 

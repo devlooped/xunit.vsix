@@ -55,7 +55,9 @@ namespace Xunit
 		public string[] VisualStudioVersions { get; private set; }
 
 		/// <summary>
-		/// The root suffix for Visual Studio, like "Exp" (the default).
+		/// The root suffix for Visual Studio, like "Exp" (the default). 
+		/// Specify an empty string or "." for the regular Visual Studio 
+		/// instance/hive.
 		/// </summary>
 		public string RootSuffix { get; set; }
 

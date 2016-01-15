@@ -25,7 +25,6 @@ namespace Xunit
 		static readonly TraceSource tracer = Constants.Tracer;
 
 		bool initializedExtension;
-		bool detectedFirstRun;
 		string visualStudioVersion;
 		string pipeName;
 		string rootSuffix;

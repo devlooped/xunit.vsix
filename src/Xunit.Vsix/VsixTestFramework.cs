@@ -73,6 +73,14 @@ namespace Xunit
 			IMessageSink innerSink;
 			TraceSource tracer;
 
+			static TracingMessageSink()
+			{
+#if DEBUG
+				if (File.Exists ("xunit.vsix.log"))
+					File.Delete ("xunit.vsix.log");
+#endif
+			}
+
 			public TracingMessageSink (IMessageSink innerSink, TraceSource tracer)
 			{
 				this.innerSink = innerSink;
@@ -84,6 +92,10 @@ namespace Xunit
 				var diagnostic = message as IDiagnosticMessage;
 				if (diagnostic != null)
 					tracer.TraceEvent (TraceEventType.Verbose, 0, diagnostic.Message);
+
+#if DEBUG
+				File.AppendAllText ("xunit.vsix.log", message.GetType ().FullName + Environment.NewLine);
+#endif
 
 				return innerSink.OnMessage (message);
 			}

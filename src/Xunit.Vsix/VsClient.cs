@@ -255,6 +255,12 @@ namespace Xunit
 					!((string)x.Key).Equals ("pathbackup", StringComparison.OrdinalIgnoreCase))
 				.Select (x => "    " + x.Key + "=" + x.Value))));
 
+			// Eat the standard output to prevent this from polluting AppVeyor or other CI systems 
+			// that capture processes standard output.
+			info.RedirectStandardOutput = true;
+			info.RedirectStandardInput = true;
+			info.RedirectStandardError = true;
+
 			Process = Process.Start (info);
 
 			// This forces us to wait until VS is fully started.

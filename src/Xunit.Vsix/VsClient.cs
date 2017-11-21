@@ -11,6 +11,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Threading;
 using System.Threading.Tasks;
+using Bootstrap;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
@@ -365,11 +366,11 @@ namespace Xunit
 				try {
 					var disposable = mbr as IDisposable;
 					if (disposable != null)
-						disposable.Dispose ();
+						disposable.Dispose();
 				} catch { }
 
 				try {
-					RemotingServices.Disconnect (mbr);
+					RemotingServices.Disconnect(mbr);
 				} catch { }
 			}
 

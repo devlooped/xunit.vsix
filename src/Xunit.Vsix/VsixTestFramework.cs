@@ -11,128 +11,145 @@ using Xunit.Properties;
 
 namespace Xunit
 {
-	class VsixTestFramework : XunitTestFramework
-	{
-		static TraceSource tracer = Constants.Tracer;
+    class VsixTestFramework : XunitTestFramework
+    {
+        static TraceSource tracer = Constants.Tracer;
 
-		public VsixTestFramework (IMessageSink messageSink) : base (new TracingMessageSink (messageSink, tracer))
-		{
-			tracer.Switch.Level = SourceLevels.Error;
-			Trace.AutoFlush = true;
-			AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
-			TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
-		}
+        public VsixTestFramework(IMessageSink messageSink) : base(new TracingMessageSink(messageSink, tracer))
+        {
+            tracer.Switch.Level = SourceLevels.Error;
+            Trace.AutoFlush = true;
+            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+            TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+        }
 
-		void OnUnobservedTaskException (object sender, UnobservedTaskExceptionEventArgs e)
-		{
-			tracer.TraceEvent (TraceEventType.Error, 0, e.Exception.Flatten ().InnerException.ToString ());
-			e.SetObserved ();
-		}
+        void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            tracer.TraceEvent(TraceEventType.Error, 0, e.Exception.Flatten().InnerException.ToString());
+            e.SetObserved();
+        }
 
-		void OnUnhandledException (object sender, UnhandledExceptionEventArgs e)
-		{
-			tracer.TraceEvent (TraceEventType.Error, 0, ((Exception)e.ExceptionObject).ToString ());
-		}
+        void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            tracer.TraceEvent(TraceEventType.Error, 0, ((Exception)e.ExceptionObject).ToString());
+        }
 
-		protected override ITestFrameworkDiscoverer CreateDiscoverer (IAssemblyInfo assemblyInfo)
-		{
-			SetupTracing (assemblyInfo);
+        protected override ITestFrameworkDiscoverer CreateDiscoverer(IAssemblyInfo assemblyInfo)
+        {
+            SetupTracing(assemblyInfo);
 
-			return new XunitTestFrameworkDiscoverer (assemblyInfo, SourceInformationProvider, DiagnosticMessageSink, null);
-		}
+            return new XunitTestFrameworkDiscoverer(assemblyInfo, SourceInformationProvider, DiagnosticMessageSink, null);
+        }
 
-		protected override ITestFrameworkExecutor CreateExecutor (AssemblyName assemblyName)
-		{
-			return new VsixTestFrameworkExecutor (assemblyName, SourceInformationProvider, DiagnosticMessageSink);
-		}
+        protected override ITestFrameworkExecutor CreateExecutor(AssemblyName assemblyName)
+        {
+            return new VsixTestFrameworkExecutor(assemblyName, SourceInformationProvider, DiagnosticMessageSink);
+        }
 
-		static void SetupTracing (IAssemblyInfo assemblyInfo)
-		{
-			var attr = assemblyInfo.GetCustomAttributes (typeof (VsixRunnerAttribute)).FirstOrDefault ();
-			tracer.Switch.Level = attr?
-				.GetInitializedArgument<SourceLevels?> (nameof (VsixRunnerAttribute.TraceLevel))
-				.GetValueOrDefault (SourceLevels.Error) ?? SourceLevels.Error;
+        static void SetupTracing(IAssemblyInfo assemblyInfo)
+        {
+            var attr = assemblyInfo.GetCustomAttributes(typeof(VsixRunnerAttribute)).FirstOrDefault();
+            tracer.Switch.Level = attr?
+                .GetInitializedArgument<SourceLevels?>(nameof(VsixRunnerAttribute.TraceLevel))
+                .GetValueOrDefault(SourceLevels.Error) ?? SourceLevels.Error;
 
-			var logFile = Path.ChangeExtension (assemblyInfo.AssemblyPath, ".log");
-			if (File.Exists (logFile)) {
-				try {
-					File.Delete (logFile);
-				} catch (IOException) {
-				}
-			}
+            var logFile = Path.ChangeExtension(assemblyInfo.AssemblyPath, ".log");
+            if (File.Exists(logFile))
+            {
+                try
+                {
+                    File.Delete(logFile);
+                }
+                catch (IOException)
+                {
+                }
+            }
 
-			if (!tracer.Listeners.OfType<TraceListener> ().Any (x => x.Name == assemblyInfo.Name)) {
-				var listener = new TextWriterTraceListener (logFile, assemblyInfo.Name);
-                tracer.Listeners.Add (listener);
-				Trace.Listeners.Add (listener);
-			}
-		}
+            if (!tracer.Listeners.OfType<TraceListener>().Any(x => x.Name == assemblyInfo.Name))
+            {
+                var listener = new TextWriterTraceListener(logFile, assemblyInfo.Name);
+                tracer.Listeners.Add(listener);
+                Trace.Listeners.Add(listener);
+            }
+        }
 
-		class TracingMessageSink : IMessageSink
-		{
-			IMessageSink innerSink;
-			TraceSource tracer;
+        class TracingMessageSink : IMessageSink
+        {
+            IMessageSink innerSink;
+            TraceSource tracer;
 
-			static TracingMessageSink()
-			{
+            static TracingMessageSink()
+            {
 #if DEBUG
-				if (File.Exists ("xunit.vsix.log"))
-					File.Delete ("xunit.vsix.log");
+                if (File.Exists("xunit.vsix.log"))
+                {
+                    try
+                    {
+                        File.Delete("xunit.vsix.log");
+                    }
+                    catch (IOException) { }
+                }
 #endif
-			}
+            }
 
-			public TracingMessageSink (IMessageSink innerSink, TraceSource tracer)
-			{
-				this.innerSink = innerSink;
-				this.tracer = tracer;
-			}
+            public TracingMessageSink(IMessageSink innerSink, TraceSource tracer)
+            {
+                this.innerSink = innerSink;
+                this.tracer = tracer;
+            }
 
-			public bool OnMessage (IMessageSinkMessage message)
-			{
-				var diagnostic = message as IDiagnosticMessage;
-				if (diagnostic != null)
-					tracer.TraceEvent (TraceEventType.Verbose, 0, diagnostic.Message);
+            public bool OnMessage(IMessageSinkMessage message)
+            {
+                var diagnostic = message as IDiagnosticMessage;
+                if (diagnostic != null)
+                    tracer.TraceEvent(TraceEventType.Verbose, 0, diagnostic.Message);
 
 #if DEBUG
-				File.AppendAllText ("xunit.vsix.log", message.GetType ().FullName + Environment.NewLine);
+                try
+                {
+                    File.AppendAllText("xunit.vsix.log", message.GetType().FullName + Environment.NewLine);
+                }
+                catch (IOException) { }
 #endif
 
-				return innerSink.OnMessage (message);
-			}
-		}
+                return innerSink.OnMessage(message);
+            }
+        }
 
-		class VsixTestFrameworkExecutor : XunitTestFrameworkExecutor
-		{
-			public VsixTestFrameworkExecutor (AssemblyName assemblyName,
-											  ISourceInformationProvider sourceInformationProvider,
-											  IMessageSink diagnosticMessageSink)
-				: base (assemblyName, sourceInformationProvider, diagnosticMessageSink)
-			{ }
+        class VsixTestFrameworkExecutor : XunitTestFrameworkExecutor
+        {
+            public VsixTestFrameworkExecutor(AssemblyName assemblyName,
+                                              ISourceInformationProvider sourceInformationProvider,
+                                              IMessageSink diagnosticMessageSink)
+                : base(assemblyName, sourceInformationProvider, diagnosticMessageSink)
+            { }
 
-			protected override async void RunTestCases (IEnumerable<IXunitTestCase> testCases, IMessageSink executionMessageSink, ITestFrameworkExecutionOptions executionOptions)
-			{
-				SetupTracing (TestAssembly.Assembly);
+            protected override async void RunTestCases(IEnumerable<IXunitTestCase> testCases, IMessageSink executionMessageSink, ITestFrameworkExecutionOptions executionOptions)
+            {
+                SetupTracing(TestAssembly.Assembly);
 
-				// Always run at least with one thread per VS version.
-				if (executionOptions.MaxParallelThreadsOrDefault () < VsVersions.InstalledVersions.Length && !Debugger.IsAttached) {
-					executionOptions.SetValue ("xunit.execution.MaxParallelThreads", VsVersions.InstalledVersions.Length);
-					Constants.Tracer.TraceEvent (TraceEventType.Verbose, 0, Strings.VsixTestFramework.SettingMaxThreads (VsVersions.InstalledVersions.Length));
-				}
-				// If debugger is attached, don't run multiple instances simultaneously since that makes debugging much harder.
-				if (Debugger.IsAttached) {
-					executionOptions.SetValue ("xunit.execution.MaxParallelThreads", 1);
-					Constants.Tracer.TraceEvent (TraceEventType.Verbose, 0, Strings.VsixTestFramework.DebugMaxThreads);
-				}
+                // Always run at least with one thread per VS version.
+                if (executionOptions.MaxParallelThreadsOrDefault() < VsVersions.InstalledVersions.Length && !Debugger.IsAttached)
+                {
+                    executionOptions.SetValue("xunit.execution.MaxParallelThreads", VsVersions.InstalledVersions.Length);
+                    Constants.Tracer.TraceEvent(TraceEventType.Verbose, 0, Strings.VsixTestFramework.SettingMaxThreads(VsVersions.InstalledVersions.Length));
+                }
+                // If debugger is attached, don't run multiple instances simultaneously since that makes debugging much harder.
+                if (Debugger.IsAttached)
+                {
+                    executionOptions.SetValue("xunit.execution.MaxParallelThreads", 1);
+                    Constants.Tracer.TraceEvent(TraceEventType.Verbose, 0, Strings.VsixTestFramework.DebugMaxThreads);
+                }
 
-				// This is the implementation of the base XunitTestFrameworkExecutor
-				using (var assemblyRunner = new VsixTestAssemblyRunner (TestAssembly, testCases, DiagnosticMessageSink, new TracingMessageSink (executionMessageSink, Constants.Tracer), executionOptions))
-					await assemblyRunner.RunAsync ();
+                // This is the implementation of the base XunitTestFrameworkExecutor
+                using (var assemblyRunner = new VsixTestAssemblyRunner(TestAssembly, testCases, DiagnosticMessageSink, new TracingMessageSink(executionMessageSink, Constants.Tracer), executionOptions))
+                    await assemblyRunner.RunAsync();
 
-				tracer.Flush ();
-			}
-		}
+                tracer.Flush();
+            }
+        }
 
-		/***********************************************
+        /***********************************************
 		 * Showcases how to change [Fact] execution
 		 * without even having to inherit the attribute
 		 * *********************************************
@@ -290,5 +307,5 @@ namespace Xunit
 				}
 		 */
 
-	}
+    }
 }

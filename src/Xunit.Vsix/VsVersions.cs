@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using Microsoft.Win32;
 using Xunit.Properties;
 
 namespace Xunit
@@ -14,12 +16,19 @@ namespace Xunit
 
 		static VsVersions ()
 		{
-			InstalledVersions = (from version in Enumerable.Range (10, 20)
-								// VSSDK100Install
-								 let varName = "VSSDK" + version + "0Install"
-								 where !string.IsNullOrEmpty (Environment.GetEnvironmentVariable (varName))
-								 select version + ".0")
-								.ToArray ();
+            using (var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\VisualStudio\SxS\VS7"))
+            {
+                InstalledVersions = key.GetValueNames()
+                    .Where(version => Directory.Exists(Path.Combine((string)key.GetValue(version), "VSSDK")))
+                    .ToArray();
+            }
+            
+			//InstalledVersions = (from version in Enumerable.Range (10, 20)
+			//					// VSSDK100Install
+			//					 let varName = "VSSDK" + version + "0Install"
+			//					 where !string.IsNullOrEmpty (Environment.GetEnvironmentVariable (varName))
+			//					 select version + ".0")
+			//					.ToArray ();
 
 
 			LatestVersion = InstalledVersions.LastOrDefault ();

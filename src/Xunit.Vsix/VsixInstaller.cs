@@ -125,7 +125,8 @@ namespace Xunit
     <Description xml:space='preserve'>Provides VSIX runtime testing support for xunit.</Description>
   </Metadata>
   <Installation InstalledByMsi='false'>
-    <InstallationTarget Id='Microsoft.VisualStudio.Pro' Version='11.0' />
+    <InstallationTarget Id='Microsoft.VisualStudio.Pro' Version='[11.0,12.0]' />
+    <InstallationTarget Id='Microsoft.VisualStudio.Community' Version='[14.0,)' />
   </Installation>
   <Dependencies>
   </Dependencies>

@@ -1,3 +1,0 @@
-LIBRARY	"xunit.vsx.bootstrap.dll"
-EXPORTS
-   MessageHookProc   @1

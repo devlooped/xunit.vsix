@@ -4,10 +4,10 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-	interface IVsClient : IDisposable
-	{
-		void Recycle ();
+    internal interface IVsClient : IDisposable
+    {
+        void Recycle();
 
-		Task<RunSummary> RunAsync (VsixTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator);
-	}
+        Task<RunSummary> RunAsync(VsixTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator);
+    }
 }

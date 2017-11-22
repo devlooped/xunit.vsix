@@ -14,6 +14,7 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #endregion
+
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace System.Dynamic
     /// and <see cref="AsDynamicReflection(Type)"/> as entry points.
     /// </summary>
     /// <nuget id="netfx-System.Dynamic.Reflection" />
-    static partial class DynamicReflection
+    internal static partial class DynamicReflection
     {
         /// <summary>
         /// Provides dynamic syntax for accessing the given object members.
@@ -71,21 +72,21 @@ namespace System.Dynamic
 
         private class DynamicReflectionObject : DynamicObject
         {
-            private static readonly BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public;
-            private static readonly MethodInfo castMethod = typeof(DynamicReflectionObject).GetMethod("Cast", BindingFlags.Static | BindingFlags.NonPublic);
-            private object target;
-            private Type targetType;
+            private static readonly BindingFlags s_flags = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public;
+            private static readonly MethodInfo s_castMethod = typeof(DynamicReflectionObject).GetMethod("Cast", BindingFlags.Static | BindingFlags.NonPublic);
+            private object _target;
+            private Type _targetType;
 
             public DynamicReflectionObject(object target)
             {
-                this.target = target;
-                this.targetType = target.GetType();
+                _target = target;
+                _targetType = target.GetType();
             }
 
             public DynamicReflectionObject(Type type)
             {
-                this.target = null;
-                this.targetType = type;
+                _target = null;
+                _targetType = type;
             }
 
             public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
@@ -98,16 +99,16 @@ namespace System.Dynamic
                     {
                         if (binder.Name == "ctor")
                         {
-                            var instance = this.target;
+                            var instance = _target;
                             if (instance == null)
-                                instance = FormatterServices.GetSafeUninitializedObject(this.targetType);
+                                instance = FormatterServices.GetSafeUninitializedObject(_targetType);
 
                             result = Invoke(method, instance, args);
                             result = instance.AsDynamicReflection();
                         }
                         else
                         {
-                            result = AsDynamicIfNecessary(Invoke(method, this.target, args));
+                            result = AsDynamicIfNecessary(Invoke(method, _target, args));
                         }
 
                         return true;
@@ -122,24 +123,24 @@ namespace System.Dynamic
             {
                 if (!base.TryGetMember(binder, out result))
                 {
-                    var field = targetType.GetField(binder.Name, flags);
-                    var baseType = targetType.BaseType;
+                    var field = _targetType.GetField(binder.Name, s_flags);
+                    var baseType = _targetType.BaseType;
                     while (field == null && baseType != null)
                     {
-                        field = baseType.GetField(binder.Name, flags);
+                        field = baseType.GetField(binder.Name, s_flags);
                         baseType = baseType.BaseType;
                     }
 
                     if (field != null)
                     {
-                        result = AsDynamicIfNecessary(field.GetValue(target));
+                        result = AsDynamicIfNecessary(field.GetValue(_target));
                         return true;
                     }
 
                     var getter = FindBestMatch(binder, "get_" + binder.Name, new object[0]);
                     if (getter != null)
                     {
-                        result = AsDynamicIfNecessary(getter.Invoke(this.target, null));
+                        result = AsDynamicIfNecessary(getter.Invoke(_target, null));
                         return true;
                     }
                 }
@@ -147,7 +148,7 @@ namespace System.Dynamic
                 // \o/ If nothing else works, and the member is "target", return our target.
                 if (binder.Name == "target")
                 {
-                    result = this.target;
+                    result = _target;
                     return true;
                 }
 
@@ -159,24 +160,24 @@ namespace System.Dynamic
             {
                 if (!base.TrySetMember(binder, value))
                 {
-                    var field = targetType.GetField(binder.Name, flags);
-                    var baseType = targetType.BaseType;
+                    var field = _targetType.GetField(binder.Name, s_flags);
+                    var baseType = _targetType.BaseType;
                     while (field == null && baseType != null)
                     {
-                        field = baseType.GetField(binder.Name, flags);
+                        field = baseType.GetField(binder.Name, s_flags);
                         baseType = baseType.BaseType;
                     }
 
                     if (field != null)
                     {
-                        field.SetValue(target, value);
+                        field.SetValue(_target, value);
                         return true;
                     }
 
                     var setter = FindBestMatch(binder, "set_" + binder.Name, new[] { value });
                     if (setter != null)
                     {
-                        setter.Invoke(this.target, new[] { value });
+                        setter.Invoke(_target, new[] { value });
                         return true;
                     }
                 }
@@ -191,7 +192,7 @@ namespace System.Dynamic
                     var indexer = FindBestMatch(binder, "get_Item", indexes);
                     if (indexer != null)
                     {
-                        result = AsDynamicIfNecessary(indexer.Invoke(this.target, indexes));
+                        result = AsDynamicIfNecessary(indexer.Invoke(_target, indexes));
                         return true;
                     }
                 }
@@ -208,7 +209,7 @@ namespace System.Dynamic
                     var indexer = FindBestMatch(binder, "set_Item", args);
                     if (indexer != null)
                     {
-                        indexer.Invoke(this.target, args);
+                        indexer.Invoke(_target, args);
                         return true;
                     }
                 }
@@ -220,12 +221,12 @@ namespace System.Dynamic
             {
                 try
                 {
-                    result = castMethod.MakeGenericMethod(binder.Type).Invoke(null, new[] { this.target });
+                    result = s_castMethod.MakeGenericMethod(binder.Type).Invoke(null, new[] { _target });
                     return true;
                 }
                 catch (Exception) { }
 
-                var convertible = this.target as IConvertible;
+                var convertible = _target as IConvertible;
                 if (convertible != null)
                 {
                     try
@@ -312,25 +313,25 @@ namespace System.Dynamic
                     genericTypeArgs.AddRange(args.OfType<TypeParameter>().Select(x => x.Type));
                 }
 
-                var method = FindBestMatch(binder, finalArgs, genericTypeArgs, this.targetType
-                    .GetMethods(flags)
+                var method = FindBestMatch(binder, finalArgs, genericTypeArgs, _targetType
+                    .GetMethods(s_flags)
                     .Where(x => x.Name == memberName && x.GetParameters().Length == finalArgs.Length)
                     .Select(x => new MethodInvocable(x)));
 
                 if (method == null)
                 {
                     // Fallback to explicitly implemented members.
-                    method = FindBestMatch(binder, finalArgs, genericTypeArgs, this.targetType
+                    method = FindBestMatch(binder, finalArgs, genericTypeArgs, _targetType
                         .GetInterfaces()
                         .SelectMany(
-                            iface => this.targetType
+                            iface => _targetType
                                 .GetInterfaceMap(iface)
                                 .TargetMethods.Select(x => new { Interface = iface, Method = x }))
                         .Where(x =>
                             x.Method.GetParameters().Length == finalArgs.Length &&
                             x.Method.Name.Replace(x.Interface.FullName.Replace('+', '.') + ".", "") == memberName)
                         .Select(x => (IInvocable)new MethodInvocable(x.Method))
-                        .Concat(this.targetType.GetConstructors(flags)
+                        .Concat(_targetType.GetConstructors(s_flags)
                             .Where(x => x.Name == memberName && x.GetParameters().Length == finalArgs.Length)
                             .Select(x => new ConstructorInvocable(x)))
                         .Distinct());
@@ -414,7 +415,7 @@ namespace System.Dynamic
                 if (arg is RefValue || arg is OutValue)
                     return arg.GetType().GetGenericArguments()[0].MakeByRefType();
                 if (arg is DynamicReflectionObject)
-                    return ((DynamicReflectionObject)arg).target.GetType();
+                    return ((DynamicReflectionObject)arg)._target.GetType();
 
                 return arg.GetType();
             }
@@ -454,51 +455,51 @@ namespace System.Dynamic
 
             private class MethodInvocable : IInvocable
             {
-                private MethodInfo method;
-                private Lazy<IList<ParameterInfo>> parameters;
+                private MethodInfo _method;
+                private Lazy<IList<ParameterInfo>> _parameters;
 
                 public MethodInvocable(MethodInfo method)
                 {
-                    this.method = method;
-                    this.parameters = new Lazy<IList<ParameterInfo>>(() => this.method.GetParameters());
+                    _method = method;
+                    _parameters = new Lazy<IList<ParameterInfo>>(() => _method.GetParameters());
                 }
 
                 public object Invoke(object obj, object[] parameters)
                 {
-                    return this.method.Invoke(obj, parameters);
+                    return _method.Invoke(obj, parameters);
                 }
 
                 public IList<ParameterInfo> Parameters
                 {
-                    get { return this.parameters.Value; }
+                    get { return _parameters.Value; }
                 }
 
-                public MethodInfo Method { get { return this.method; } }
+                public MethodInfo Method { get { return _method; } }
 
-                public bool IsGeneric { get { return this.method.IsGenericMethodDefinition; } }
+                public bool IsGeneric { get { return _method.IsGenericMethodDefinition; } }
 
-                public int GenericParameters { get { return this.method.GetGenericArguments().Length; } }
+                public int GenericParameters { get { return _method.GetGenericArguments().Length; } }
             }
 
             private class ConstructorInvocable : IInvocable
             {
-                private ConstructorInfo ctor;
-                private Lazy<IList<ParameterInfo>> parameters;
+                private ConstructorInfo _ctor;
+                private Lazy<IList<ParameterInfo>> _parameters;
 
                 public ConstructorInvocable(ConstructorInfo ctor)
                 {
-                    this.ctor = ctor;
-                    this.parameters = new Lazy<IList<ParameterInfo>>(() => this.ctor.GetParameters());
+                    _ctor = ctor;
+                    _parameters = new Lazy<IList<ParameterInfo>>(() => _ctor.GetParameters());
                 }
 
                 public object Invoke(object obj, object[] parameters)
                 {
-                    return this.ctor.Invoke(obj, parameters);
+                    return _ctor.Invoke(obj, parameters);
                 }
 
                 public IList<ParameterInfo> Parameters
                 {
-                    get { return this.parameters.Value; }
+                    get { return _parameters.Value; }
                 }
 
                 public bool IsGeneric { get { return false; } }

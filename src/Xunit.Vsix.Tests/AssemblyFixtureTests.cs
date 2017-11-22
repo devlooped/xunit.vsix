@@ -7,55 +7,55 @@ using Xunit.Abstractions;
 
 namespace Xunit.AssemblyFixtures
 {
-	public class AssemblyFixture : IDisposable
-	{
-		public AssemblyFixture ()
-		{
-			ConstructedTimes++;
-		}
+    public class AssemblyFixture : IDisposable
+    {
+        public AssemblyFixture()
+        {
+            ConstructedTimes++;
+        }
 
-		public int ConstructedTimes { get; private set; }
+        public int ConstructedTimes { get; private set; }
 
-		public void Dispose ()
-		{
-		}
-	}
+        public void Dispose()
+        {
+        }
+    }
 
-	public class TestWithAssemblyFixture : IAssemblyFixture<AssemblyFixture>
-	{
-		ITestOutputHelper output;
-		AssemblyFixture state;
+    public class TestWithAssemblyFixture : IAssemblyFixture<AssemblyFixture>
+    {
+        private ITestOutputHelper _output;
+        private AssemblyFixture _state;
 
-		public TestWithAssemblyFixture (AssemblyFixture state, ITestOutputHelper output)
-		{
-			this.state = state;
-			this.output = output;
-		}
+        public TestWithAssemblyFixture(AssemblyFixture state, ITestOutputHelper output)
+        {
+            _state = state;
+            _output = output;
+        }
 
-		[VsixFact]
-		public void when_using_assembly_fixture_then_can_access_its_state ()
-		{
-			Assert.NotNull (state);
-			Assert.Equal (1, state.ConstructedTimes);
-		}
-	}
+        [VsixFact]
+        public void when_using_assembly_fixture_then_can_access_its_state()
+        {
+            Assert.NotNull(_state);
+            Assert.Equal(1, _state.ConstructedTimes);
+        }
+    }
 
-	public class TestWithAssemblyFixture2 : IAssemblyFixture<AssemblyFixture>
-	{
-		ITestOutputHelper output;
-		AssemblyFixture state;
+    public class TestWithAssemblyFixture2 : IAssemblyFixture<AssemblyFixture>
+    {
+        private ITestOutputHelper _output;
+        private AssemblyFixture _state;
 
-		public TestWithAssemblyFixture2 (AssemblyFixture state, ITestOutputHelper output)
-		{
-			this.state = state;
-			this.output = output;
-		}
+        public TestWithAssemblyFixture2(AssemblyFixture state, ITestOutputHelper output)
+        {
+            _state = state;
+            _output = output;
+        }
 
-		[VsixFact]
-		public void when_using_assembly_fixture_then_can_access_its_state ()
-		{
-			Assert.NotNull (state);
-			Assert.Equal (1, state.ConstructedTimes);
-		}
-	}
+        [VsixFact]
+        public void when_using_assembly_fixture_then_can_access_its_state()
+        {
+            Assert.NotNull(_state);
+            Assert.Equal(1, _state.ConstructedTimes);
+        }
+    }
 }

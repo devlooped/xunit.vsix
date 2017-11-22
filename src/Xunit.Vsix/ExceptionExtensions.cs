@@ -3,21 +3,22 @@ using System.Reflection;
 
 namespace Xunit
 {
-	static class ExceptionExtensions
-	{
-		public static Exception Unwrap (this Exception ex)
-		{
-			while (true) {
-				var aex = ex as AggregateException;
-				if (aex != null)
-					ex = aex.GetBaseException ();
+    internal static class ExceptionExtensions
+    {
+        public static Exception Unwrap(this Exception ex)
+        {
+            while (true)
+            {
+                var aex = ex as AggregateException;
+                if (aex != null)
+                    ex = aex.GetBaseException();
 
-				var tiex = ex as TargetInvocationException;
-				if (tiex == null)
-					return ex;
+                var tiex = ex as TargetInvocationException;
+                if (tiex == null)
+                    return ex;
 
-				ex = tiex.InnerException;
-			}
-		}
-	}
+                ex = tiex.InnerException;
+            }
+        }
+    }
 }

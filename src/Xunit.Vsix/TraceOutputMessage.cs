@@ -7,10 +7,10 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-	internal class TraceOutputMessage : DiagnosticMessage
-	{
-		public TraceOutputMessage (string message) : base (message)
-		{
-		}
-	}
+    internal class TraceOutputMessage : DiagnosticMessage
+    {
+        public TraceOutputMessage(string message) : base(message)
+        {
+        }
+    }
 }

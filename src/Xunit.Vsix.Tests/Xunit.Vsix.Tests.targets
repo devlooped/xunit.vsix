@@ -12,6 +12,8 @@
   <ItemGroup>
     <SupportedVersion Include="11.0;12.0;14.0" Condition=" '$(Configuration)' == 'Release' " />
     <SupportedVersion Include="14.0" Condition=" '$(Configuration)' == 'Debug' " />
+    <Compile Remove="Content\**\*.*" />
+    <None Remove="Content\**\*.*" />
     <Content Include="Content\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -23,7 +25,7 @@
       DeployVsixSdk
     </CoreCompileDependsOn>
   </PropertyGroup>
-  
+
   <!-- Clones the CoreCompile inputs/outputs so that we only do this if the integration tests project 
        has changed, meaning it will be likely re-run and would need updated VSIXes. -->
   <Target Name="DeployVsixSdk"
@@ -45,7 +47,7 @@
                  @(_DebugSymbolsIntermediatePath);
                  $(NonExistentFile);
                  @(CustomAdditionalCompileOutputs)">
-    
+
     <!-- Build the VSIX for supported VS versions that aren't the currently used VS -->
     <Exec Command='"$(MSBuildBinPath)\MSBuild.exe" ..\Sdk.Vsix\Sdk.Vsix.csproj /p:VisualStudioVersion=%(SupportedVersion.Identity) /p:DeployExtension=True /t:DeployVsixExtensionFiles'
           Condition=" '%(SupportedVersion.Identity)' != '$(VisualStudioVersion)'"
@@ -83,5 +85,5 @@
           IgnoreExitCode='true'/>
     -->
   </Target>
-  
+
 </Project>

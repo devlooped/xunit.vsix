@@ -1,10 +1,11 @@
-os: Visual Studio 2015
+os: Visual Studio 2017
 
 init:
   - git config --global core.autocrlf input
 
 build_script:
-  - build.cmd
+  - msbuild /t:restore /bl:restore.binlog
+  - msbuild /t:build,pack /bl
 
 # since this requires launching VS and special UI permissions
 test: off
@@ -22,5 +23,8 @@ nuget:
   disable_publish_on_pr: true
   
 artifacts:
-  - path: '*.nupkg'
+  - path: 'bin\*.nupkg'
     name: Packages
+
+  - path: '*.binlog'
+    name: Logs

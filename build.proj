@@ -16,6 +16,7 @@
     <Authors>Mobile Essentials</Authors>
     <Description>Allows creating reliable, flexible and fast VS SDK integration (VSIX) tests that run using any xUnit capable runner, such as Visual Studio built-in Test Explorer or TestDriven.NET.</Description>
 
+    <TargetFramework>net452</TargetFramework>
     <PackageLicenseUrl>https://github.com/kzu/xunit.vsix/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/kzu/xunit.vsix</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -27,13 +28,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageFile Include="xunit" Version="2.3.1" Kind="dependency" />
-    <PackageFile Include="xunit.extensibility.execution" Version="2.3.1" Kind="dependency" />
+    <PackageFile Include="xunit" Version="2.3.1" Kind="Dependency" TargetFramework="net452" />
+    <PackageFile Include="xunit.extensibility.execution" Version="2.3.1" Kind="Dependency" TargetFramework="net452" />
 
-    <PackageFile Include="src\build\*.*" target="build" />
-    <PackageFile Include="src\Xunit.Vsix\bin\x86\$(Configuration)\*\xunit.vsix.*" target="lib\net452" />
-    <PackageFile Include="src\Xunit.Vsix\bin\x86\$(Configuration)\*\NuGet.Versioning.dll" target="lib\net452" />
-    <PackageFile Include="src\Xunit.Vsix\bin\x86\$(Configuration)\*\bootstrap.dll" target="lib\net452" />
+    <PackageFile Include="src\build\*.*" Kind="build" />
+    <PackageFile Include="src\Xunit.Vsix\bin\x86\$(Configuration)\net452\xunit.vsix.*" TargetFramework="net452" Kind="Lib" />
+    <PackageFile Include="src\Xunit.Vsix\bin\x86\$(Configuration)\net452\NuGet.Versioning.dll" TargetFramework="net452" Kind="Lib" />
+    <PackageFile Include="src\Xunit.Vsix\bin\x86\$(Configuration)\net452\bootstrap.dll" TargetFramework="net452" Kind="Lib" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,7 +49,7 @@
     <MSBuild Projects="src\Xunit.Vsix.sln" Targets="Restore" />
   </Target>
 
-  <Target Name="Build">
+    <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
     <MSBuild Projects="src\Xunit.Vsix.sln" Properties="Configuration=$(Configuration)" />
   </Target>
 

@@ -4,6 +4,7 @@ init:
   - git config --global core.autocrlf input
 
 build_script:
+  - msbuild /t:restore
   - msbuild /t:build,pack
 
 # since this requires launching VS and special UI permissions

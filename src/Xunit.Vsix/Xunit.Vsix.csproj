@@ -35,16 +35,13 @@
     <PackageReference Include="NuGet.Versioning" Version="4.4.0" />
     <PackageReference Include="VSSDK.ComponentModelHost.11" Version="11.0.4" />
     <PackageReference Include="VSSDK.Shell.11" Version="11.0.4" />
-    <PackageReference Include="Xamarin.Windows.Injector" Version="1.0.0-beta-build011" />
+    <PackageReference Include="Xamarin.Windows.Injector" Version="1.0.0-beta-build012" />
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="xunit.extensibility.execution" Version="2.3.1" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Runtime.Remoting" />
-    <Reference Include="bootstrap">
-      <HintPath>$(WindowsInjectorToolsPath)\$(Platform)\bootstrap.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">

@@ -11,27 +11,27 @@ using Xunit.Properties;
 
 namespace Xunit
 {
-    class VsixTestFramework : XunitTestFramework
+    internal class VsixTestFramework : XunitTestFramework
     {
-        static TraceSource tracer = Constants.Tracer;
+        private static TraceSource s_tracer = Constants.Tracer;
 
-        public VsixTestFramework(IMessageSink messageSink) : base(new TracingMessageSink(messageSink, tracer))
+        public VsixTestFramework(IMessageSink messageSink) : base(new TracingMessageSink(messageSink, s_tracer))
         {
-            tracer.Switch.Level = SourceLevels.Error;
+            s_tracer.Switch.Level = SourceLevels.Error;
             Trace.AutoFlush = true;
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
         }
 
-        void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        private void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
-            tracer.TraceEvent(TraceEventType.Error, 0, e.Exception.Flatten().InnerException.ToString());
+            s_tracer.TraceEvent(TraceEventType.Error, 0, e.Exception.Flatten().InnerException.ToString());
             e.SetObserved();
         }
 
-        void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            tracer.TraceEvent(TraceEventType.Error, 0, ((Exception)e.ExceptionObject).ToString());
+            s_tracer.TraceEvent(TraceEventType.Error, 0, ((Exception)e.ExceptionObject).ToString());
         }
 
         protected override ITestFrameworkDiscoverer CreateDiscoverer(IAssemblyInfo assemblyInfo)
@@ -46,10 +46,10 @@ namespace Xunit
             return new VsixTestFrameworkExecutor(assemblyName, SourceInformationProvider, DiagnosticMessageSink);
         }
 
-        static void SetupTracing(IAssemblyInfo assemblyInfo)
+        private static void SetupTracing(IAssemblyInfo assemblyInfo)
         {
             var attr = assemblyInfo.GetCustomAttributes(typeof(VsixRunnerAttribute)).FirstOrDefault();
-            tracer.Switch.Level = attr?
+            s_tracer.Switch.Level = attr?
                 .GetInitializedArgument<SourceLevels?>(nameof(VsixRunnerAttribute.TraceLevel))
                 .GetValueOrDefault(SourceLevels.Error) ?? SourceLevels.Error;
 
@@ -65,18 +65,18 @@ namespace Xunit
                 }
             }
 
-            if (!tracer.Listeners.OfType<TraceListener>().Any(x => x.Name == assemblyInfo.Name))
+            if (!s_tracer.Listeners.OfType<TraceListener>().Any(x => x.Name == assemblyInfo.Name))
             {
                 var listener = new TextWriterTraceListener(logFile, assemblyInfo.Name);
-                tracer.Listeners.Add(listener);
+                s_tracer.Listeners.Add(listener);
                 Trace.Listeners.Add(listener);
             }
         }
 
-        class TracingMessageSink : IMessageSink
+        private class TracingMessageSink : IMessageSink
         {
-            IMessageSink innerSink;
-            TraceSource tracer;
+            private IMessageSink _innerSink;
+            private TraceSource _tracer;
 
             static TracingMessageSink()
             {
@@ -94,15 +94,15 @@ namespace Xunit
 
             public TracingMessageSink(IMessageSink innerSink, TraceSource tracer)
             {
-                this.innerSink = innerSink;
-                this.tracer = tracer;
+                _innerSink = innerSink;
+                _tracer = tracer;
             }
 
             public bool OnMessage(IMessageSinkMessage message)
             {
                 var diagnostic = message as IDiagnosticMessage;
                 if (diagnostic != null)
-                    tracer.TraceEvent(TraceEventType.Verbose, 0, diagnostic.Message);
+                    _tracer.TraceEvent(TraceEventType.Verbose, 0, diagnostic.Message);
 
 #if DEBUG
                 try
@@ -112,11 +112,11 @@ namespace Xunit
                 catch (IOException) { }
 #endif
 
-                return innerSink.OnMessage(message);
+                return _innerSink.OnMessage(message);
             }
         }
 
-        class VsixTestFrameworkExecutor : XunitTestFrameworkExecutor
+        private class VsixTestFrameworkExecutor : XunitTestFrameworkExecutor
         {
             public VsixTestFrameworkExecutor(AssemblyName assemblyName,
                                               ISourceInformationProvider sourceInformationProvider,
@@ -145,7 +145,7 @@ namespace Xunit
                 using (var assemblyRunner = new VsixTestAssemblyRunner(TestAssembly, testCases, DiagnosticMessageSink, new TracingMessageSink(executionMessageSink, Constants.Tracer), executionOptions))
                     await assemblyRunner.RunAsync();
 
-                tracer.Flush();
+                s_tracer.Flush();
             }
         }
 
@@ -306,6 +306,5 @@ namespace Xunit
 					}
 				}
 		 */
-
     }
 }

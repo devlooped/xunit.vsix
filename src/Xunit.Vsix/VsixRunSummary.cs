@@ -3,9 +3,9 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-	[Serializable]
-	class VsixRunSummary
-	{
+    [Serializable]
+    internal class VsixRunSummary
+    {
         /// <summary>
         /// The total number of tests run.
         /// </summary>
@@ -26,32 +26,34 @@ namespace Xunit
         /// </summary>
         public decimal Time;
 
-		/// <summary>
-		/// The exception, if any, that occurred during the run.
-		/// </summary>
-		public Exception Exception;
+        /// <summary>
+        /// The exception, if any, that occurred during the run.
+        /// </summary>
+        public Exception Exception;
 
-		public RunSummary ToRunSummary()
-		{
-			return new RunSummary {
-				Total = Total,
-				Failed = Failed,
-				Skipped = Skipped,
-				Time = Time,
-			};
-		}
-	}
+        public RunSummary ToRunSummary()
+        {
+            return new RunSummary
+            {
+                Total = Total,
+                Failed = Failed,
+                Skipped = Skipped,
+                Time = Time,
+            };
+        }
+    }
 
-	static class VsixRunSummaryExtensions
-	{
-		public static VsixRunSummary ToVsixRunSummary(this RunSummary summary)
-		{
-			return new VsixRunSummary {
-				Total = summary.Total,
-				Failed = summary.Failed,
-				Skipped = summary.Skipped,
-				Time = summary.Time,
-			};
-		}
-	}
+    internal static class VsixRunSummaryExtensions
+    {
+        public static VsixRunSummary ToVsixRunSummary(this RunSummary summary)
+        {
+            return new VsixRunSummary
+            {
+                Total = summary.Total,
+                Failed = summary.Failed,
+                Skipped = summary.Skipped,
+                Time = summary.Time,
+            };
+        }
+    }
 }

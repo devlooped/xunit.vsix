@@ -5,17 +5,17 @@ VisualStudioVersion = 15.0.27110.0
 MinimumVisualStudioVersion = 14.0.23107.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2AF55F73-4FE0-46B1-B5C4-534F028A90C1}"
 	ProjectSection(SolutionItems) = preProject
-		Before.Xunit.Vsix.sln.targets = Before.Xunit.Vsix.sln.targets
+		..\.editorconfig = ..\.editorconfig
+		..\appveyor.yml = ..\appveyor.yml
 		..\build.cmd = ..\build.cmd
 		..\build.proj = ..\build.proj
 		..\build\build.targets = ..\build\build.targets
-		SmartReferences.targets = SmartReferences.targets
-		Xunit.Vsix.targets = Xunit.Vsix.targets
+		NuGet.Config = NuGet.Config
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Vsix", "Xunit.Vsix\Xunit.Vsix.csproj", "{EA6250CB-F20A-4B92-AC35-365D902C225F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xunit.Vsix", "Xunit.Vsix\Xunit.Vsix.csproj", "{EA6250CB-F20A-4B92-AC35-365D902C225F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Vsix.Tests", "Xunit.Vsix.Tests\Xunit.Vsix.Tests.csproj", "{D1B1C34C-EF09-463A-9C55-CCCC249F9BBE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xunit.Vsix.Tests", "Xunit.Vsix.Tests\Xunit.Vsix.Tests.csproj", "{D1B1C34C-EF09-463A-9C55-CCCC249F9BBE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Package", "Package", "{FB4FD484-8321-4FED-BEDB-3D6FED1351FC}"
 	ProjectSection(SolutionItems) = preProject

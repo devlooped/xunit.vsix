@@ -4,14 +4,12 @@
 	<PropertyGroup>
 		<!-- Ignore warning about xunit.vsix.bootstrap being x86 -->
 		<ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
-		<CompileDependsOn>
-			GetVsixFrameworkInfoFile;
-			GenerateVsixFrameworkInfo;
-			IncludeVsixFrameworkInfo;
-			$(CompileDependsOn);
-		</CompileDependsOn>
 	</PropertyGroup>
 
+  <Target Name="VsixFrameworkInfo" 
+          DependsOnTargets="GetVsixFrameworkInfoFile;GenerateVsixFrameworkInfo;IncludeVsixFrameworkInfo" 
+          BeforeTargets="CoreCompile" />
+  
 	<Target Name="GetVsixFrameworkInfoFile">
 		<ItemGroup>
 			<VisualStudioVersion Include="$(VisualStudioVersions)" />

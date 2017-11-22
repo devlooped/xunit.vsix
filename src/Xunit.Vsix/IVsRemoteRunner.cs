@@ -4,12 +4,12 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-	interface IVsRemoteRunner : IDisposable
-	{
-		string[][] GetEnvironment ();
+    internal interface IVsRemoteRunner : IDisposable
+    {
+        string[][] GetEnvironment();
 
-		void Ping ();
+        void Ping();
 
-		VsixRunSummary Run (VsixTestCase testCase, IMessageBus messageBus);
-	}
+        VsixRunSummary Run(VsixTestCase testCase, IMessageBus messageBus);
+    }
 }

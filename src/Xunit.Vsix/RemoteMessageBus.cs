@@ -3,23 +3,23 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-	class RemoteMessageBus : LongLivedMarshalByRefObject, IMessageBus
-	{
-		IMessageBus localMessageBus;
+    internal class RemoteMessageBus : LongLivedMarshalByRefObject, IMessageBus
+    {
+        private IMessageBus _localMessageBus;
 
-		public RemoteMessageBus (IMessageBus localMessageBus)
-		{
-			this.localMessageBus = localMessageBus;
-		}
+        public RemoteMessageBus(IMessageBus localMessageBus)
+        {
+            _localMessageBus = localMessageBus;
+        }
 
-		public void Dispose ()
-		{
-			localMessageBus.Dispose ();
-		}
+        public void Dispose()
+        {
+            _localMessageBus.Dispose();
+        }
 
-		public bool QueueMessage (IMessageSinkMessage message)
-		{
-			return localMessageBus.QueueMessage (message);
-		}
-	}
+        public bool QueueMessage(IMessageSinkMessage message)
+        {
+            return _localMessageBus.QueueMessage(message);
+        }
+    }
 }

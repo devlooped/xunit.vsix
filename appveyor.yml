@@ -4,8 +4,8 @@ init:
   - git config --global core.autocrlf input
 
 build_script:
-  - msbuild /t:restore /bl:restore.binlog || appveyor PushArtifact restore.binlog
-  - msbuild /t:build,pack /bl || appveyor PushArtifact msbuild.binlog
+  - msbuild /t:restore /bl:restore.binlog
+  - msbuild /t:build,pack /bl
 
 # since this requires launching VS and special UI permissions
 test: off

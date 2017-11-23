@@ -16,6 +16,8 @@ namespace Xunit
         public const string RootNamespace = "Xunit";
 
         public const string PipeNameEnvironmentVariable = "xunit.vsix.pipe";
+        public const string BaseDirectoryEnvironmentVariable = "xunit.vsix.directory";
+        public const string DebugEnvironmentVariable = "xunit.vsix.debug";
 
         public const string TracerName = "xunit.vsix";
         public const string ServerChannelName = "xunit.vsix.server";

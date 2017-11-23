@@ -30,18 +30,12 @@ namespace Xunit
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static bool Start()
         {
+            var debug = Environment.GetEnvironmentVariable(Constants.DebugEnvironmentVariable);
+            if (bool.TryParse(debug, out var shouldDebug) && shouldDebug)
+                Debugger.Launch();
+
             AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
-
-            // Determine if the current directory contains the assemblies to resolve, or if we
-            // should locate the current assembly directory instead.
-            var thisFileName = Path.GetFileName(typeof(VsStartup).Assembly.ManifestModule.FullyQualifiedName);
-            var resolveDir = Directory.GetCurrentDirectory();
-            if (!File.Exists(Path.Combine(Directory.GetCurrentDirectory(), thisFileName)))
-            {
-                resolveDir = Path.GetDirectoryName(typeof(VsStartup).Assembly.ManifestModule.FullyQualifiedName);
-                Directory.SetCurrentDirectory(resolveDir);
-            }
-
+            var resolveDir = Environment.GetEnvironmentVariable(Constants.BaseDirectoryEnvironmentVariable);
             s_localAssemblyNames = GetLocalAssemblyNames(resolveDir);
             try
             {

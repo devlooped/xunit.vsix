@@ -21,8 +21,10 @@
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.15.103" />
     <PackageReference Include="MSBuilder.CI" Version="0.1.2" />
     <PackageReference Include="NuGet.Versioning" Version="4.4.0" />
+    <PackageReference Include="StrongNamer" Version="0.0.6" />
     <PackageReference Include="VSSDK.DTE.8" Version="8.0.4" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" Condition="'$(CI)' == 'true'" />
+    <PackageReference Include="Octokit" Version="0.28.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xunit.Vsix\Xunit.Vsix.csproj" />

@@ -27,6 +27,14 @@ namespace Xunit
         }
 
         [VsixFact(VisualStudioVersion.Current, RootSuffix = "Exp", RunOnUIThread = true)]
+        public void when_using_external_assembly_then_resolves()
+        {
+            var client = new Octokit.GitHubClient(new Octokit.ProductHeaderValue("xunit.vsix"));
+
+            Assert.NotNull(client);
+        }
+
+        [VsixFact(VisualStudioVersion.Current, RootSuffix = "Exp", RunOnUIThread = true)]
         public async void when_requesting_ui_thread_then_runs_on_UI_thread()
         {
             var currentThreadId = Thread.CurrentThread.ManagedThreadId;

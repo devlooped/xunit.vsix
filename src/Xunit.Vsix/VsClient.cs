@@ -4,7 +4,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Packaging;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Remoting;
@@ -14,7 +13,6 @@ using System.Threading.Tasks;
 using Bootstrap;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.Win32;
 using Xunit.Abstractions;
 using Xunit.Properties;
 using Xunit.Sdk;
@@ -268,6 +266,15 @@ namespace Xunit
             // tests in the VS app domain.
             info.EnvironmentVariables.Add(Constants.PipeNameEnvironmentVariable, _pipeName);
 
+#if DEBUG
+            var debug = true;
+#else
+            var debug = false;
+#endif
+
+            info.EnvironmentVariables.Add(Constants.BaseDirectoryEnvironmentVariable, Directory.GetCurrentDirectory());
+            info.EnvironmentVariables.Add(Constants.DebugEnvironmentVariable, debug.ToString());
+
             // Propagate profiling values to support OpenCover or any third party profiler
             // already attached to the current process.
             PropagateProfilingVariables(info);
@@ -355,7 +362,7 @@ namespace Xunit
             {
                 Injector.Launch(Process.MainWindowHandle,
                     GetType().Assembly.Location,
-                    typeof(VsStartup).FullName, "Start");
+                    typeof(VsStartup).FullName, $"Start");
             }
             catch (Exception ex)
             {

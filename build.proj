@@ -31,7 +31,8 @@
     <PackageFile Include="xunit" Version="2.3.1" Kind="Dependency" TargetFramework="net452" />
     <PackageFile Include="xunit.extensibility.execution" Version="2.3.1" Kind="Dependency" TargetFramework="net452" />
 
-    <PackageFile Include="src\build\*.*" Kind="build" />
+    <PackageFile Include="src\Package\build\*.*" Kind="Build" />
+    <PackageFile Include="src\Package\Readme.txt" PackagePath="Readme.txt" />
     <PackageFile Include="src\Xunit.Vsix\bin\x86\$(Configuration)\net452\xunit.vsix.*" TargetFramework="net452" Kind="Lib" />
     <PackageFile Include="src\Xunit.Vsix\bin\x86\$(Configuration)\net452\NuGet.Versioning.dll" TargetFramework="net452" Kind="Lib" />
     <PackageFile Include="src\Xunit.Vsix\bin\x86\$(Configuration)\net452\bootstrap.dll" TargetFramework="net452" Kind="Lib" />

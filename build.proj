@@ -49,7 +49,7 @@
     <MSBuild Projects="src\Xunit.Vsix.sln" Targets="Restore" />
   </Target>
 
-    <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
     <MSBuild Projects="src\Xunit.Vsix.sln" Properties="Configuration=$(Configuration)" />
   </Target>
 

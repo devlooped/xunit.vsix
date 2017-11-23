@@ -5,7 +5,8 @@ init:
 
 build_script:
   - msbuild /t:restore /bl:restore.binlog
-  - msbuild /t:build,pack /bl
+  - msbuild /t:build /bl:build.binlog
+  - msbuild /t:pack /bl:pack.binlog
 
 # since this requires launching VS and special UI permissions
 test: off

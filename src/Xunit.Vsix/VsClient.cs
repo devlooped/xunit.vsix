@@ -23,7 +23,6 @@ namespace Xunit
     {
         private static readonly TraceSource s_tracer = Constants.Tracer;
 
-        private bool _initializedExtension;
         private string _visualStudioVersion;
         private string _pipeName;
         private string _rootSuffix;
@@ -251,8 +250,6 @@ namespace Xunit
 
         private bool Start()
         {
-            InitializeExtension();
-
             _pipeName = Guid.NewGuid().ToString();
 
             var info = new ProcessStartInfo(_devEnvPath, string.IsNullOrEmpty(_rootSuffix) ? "" : "/RootSuffix " + _rootSuffix)
@@ -389,16 +386,6 @@ namespace Xunit
             {
                 info.EnvironmentVariables.Add(envVar.Key, envVar.Value);
             }
-        }
-
-        private void InitializeExtension()
-        {
-            if (_initializedExtension)
-                return;
-
-            //VsixInstaller.Initialize(Path.GetDirectoryName(_devEnvPath), _visualStudioVersion, _rootSuffix);
-
-            _initializedExtension = true;
         }
 
         private void Stop()

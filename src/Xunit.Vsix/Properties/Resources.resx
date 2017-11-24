@@ -146,12 +146,6 @@
     <value>Environment variables from test runner process:
 {0}</value>
   </data>
-  <data name="VsixInstaller_MissingExtensionManager" xml:space="preserve">
-    <value>Failed to find Extension Manager implementation assembly at {0}</value>
-  </data>
-  <data name="VsixInstaller_MissingVSSDK" xml:space="preserve">
-    <value>The Visual Studio SDK is not installed for Visual Studio version {0}</value>
-  </data>
   <data name="VsStartup_Failed" xml:space="preserve">
     <value>Failed to start remote runner</value>
   </data>
@@ -169,15 +163,6 @@
   </data>
   <data name="VsVersions_LatestVersion" xml:space="preserve">
     <value>Determined latest Visual Studio version installed: {0}</value>
-  </data>
-  <data name="VsixInstaller_MissingSettingsManager" xml:space="preserve">
-    <value>Failed to find Settings Manager SDK assembly at {0}</value>
-  </data>
-  <data name="VsixInstaller_InstalledExtension" xml:space="preserve">
-    <value>Extension {0} was successfully registered with Visual Studio {1}</value>
-  </data>
-  <data name="VsixInstaller_InstallingExtension" xml:space="preserve">
-    <value>File {0} not found found in extensions path {1}. Extension will be created and installed</value>
   </data>
   <data name="VsixTestFramework_SettingMaxThreads" xml:space="preserve">
     <value>Overriding configured max threads to match the number of detected installed Visual Studio versions: {0}</value>

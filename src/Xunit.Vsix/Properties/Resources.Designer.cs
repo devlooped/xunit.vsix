@@ -144,51 +144,6 @@ namespace Xunit.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Extension {0} was successfully registered with Visual Studio {1}.
-        /// </summary>
-        internal static string VsixInstaller_InstalledExtension {
-            get {
-                return ResourceManager.GetString("VsixInstaller_InstalledExtension", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to File {0} not found found in extensions path {1}. Extension will be created and installed.
-        /// </summary>
-        internal static string VsixInstaller_InstallingExtension {
-            get {
-                return ResourceManager.GetString("VsixInstaller_InstallingExtension", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to find Extension Manager implementation assembly at {0}.
-        /// </summary>
-        internal static string VsixInstaller_MissingExtensionManager {
-            get {
-                return ResourceManager.GetString("VsixInstaller_MissingExtensionManager", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to find Settings Manager SDK assembly at {0}.
-        /// </summary>
-        internal static string VsixInstaller_MissingSettingsManager {
-            get {
-                return ResourceManager.GetString("VsixInstaller_MissingSettingsManager", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The Visual Studio SDK is not installed for Visual Studio version {0}.
-        /// </summary>
-        internal static string VsixInstaller_MissingVSSDK {
-            get {
-                return ResourceManager.GetString("VsixInstaller_MissingVSSDK", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Setting configured max threads to 1 for debugging.
         /// </summary>
         internal static string VsixTestFramework_DebugMaxThreads {

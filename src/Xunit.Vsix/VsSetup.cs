@@ -33,27 +33,26 @@ namespace Xunit
             return vs.FirstOrDefault();
         }
 
-        public static string GetExtensionsPath(Version version, string rootSuffix)
+        public static string GetComponentModelCachePath(string devEnvPath, Version version, string rootSuffix)
         {
             if (version.Major < 15)
                 return Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     @"Microsoft\VisualStudio",
                     version.ToString() + rootSuffix,
-                    "Extensions");
+                    "ComponentModelCache");
 
-            var vs = from instance in EnumerateExtensibilityInstances()
-                     let productVersion = (string)(instance as ISetupInstanceCatalog)?.GetCatalogInfo()?.GetValue("productSemanticVersion")
-                     where productVersion != null
-                     let semver = NuGet.Versioning.SemanticVersion.Parse(productVersion)
-                     // TODO: eventually, compare both major.minor when supported in the attributes.
-                     where semver.Major == version.Major
-                     orderby semver descending
-                     select Path.Combine(
-                         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                         $@"Microsoft\VisualStudio\{version.Major}.0_{instance.GetInstanceId()}{rootSuffix}\Extensions");
+            var ini = Path.ChangeExtension(devEnvPath, "isolation.ini");
+            if (!File.Exists(ini))
+                return null;
 
-            return vs.FirstOrDefault();
+            return File.ReadAllLines(ini)
+                .Where(line => line.StartsWith("InstallationID="))
+                .Select(line => line.Substring(15))
+                .Select(instanceId => Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    $@"Microsoft\VisualStudio\{version.Major}.0_{instanceId}{rootSuffix}\ComponentModelCache"))
+                .FirstOrDefault();
         }
 
         /// <summary>

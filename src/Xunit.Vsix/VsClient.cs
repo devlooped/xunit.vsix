@@ -75,8 +75,7 @@ namespace Xunit
                 shouldRecycle = true;
                 try
                 {
-                    var path = Environment.ExpandEnvironmentVariables(@"%LocalAppData%\Microsoft\VisualStudio");
-                    path = Path.Combine(path, _visualStudioVersion + _rootSuffix, "ComponentModelCache");
+                    var path = VsSetup.GetComponentModelCachePath(_devEnvPath, new Version(_visualStudioVersion), _rootSuffix);
                     if (Directory.Exists(path))
                         Directory.Delete(path, true);
                 }
@@ -262,15 +261,9 @@ namespace Xunit
             // server channel named pipe, which is later used by the test runner to execute
             // tests in the VS app domain.
             info.EnvironmentVariables.Add(Constants.PipeNameEnvironmentVariable, _pipeName);
-
-#if DEBUG
-            var debug = true;
-#else
-            var debug = false;
-#endif
-
             info.EnvironmentVariables.Add(Constants.BaseDirectoryEnvironmentVariable, Directory.GetCurrentDirectory());
-            info.EnvironmentVariables.Add(Constants.DebugEnvironmentVariable, debug.ToString());
+            // Allow debugging xunit.vsix itself by setting the `xunit.vsix.debug=true` envvar in the current VS.
+            info.EnvironmentVariables.Add(Constants.DebugEnvironmentVariable, Environment.GetEnvironmentVariable(Constants.DebugEnvironmentVariable));
 
             // Propagate profiling values to support OpenCover or any third party profiler
             // already attached to the current process.

@@ -34,9 +34,10 @@ namespace Xunit
             if (bool.TryParse(debug, out var shouldDebug) && shouldDebug)
                 Debugger.Launch();
 
-            AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
             var resolveDir = Environment.GetEnvironmentVariable(Constants.BaseDirectoryEnvironmentVariable);
             s_localAssemblyNames = GetLocalAssemblyNames(resolveDir);
+
+            AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
             try
             {
                 s_tracer.TraceEvent(TraceEventType.Verbose, 0, Strings.VsStartup.Starting);

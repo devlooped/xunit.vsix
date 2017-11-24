@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.Setup.Configuration;
 
 namespace Xunit
 {
-    class VsSetup
+    internal class VsSetup
     {
         public static string[] GetInstalled()
         {
@@ -22,13 +22,13 @@ namespace Xunit
         public static string GetDevEnv(Version version)
         {
             var vs = from instance in EnumerateExtensibilityInstances()
-                         let productVersion = (string)(instance as ISetupInstanceCatalog)?.GetCatalogInfo()?.GetValue("productSemanticVersion")
-                         where productVersion != null
-                         let semver = NuGet.Versioning.SemanticVersion.Parse(productVersion)
-                         // TODO: eventually, compare both major.minor when supported in the attributes.
-                         where semver.Major == version.Major
-                         orderby semver descending
-                         select Path.Combine(instance.GetInstallationPath(), @"Common7\IDE\devenv.exe");
+                     let productVersion = (string)(instance as ISetupInstanceCatalog)?.GetCatalogInfo()?.GetValue("productSemanticVersion")
+                     where productVersion != null
+                     let semver = NuGet.Versioning.SemanticVersion.Parse(productVersion)
+                     // TODO: eventually, compare both major.minor when supported in the attributes.
+                     where semver.Major == version.Major
+                     orderby semver descending
+                     select Path.Combine(instance.GetInstallationPath(), @"Common7\IDE\devenv.exe");
 
             return vs.FirstOrDefault();
         }
@@ -60,7 +60,7 @@ namespace Xunit
         /// Filters the <see cref="EnumerateInstances"/> by those that are locally installed and 
         /// have the VSSDK workload installed.
         /// </summary>
-        static IEnumerable<ISetupInstance2> EnumerateExtensibilityInstances()
+        private static IEnumerable<ISetupInstance2> EnumerateExtensibilityInstances()
             => from instance in EnumerateInstances()
                let state = instance.GetState()
                where state == InstanceState.Complete &&
@@ -69,7 +69,7 @@ namespace Xunit
                instance.GetPackages().Any(package => package.GetId() == "Microsoft.VisualStudio.Workload.VisualStudioExtension")
                select instance;
 
-        static IEnumerable<ISetupInstance2> EnumerateInstances()
+        private static IEnumerable<ISetupInstance2> EnumerateInstances()
         {
             var query = (ISetupConfiguration2)new SetupConfiguration();
             var e = query.EnumAllInstances();

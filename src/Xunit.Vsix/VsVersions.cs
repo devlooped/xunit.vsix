@@ -40,15 +40,15 @@ namespace Xunit
             } while (fetched > 0);
 
             var vs2017 = from instance in instances
-                        let state = instance.GetState()
-                        where state == InstanceState.Complete &&
-                        (state & InstanceState.Local) == InstanceState.Local &&
-                        // Require the VSSDK workload, just like we do for pre-2017 VS
-                        instance.GetPackages().Any(package => package.GetId() == "Microsoft.VisualStudio.Workload.VisualStudioExtension")
-                        let productVersion = (string)(instance as ISetupInstanceCatalog)?.GetCatalogInfo()?.GetValue("productSemanticVersion")
-                        where productVersion != null
-                        let semver = NuGet.Versioning.SemanticVersion.Parse(productVersion)
-                        select new Version(semver.Major, 0);
+                         let state = instance.GetState()
+                         where state == InstanceState.Complete &&
+                         (state & InstanceState.Local) == InstanceState.Local &&
+                         // Require the VSSDK workload, just like we do for pre-2017 VS
+                         instance.GetPackages().Any(package => package.GetId() == "Microsoft.VisualStudio.Workload.VisualStudioExtension")
+                         let productVersion = (string)(instance as ISetupInstanceCatalog)?.GetCatalogInfo()?.GetValue("productSemanticVersion")
+                         where productVersion != null
+                         let semver = NuGet.Versioning.SemanticVersion.Parse(productVersion)
+                         select new Version(semver.Major, 0);
 
             versions.AddRange(vs2017.Distinct().Select(v => v.ToString()));
             versions.Sort();

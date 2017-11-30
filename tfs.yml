@@ -21,7 +21,7 @@ steps:
   displayName: Push
   inputs:
     solution: build.proj
-    msbuildArguments: /t:Push /p:Out="$(Build.ArtifactStagingDirectory)" /p:StorageAccessKey=$(StorageAccessKey) /bl:"$(Build.ArtifactStagingDirectory)\push.binlog"
+    msbuildArguments: /t:Push /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)" /p:StorageAccessKey=$(StorageAccessKey) /bl:"$(Build.ArtifactStagingDirectory)\push.binlog"
 
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifact

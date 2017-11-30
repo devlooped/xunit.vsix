@@ -26,7 +26,8 @@
     <MSBuild Projects="src\Xunit.Vsix.sln" Targets="Restore" />
   </Target>
 
-  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn);SetVersion">
+    <Message Text="##vso[build.updatebuildnumber]$(PackageVersion)" Importance="high" Condition="'$(TF_BUILD)' == 'true'" />
     <MSBuild Projects="src\Xunit.Vsix.sln" Properties="Configuration=$(Configuration);PackageOutputPath=$(PackageOutputPath)" />
   </Target>
 

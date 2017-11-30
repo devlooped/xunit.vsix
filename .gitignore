@@ -1,3 +1,4 @@
+.vs
 .nuget
 out
 bin
@@ -11,5 +12,5 @@ packages
 *.user
 *.cache
 *.binlog
-.vs
+*.rsp
 .*

@@ -2,7 +2,8 @@
   <Import Project="build\corebuild.props" />
 
   <PropertyGroup>
-    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <Configuration Condition="'$(Configuration)' == '' and '$(CI)' == 'true'">Release</Configuration>
+    <Configuration Condition="'$(Configuration)' == '' and '$(CI)' != 'true'">Debug</Configuration>
     <GitInfoReportImportance>high</GitInfoReportImportance>
   </PropertyGroup>
 

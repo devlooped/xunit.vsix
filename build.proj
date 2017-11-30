@@ -10,8 +10,7 @@
     <OutputPath>$(MSBuildThisFileDirectory)\bin</OutputPath>
     <PackageOutputPath>$(OutputPath)</PackageOutputPath>
 
-    <!-- Validate/init feed before pushing. Typically, init is done once, manually. Validate takes time -->
-    <SleetValidate Condition="'$(SleetValidate)' == ''">false</SleetValidate>
+    <SleetInit>false</SleetInit>
     <StorageAccount>kzu</StorageAccount>
     <StorageContainer>nuget</StorageContainer>
   </PropertyGroup>

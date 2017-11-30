@@ -1,4 +1,4 @@
-<Project DefaultTargets="Build;Pack" TreatAsLocalProperty="Configuration" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" TreatAsLocalProperty="Configuration" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="build\corebuild.props" />
 
   <PropertyGroup>
@@ -27,7 +27,9 @@
   </Target>
 
   <Target Name="Build" DependsOnTargets="$(BuildDependsOn);SetVersion">
-    <Message Text="##vso[build.updatebuildnumber]$(PackageVersion)" Importance="high" Condition="'$(TF_BUILD)' == 'true'" />
+    <Message Text="##vso[build.updatebuildnumber]$(PackageVersion)" Condition="'$(TF_BUILD)' == 'true'" Importance="high" />
+    <Exec Command="appveyor UpdateBuild -Version $(PackageVersion)" Condition="'$(APPVEYOR)' == 'true'" ContinueOnError="WarnAndContinue" />
+
     <MSBuild Projects="src\Xunit.Vsix.sln" Properties="Configuration=$(Configuration);PackageOutputPath=$(PackageOutputPath)" />
   </Target>
 

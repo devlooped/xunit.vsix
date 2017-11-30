@@ -10,7 +10,7 @@
     <OutputPath>$(MSBuildThisFileDirectory)\bin</OutputPath>
     <PackageOutputPath>$(OutputPath)</PackageOutputPath>
 
-    <SleetInit>false</SleetInit>
+    <SleetInit Condition="'$(SleetInit)' == ''">false</SleetInit>
     <StorageAccount>kzu</StorageAccount>
     <StorageContainer>nuget</StorageContainer>
   </PropertyGroup>

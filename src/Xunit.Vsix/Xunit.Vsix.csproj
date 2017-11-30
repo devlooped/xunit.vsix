@@ -17,17 +17,39 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
     <WarningsAsErrors>NU1605;NU1603</WarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Xunit.Vsix.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <InferPackageContents>false</InferPackageContents>
+    <PackOnBuild>true</PackOnBuild>
+
+    <PackageId>$(AssemblyName)</PackageId>
+    <Title>xUnit.net [VsixFact and VsixTheory]</Title>
+    <Description>Allows creating reliable, flexible and fast VS SDK integration (VSIX) tests that run using any xUnit capable runner, such as Visual Studio built-in Test Explorer or TestDriven.NET.</Description>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageProjectUrl>https://github.com/kzu/xunit.vsix</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/kzu/xunit.vsix/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageTags>xunit vssdk testing</PackageTags>
+  </PropertyGroup>
+
   <ItemGroup>
+    <PackageFile Include="Readme.txt" PackagePath="Readme.txt" />
+    <PackageFile Include="xunit" Version="2.3.1" Kind="Dependency" />
+    <PackageFile Include="xunit.extensibility.execution" Version="2.3.1" Kind="Dependency" />
+    <PackageFile Include="xunit.runner.visualstudio" Version="2.3.1" Kind="Dependency" />
+    <PackageFile Include="build\xunit.vsix.props" Kind="Build" />
+    <PackageFile Include="build\xunit.vsix.targets" Kind="Build" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="@(PackageFile)" />
     <None Include="..\Xunit.Vsix.snk">
       <Link>Xunit.Vsix.snk</Link>
     </None>
-    <None Include="Xunit.Vsix.props" />
   </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="GitInfo" Version="2.0.6" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.15.103" />
@@ -38,11 +60,14 @@
     <PackageReference Include="Xamarin.Windows.Injector" Version="1.0.0-beta-build013" />
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="xunit.extensibility.execution" Version="2.3.1" />
+    <PackageReference Include="NuGet.Build.Packaging" Version="0.2.1" />
   </ItemGroup>
+
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Runtime.Remoting" />
   </ItemGroup>
+
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -56,6 +81,22 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <Import Project="Xunit.Vsix.props" />
+
+  <Target Name="_AddPackageContent" BeforeTargets="GetPackageContents">
+    <ItemGroup>
+      <PackageFile Include="$(OutputPath)\xunit.vsix.*" Kind="Lib" />
+      <PackageFile Include="$(OutputPath)\NuGet.Versioning.dll" Kind="Lib" />
+      <PackageFile Include="$(OutputPath)\bootstrap.*" Kind="Lib" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="LocalPublish" Condition="'$(CI)' != 'true'" AfterTargets="Pack">
+    <Exec Command="rd &quot;$(NuGetPackageRoot)$(PackageId.ToLowerInvariant())&quot; /q /s" Condition="Exists('$(NuGetPackageRoot)$(PackageId.ToLowerInvariant())')" />
+    <Exec Command="del $(TEMP)\packages\$(PackageId)*.nupkg" Condition="Exists('$(TEMP)\packages')" ContinueOnError="true" />
+    <MakeDir Directories="$(TEMP)\packages" Condition="!Exists('$(TEMP)\packages')" />
+    <Copy SourceFiles="$(PackageTargetPath)" DestinationFolder="$(TEMP)\packages" />
+  </Target>
+
+  <Import Project="..\Version.targets" />
   <Import Project="..\Xunit.Vsix.targets" />
 </Project>

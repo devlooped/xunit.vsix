@@ -30,10 +30,10 @@
     <ProjectReference Include="..\Xunit.Vsix\Xunit.Vsix.csproj" />
   </ItemGroup>
   <Import Project="Xunit.Vsix.Tests.targets" />
-  <Import Project="..\Package\build\xunit.vsix.props" />
+  <Import Project="..\Xunit.Vsix\build\xunit.vsix.props" />
   <Import Project="..\Xunit.Vsix.targets" />
   <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">
     <VisualStudioVersions>All</VisualStudioVersions>
   </PropertyGroup>
-  <Import Project="..\Package\build\xunit.vsix.targets" />
+  <Import Project="..\Xunit.Vsix\build\xunit.vsix.targets" />
 </Project>

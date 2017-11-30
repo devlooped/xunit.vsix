@@ -4,43 +4,20 @@
   <PropertyGroup>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <GitInfoReportImportance>high</GitInfoReportImportance>
-    <GitIgnoreTagVersion>true</GitIgnoreTagVersion>
-    <GitSkipCache>true</GitSkipCache>
   </PropertyGroup>
 
-  <!-- Package metadata -->
   <PropertyGroup>
-    <PackageId>xunit.vsix</PackageId>
-    <PackageVersion>0.1.0</PackageVersion>
-    <Title>xUnit.net [VsixFact and VsixTheory]</Title>
-    <Authors>Mobile Essentials</Authors>
-    <Description>Allows creating reliable, flexible and fast VS SDK integration (VSIX) tests that run using any xUnit capable runner, such as Visual Studio built-in Test Explorer or TestDriven.NET.</Description>
-
-    <TargetFramework>net452</TargetFramework>
-    <PackageLicenseUrl>https://github.com/kzu/xunit.vsix/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/kzu/xunit.vsix</PackageProjectUrl>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageTags>xunit vssdk testing</PackageTags>
-
     <OutputPath>$(MSBuildThisFileDirectory)\bin</OutputPath>
     <PackageOutputPath>$(OutputPath)</PackageOutputPath>
-    <InferPackageContents>false</InferPackageContents>
+
+    <!-- Validate/init feed before pushing. Typically, init is done once, manually. Validate takes time -->
+    <SleetValidate Condition="'$(SleetValidate)' == ''">false</SleetValidate>
+    <StorageAccount>kzu</StorageAccount>
+    <StorageContainer>nuget</StorageContainer>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageFile Include="xunit" Version="2.3.1" Kind="Dependency" TargetFramework="net452" />
-    <PackageFile Include="xunit.extensibility.execution" Version="2.3.1" Kind="Dependency" TargetFramework="net452" />
-
-    <PackageFile Include="src\Package\build\*.*" Kind="Build" />
-    <PackageFile Include="src\Package\Readme.txt" PackagePath="Readme.txt" />
-    <PackageFile Include="src\Xunit.Vsix\bin\x86\$(Configuration)\net452\xunit.vsix.*" TargetFramework="net452" Kind="Lib" />
-    <PackageFile Include="src\Xunit.Vsix\bin\x86\$(Configuration)\net452\NuGet.Versioning.dll" TargetFramework="net452" Kind="Lib" />
-    <PackageFile Include="src\Xunit.Vsix\bin\x86\$(Configuration)\net452\bootstrap.dll" TargetFramework="net452" Kind="Lib" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="GitInfo" Version="*" />
-    <PackageReference Include="NuGet.Build.Packaging" Version="*" />
+    <PackageReference Include="Sleet.Azure" Version="*" />
     <PackageReference Include="xunit.runner.msbuild" Version="2.3.1" />
   </ItemGroup>
 
@@ -51,7 +28,7 @@
   </Target>
 
   <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
-    <MSBuild Projects="src\Xunit.Vsix.sln" Properties="Configuration=$(Configuration)" />
+    <MSBuild Projects="src\Xunit.Vsix.sln" Properties="Configuration=$(Configuration);PackageOutputPath=$(PackageOutputPath)" />
   </Target>
 
   <Target Name="Clean">
@@ -59,22 +36,23 @@
     <Exec Command='rmdir "$(OutputPath)" /s /q' Condition="Exists('$(OutputPath)')" />
   </Target>
 
+  <Target Name="_AddPackages" BeforeTargets="Push">
+    <ItemGroup>
+      <Package Include="$(PackageOutputPath)\*.nupkg" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
 
   <Target Name="Test" DependsOnTargets="Build">
     <ItemGroup>
-      <TestAssembly Include="src\Xunit.Vsix.Tests\bin\Debug\net452\xunit.vsix.tests.dll" />
+      <TestAssembly Include="src\Xunit.Vsix.Tests\bin\Debug\xunit.vsix.tests.dll" />
     </ItemGroup>
     <xunit Assemblies="@(TestAssembly)" />
   </Target>
 
   <Target Name="Run" />
 
-  <Target Name="_SetPackageVersion" DependsOnTargets="GitVersion" BeforeTargets="GetPackageVersion">
-    <PropertyGroup>
-      <PackageVersion>$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)</PackageVersion>
-    </PropertyGroup>
-  </Target>
-
+  <Import Project="src\Version.targets"/>
   <Import Project="build\corebuild.targets" />
 </Project>

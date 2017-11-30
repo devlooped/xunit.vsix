@@ -47,7 +47,7 @@ namespace Xunit
                 return null;
 
             return File.ReadAllLines(ini)
-                .Where(line => line.StartsWith("InstallationID="))
+                .Where(line => line.StartsWith("InstallationID=", StringComparison.Ordinal))
                 .Select(line => line.Substring(15))
                 .Select(instanceId => Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -59,7 +59,7 @@ namespace Xunit
         /// Filters the <see cref="EnumerateInstances"/> by those that are locally installed and 
         /// have the VSSDK workload installed.
         /// </summary>
-        private static IEnumerable<ISetupInstance2> EnumerateExtensibilityInstances()
+        static IEnumerable<ISetupInstance2> EnumerateExtensibilityInstances()
             => from instance in EnumerateInstances()
                let state = instance.GetState()
                where state == InstanceState.Complete &&
@@ -68,7 +68,7 @@ namespace Xunit
                instance.GetPackages().Any(package => package.GetId() == "Microsoft.VisualStudio.Workload.VisualStudioExtension")
                select instance;
 
-        private static IEnumerable<ISetupInstance2> EnumerateInstances()
+        static IEnumerable<ISetupInstance2> EnumerateInstances()
         {
             var query = (ISetupConfiguration2)new SetupConfiguration();
             var e = query.EnumAllInstances();

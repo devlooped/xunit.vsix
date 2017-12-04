@@ -29,8 +29,8 @@
       <_QuotedVisualStudioVersion Include="@(_VisualStudioVersion -> '&quot;%(Identity)&quot;')" />
       <AttributeArgument Include="@(_QuotedVisualStudioVersion, ', ')" Condition="'$(VisualStudioVersions)' != ''" />
       <AttributeArgument Include='RootSuffix = "$(RootSuffix)"' Condition="'$(RootSuffix)' != ''" />
-      <AttributeArgument Include='MinimumVisualStudioVersion = "$(MinimumVisualStudioVersion)"' Condition="'$(MinimumVisualStudioVersion=' != ''" />
-      <AttributeArgument Include='MaximumVisualStudioVersion = "$(MaximumVisualStudioVersion)"' Condition="'$(MaximumVisualStudioVersion=' != ''" />
+      <AttributeArgument Include='MinimumVisualStudioVersion = "$(MinimumVisualStudioVersion)"' Condition="'$(MinimumVisualStudioVersion)' != ''" />
+      <AttributeArgument Include='MaximumVisualStudioVersion = "$(MaximumVisualStudioVersion)"' Condition="'$(MaximumVisualStudioVersion)' != ''" />
       <AttributeArgument Include='NewIdeInstance = $(NewIdeInstance.ToLowerInvariant())' Condition="'$(NewIdeInstance)' != ''" />
       <AttributeArgument Include='TimeoutSeconds = $(TimeoutSeconds)' Condition="'$(TimeoutSeconds)' != ''" />
       <AttributeArgument Include='RecycleOnFailure = $(RecycleOnFailure.ToLowerInvariant())' Condition="'$(RecycleOnFailure)' != ''" />

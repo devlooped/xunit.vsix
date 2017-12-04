@@ -12,8 +12,8 @@
     <PackageOutputPath>$(OutputPath)</PackageOutputPath>
 
     <SleetInit Condition="'$(SleetInit)' == ''">false</SleetInit>
-    <StorageAccount>kzu</StorageAccount>
-    <StorageContainer>nuget</StorageContainer>
+    <StorageAccount>nugets</StorageAccount>
+    <StorageContainer>xunit</StorageContainer>
   </PropertyGroup>
 
   <ItemGroup>

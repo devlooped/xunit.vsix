@@ -10,8 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SupportedVersion Include="11.0;12.0;14.0" Condition=" '$(Configuration)' == 'Release' " />
-    <SupportedVersion Include="14.0" Condition=" '$(Configuration)' == 'Debug' " />
+    <SupportedVersion Include="11.0;12.0;14.0;15.0" Condition=" '$(Configuration)' == 'Release' " />
+    <SupportedVersion Include="$(VisualStudioVersion)" Condition=" '$(Configuration)' == 'Debug' " />
     <Compile Remove="Content\**\*.*" />
     <None Remove="Content\**\*.*" />
     <Content Include="Content\**\*.*">

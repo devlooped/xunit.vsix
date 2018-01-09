@@ -53,7 +53,7 @@ namespace Xunit
             versions.AddRange(vs2017.Distinct().Select(v => v.ToString()));
             versions.Sort();
 
-            InstalledVersions = versions.ToArray();
+            InstalledVersions = versions.Distinct().ToArray();
             LatestVersion = InstalledVersions.LastOrDefault();
             s_tracer.TraceInformation(Strings.VsVersions.InstalledVersions(string.Join(", ", InstalledVersions)));
             s_tracer.TraceInformation(Strings.VsVersions.LatestVersion(LatestVersion));

@@ -291,7 +291,7 @@ namespace Xunit
             if (dte == null)
                 return false;
 
-            var services = new Microsoft.VisualStudio.Shell.ServiceProvider((Microsoft.VisualStudio.OLE.Interop.IServiceProvider)dte);
+            var services = new OleServiceProvider(dte);
             IVsShell shell;
             while ((shell = (IVsShell)services.GetService(typeof(SVsShell))) == null)
             {

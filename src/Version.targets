@@ -7,8 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MSBuilder.CI" Version="*" PrivateAssets="all" />
-    <PackageReference Include="GitInfo" Version="*" PrivateAssets="all" />
+    <PackageReference Include="GitInfo" Version="2.0.8" PrivateAssets="all" />
   </ItemGroup>
 
   <Target Name="Version" DependsOnTargets="SetVersion">
@@ -24,7 +23,8 @@ AssemblyVersion=$(AssemblyVersion)" />
   </Target>
 
   <!-- '$(ExcludeRestorePackageImports)' == 'true' when invoking /t:Restore -->
-  <Target Name="SetVersion" BeforeTargets="GetAssemblyVersion;GetPackageVersion" DependsOnTargets="GitVersion" Condition="'$(ExcludeRestorePackageImports)' != 'true'">
+  <Target Name="SetVersion" BeforeTargets="GetAssemblyVersion;GetPackageVersion" DependsOnTargets="GitVersion"
+          Condition="'$(ExcludeRestorePackageImports)' != 'true' and '$(GitInfoImported)' == 'true'">
     <PropertyGroup>
       <!-- PR builds are *always* prerelease -->
       <!-- TFS case: BUILD_REASON=PullRequest and BUILD_SOURCEBRANCH=refs/pull/#/merge -->

@@ -35,7 +35,7 @@ namespace Xunit
         }
 
         [VsixFact(VisualStudioVersion.Current, RootSuffix = "Exp", RunOnUIThread = true)]
-        public async void when_requesting_ui_thread_then_runs_on_UI_thread()
+        public async System.Threading.Tasks.Task when_requesting_ui_thread_then_runs_on_UI_thread()
         {
             var currentThreadId = Thread.CurrentThread.ManagedThreadId;
             var uiThreadId = await Application.Current.Dispatcher.InvokeAsync(() => Thread.CurrentThread.ManagedThreadId);
@@ -44,7 +44,7 @@ namespace Xunit
         }
 
         [VsixFact(VisualStudioVersion.Current, RootSuffix = "Exp")]
-        public async void when_executing_then_does_not_run_on_UI_thread()
+        public async System.Threading.Tasks.Task when_executing_then_does_not_run_on_UI_thread()
         {
             var currentThreadId = Thread.CurrentThread.ManagedThreadId;
             var uiThreadId = await Application.Current.Dispatcher.InvokeAsync(() => Thread.CurrentThread.ManagedThreadId);
@@ -104,7 +104,7 @@ namespace Xunit
             Thread.Sleep(TimeSpan.FromSeconds(3));
         }
 
-        [VsixFact(VisualStudioVersion.VS2015, RecycleOnFailure = true)]
+        [VsixFact(RecycleOnFailure = true, Skip = "Can only be verified manually")]
         public void when_failed_and_recycle_then_runs_twice()
         {
             Assert.Equal("foo", "foobar");

@@ -11,7 +11,6 @@ namespace Xunit
     public static class GlobalServices
     {
         private static readonly TraceSource s_tracer = Constants.Tracer;
-        private static IServiceProvider s_services;
 
         static GlobalServices()
         {
@@ -22,12 +21,11 @@ namespace Xunit
                 {
                     Debug.Fail(Strings.GlobalServices.NoDte);
                     s_tracer.TraceEvent(TraceEventType.Warning, 0, Strings.GlobalServices.NoDte);
-                    s_services = new NullServices();
+                    Instance = new NullServices();
                 }
                 else
                 {
-                    s_services = new Microsoft.VisualStudio.Shell.ServiceProvider(
-                        (Microsoft.VisualStudio.OLE.Interop.IServiceProvider)dte);
+                    Instance = new OleServiceProvider(dte);
                     s_tracer.TraceInformation(Strings.GlobalServices.InitializedDte(dte.Version));
                 }
             }
@@ -35,7 +33,7 @@ namespace Xunit
             {
                 Debug.Fail(Strings.GlobalServices.NoDte);
                 s_tracer.TraceEvent(TraceEventType.Warning, 0, Strings.GlobalServices.NoDte + Environment.NewLine + ex.ToString());
-                s_services = new NullServices();
+                Instance = new NullServices();
             }
         }
 
@@ -46,7 +44,7 @@ namespace Xunit
         /// where services are retrieved with the static usability overloads of
         /// <c>GetService</c>.
         /// </summary>
-        public static IServiceProvider Instance { get { return s_services; } }
+        public static IServiceProvider Instance { get; private set; }
 
         /// <summary>
         /// Retrieves a service with the given type from the current global <see cref="Instance"/>.
@@ -74,12 +72,9 @@ namespace Xunit
             return Instance.GetService(clsid);
         }
 
-        private class NullServices : IServiceProvider
+        class NullServices : IServiceProvider
         {
-            public object GetService(Type serviceType)
-            {
-                return null;
-            }
+            object IServiceProvider.GetService(Type serviceType) => null;
         }
     }
 

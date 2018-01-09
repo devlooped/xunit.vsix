@@ -34,10 +34,11 @@
     <MSBuild Projects="src\Xunit.Vsix.sln" Properties="Configuration=$(Configuration);PackageOutputPath=$(PackageOutputPath)" />
   </Target>
 
-  <Target Name="Clean">
-    <MSBuild Projects="src\Xunit.Vsix.sln" Targets="Clean" />
+	<Target Name="Clean">
+		<!-- Remove all bin/obj recursively under /src -->
+		<Exec Command='for /d /r . %%d in (bin,obj) do @if exist "%%d" rd /s/q "%%d"' WorkingDirectory='$(MSBuildThisFileDirectory)src' ContinueOnError='true' />
     <Exec Command='rmdir "$(OutputPath)" /s /q' Condition="Exists('$(OutputPath)')" />
-  </Target>
+	</Target>
 
   <Target Name="_AddPackages" BeforeTargets="Push">
     <ItemGroup>

@@ -18,7 +18,7 @@ namespace Xunit
 
         [InlineData("Microsoft.VisualStudio.Component.Roslyn.Compiler")]
         //[InlineData("Microsoft.VisualStudio.Component.Merq")]
-        [Theory]//(Skip = "Just testing the setup APIs")
+        [Theory(Skip = "Just testing the setup APIs")]
         public void when_enumerating_vs_then_retrieves_all_instances(string prerequisite)
         {
             var query = new SetupConfiguration();

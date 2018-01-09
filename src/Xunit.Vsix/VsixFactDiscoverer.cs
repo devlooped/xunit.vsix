@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -28,15 +29,32 @@ namespace Xunit
                 var vsix = testMethod.GetVsixAttribute(factAttribute);
                 var testCases = new List<IXunitTestCase>();
 
-                // Add invalid VS versions.
-                testCases.AddRange(vsix.VisualStudioVersions
-                    .Where(version => !VsVersions.InstalledVersions.Contains(version))
-                    .Select(v => new ExecutionErrorTestCase(_messageSink, defaultMethodDisplay, testMethod,
-                       string.Format("Cannot execute test for specified {0}={1} because there is no VSSDK installed for that version.", nameof(IVsixAttribute.VisualStudioVersions), v))));
+                if (vsix.VisualStudioVersions == null)
+                {
+                    testCases.Add(new XunitSkippedDataRowTestCase(
+                        _messageSink, defaultMethodDisplay, testMethod,
+                       string.Format(
+                           CultureInfo.CurrentCulture, 
+                           "Cannot execute test for specified {0}={1} because {2}={3} and {4}={5}.", 
+                           nameof(IVsixAttribute.VisualStudioVersions), 
+                           string.Join(",", factAttribute.GetNamedArgument<string[]>(nameof(IVsixAttribute.VisualStudioVersions))), 
+                           nameof(IVsixAttribute.MinimumVisualStudioVersion), 
+                           vsix.MinimumVisualStudioVersion, 
+                           nameof(IVsixAttribute.MaximumVisualStudioVersion),
+                           vsix.MaximumVisualStudioVersion)));
+                }
+                else
+                {
+                    // Add invalid VS versions.
+                    testCases.AddRange(vsix.VisualStudioVersions
+                        .Where(version => !VsVersions.InstalledVersions.Contains(version))
+                        .Select(v => new ExecutionErrorTestCase(_messageSink, defaultMethodDisplay, testMethod,
+                           string.Format("Cannot execute test for specified {0}={1} because there is no VSSDK installed for that version.", nameof(IVsixAttribute.VisualStudioVersions), v))));
 
-                testCases.AddRange(vsix.VisualStudioVersions
-                    .Where(version => VsVersions.InstalledVersions.Contains(version))
-                    .Select(version => new VsixTestCase(_messageSink, defaultMethodDisplay, testMethod, version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread)));
+                    testCases.AddRange(vsix.VisualStudioVersions
+                        .Where(version => VsVersions.InstalledVersions.Contains(version))
+                        .Select(version => new VsixTestCase(_messageSink, defaultMethodDisplay, testMethod, version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread)));
+                }
 
                 return testCases;
             }

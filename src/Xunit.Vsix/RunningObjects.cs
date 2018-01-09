@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text.RegularExpressions;
-using Microsoft.VisualStudio;
 using NuGet.Versioning;
 
 namespace Xunit
@@ -30,7 +29,7 @@ namespace Xunit
                     throw new NotSupportedException("Could not determine Visual Studio version from running process from " + devEnv);
 
                 var semver = File.ReadAllLines(ini)
-                    .Where(line => line.StartsWith("SemanticVersion="))
+                    .Where(line => line.StartsWith("SemanticVersion=", StringComparison.Ordinal))
                     .Select(line => SemanticVersion.Parse(line.Substring(16)))
                     .FirstOrDefault();
 

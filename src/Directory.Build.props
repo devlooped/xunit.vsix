@@ -3,6 +3,24 @@
 
   <PropertyGroup>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+
+		<NuGetBuildTasksPackTargets>NO-SDK-PACK</NuGetBuildTasksPackTargets>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(CI)' == ''">
+    <CI Condition="'$(TEAMCITY_VERSION)' != '' or 
+                   '$(APPVEYOR)' != '' or 
+                   '$(BuildRunner)' == 'MyGet' or 
+                   '$(JENKINS_HOME)' != '' or 
+                   '$(TF_BUILD)' == 'true' or
+                   '$(IsVSTSBuild)' == 'true' or
+                   '$(TRAVIS)' == 'true'">true</CI>
+    <CI Condition="'$(CI)' == ''">false</CI>
+  </PropertyGroup>
+
+  <Target Name="GetCI" Returns="$(CI)">
+    <Message Importance="high" Text="CI=$(CI)" />
+  </Target>
 
 </Project>

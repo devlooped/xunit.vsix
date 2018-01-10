@@ -52,6 +52,8 @@
     <None Include="..\Xunit.Vsix.snk">
       <Link>Xunit.Vsix.snk</Link>
     </None>
+    <None Include="build\xunit.vsix.props" />
+    <None Include="build\xunit.vsix.targets" />
   </ItemGroup>
 
   <ItemGroup>

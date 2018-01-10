@@ -9,19 +9,19 @@ steps:
   displayName: Restore
   inputs:
     solution: build.proj
-    msbuildArguments: /t:Restore /bl:"$(Build.ArtifactStagingDirectory)\restore.binlog"
+    msbuildArguments: /t:Restore /p:Configuration=Release /bl:"$(Build.ArtifactStagingDirectory)\restore.binlog" /p:Configuration=Release
 
 - task: MSBuild@1
   displayName: Build
   inputs:
     solution: build.proj
-    msbuildArguments: /t:Build /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)" /bl:"$(Build.ArtifactStagingDirectory)\build.binlog"
+    msbuildArguments: /t:Build /p:Configuration=Release /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)" /bl:"$(Build.ArtifactStagingDirectory)\build.binlog"
 
 - task: MSBuild@1
   displayName: Push
   inputs:
     solution: build.proj
-    msbuildArguments: /t:Push /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)" /p:StorageAccessKey=$(StorageAccessKey) /bl:"$(Build.ArtifactStagingDirectory)\push.binlog"
+    msbuildArguments: /t:Push /p:Configuration=Release /p:PackageOutputPath="$(Build.ArtifactStagingDirectory)" /p:StorageAccessKey=$(StorageAccessKey) /bl:"$(Build.ArtifactStagingDirectory)\push.binlog"
 
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifact

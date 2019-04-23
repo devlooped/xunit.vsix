@@ -39,5 +39,15 @@ namespace Xunit
         /// Visual Studio 2015.
         /// </summary>
         public const string VS2015 = "14.0";
+
+        /// <summary>
+        /// Visual Studio 2017.
+        /// </summary>
+        public const string VS2017 = "15.0";
+
+        /// <summary>
+        /// Visual Studio 2019.
+        /// </summary>
+        public const string VS2019 = "16.0";
     }
 }

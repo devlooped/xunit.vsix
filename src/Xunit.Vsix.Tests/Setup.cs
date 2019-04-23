@@ -57,7 +57,7 @@ namespace Xunit
             var catalog = instance as ISetupInstanceCatalog;
 
             output.WriteLine($"InstallationVersion: {installationVersion} ({version})");
-
+            
             if (catalog != null)
             {
                 var value = (string)catalog?.GetCatalogInfo().GetValue("productSemanticVersion");

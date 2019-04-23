@@ -10,7 +10,7 @@ namespace Xunit
     {
         public static string[] GetInstalled()
         {
-            var vs2017 = from instance in EnumerateExtensibilityInstances()
+            var vs2017 = from instance in EnumerateUsableInstances()
                          let productVersion = (string)(instance as ISetupInstanceCatalog)?.GetCatalogInfo()?.GetValue("productSemanticVersion")
                          where productVersion != null
                          let semver = NuGet.Versioning.SemanticVersion.Parse(productVersion)
@@ -21,7 +21,7 @@ namespace Xunit
 
         public static string GetDevEnv(Version version)
         {
-            var vs = from instance in EnumerateExtensibilityInstances()
+            var vs = from instance in EnumerateUsableInstances()
                      let productVersion = (string)(instance as ISetupInstanceCatalog)?.GetCatalogInfo()?.GetValue("productSemanticVersion")
                      where productVersion != null
                      let semver = NuGet.Versioning.SemanticVersion.Parse(productVersion)
@@ -59,13 +59,11 @@ namespace Xunit
         /// Filters the <see cref="EnumerateInstances"/> by those that are locally installed and 
         /// have the VSSDK workload installed.
         /// </summary>
-        static IEnumerable<ISetupInstance2> EnumerateExtensibilityInstances()
+        static IEnumerable<ISetupInstance2> EnumerateUsableInstances()
             => from instance in EnumerateInstances()
                let state = instance.GetState()
                where state == InstanceState.Complete &&
-               (state & InstanceState.Local) == InstanceState.Local &&
-               // Require the VSSDK workload, just like we do for pre-2017 VS
-               instance.GetPackages().Any(package => package.GetId() == "Microsoft.VisualStudio.Workload.VisualStudioExtension")
+               (state & InstanceState.Local) == InstanceState.Local
                select instance;
 
         static IEnumerable<ISetupInstance2> EnumerateInstances()

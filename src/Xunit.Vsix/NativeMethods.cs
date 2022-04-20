@@ -6,7 +6,7 @@ using System.Runtime.InteropServices.ComTypes;
 namespace Microsoft.VisualStudio.ComponentModelHost
 {
     [Guid("FD57C398-FDE3-42c2-A358-660F269CBE43")]
-    public interface SComponentModel
+    interface SComponentModel
     {
     }
 }
@@ -17,7 +17,7 @@ namespace Microsoft.VisualStudio.OLE.Interop
     [TypeIdentifier]
     [Guid("6D5140C1-7436-11CE-8034-00AA006009FA")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IServiceProvider
+    interface IServiceProvider
     {
         [MethodImpl(MethodImplOptions.PreserveSig | MethodImplOptions.InternalCall)]
         int QueryService([In][ComAliasName("Microsoft.VisualStudio.OLE.Interop.REFGUID")] ref Guid guidService, [In][ComAliasName("Microsoft.VisualStudio.OLE.Interop.REFIID")] ref Guid riid, out IntPtr ppvObject);
@@ -28,7 +28,7 @@ namespace Microsoft.VisualStudio.Shell.Interop
 {
     //[TypeIdentifier]
     [Guid("FD9DC8E3-2FFC-446D-8C50-99CA4A3D2D1C")]
-    public interface SVsShell
+    interface SVsShell
     {
     }
 
@@ -36,7 +36,7 @@ namespace Microsoft.VisualStudio.Shell.Interop
     [TypeIdentifier]
     [Guid("FD9DC8E3-2FFC-446D-8C50-99CA4A3D2D1C")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IVsShell
+    interface IVsShell
     {
         [MethodImpl(MethodImplOptions.PreserveSig | MethodImplOptions.InternalCall)]
         int GetProperty([In][ComAliasName("Microsoft.VisualStudio.Shell.Interop.VSSPROPID")] int propid, [MarshalAs(UnmanagedType.Struct)] out object pvar);
@@ -49,7 +49,7 @@ namespace EnvDTE
     [ComImport]
     [TypeLibType(4160)]
     [Guid("04A72314-32E9-48E2-9B87-A63603454F3E")]
-    public interface DTE
+    interface DTE
     {
         [DispId(100)]
         string Version
@@ -62,7 +62,7 @@ namespace EnvDTE
     }
 }
 
-internal static class NativeMethods
+static class NativeMethods
 {
     public const int ERROR_INVALID_PARAMETER = 0x57;
     public const int INVALID_HANDLE_VALUE = -1;

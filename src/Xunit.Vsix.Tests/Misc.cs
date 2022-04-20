@@ -5,6 +5,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Utilities;
 using Xunit.Abstractions;
 
 namespace Xunit;
@@ -18,6 +19,27 @@ public class Misc
     public Misc(ITestOutputHelper output)
     {
         _output = output;
+    }
+
+    [Trait("SanityCheck", "true")]
+    [VsixFact]
+    public async System.Threading.Tasks.Task SanityCheck()
+    {
+        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+        var service = ServiceProvider.GlobalProvider.GetService<DTE>();
+        Assert.NotNull(service);
+
+        service = GlobalServiceProvider.GetService<DTE>();
+        Assert.NotNull(service);
+
+        var hierarchy = GlobalServiceProvider.GetExport<IVsHierarchyItemManager>();
+
+        Assert.NotNull(hierarchy);
+
+        var items = GlobalServiceProvider.GetExports<ContentTypeDefinition>();
+
+        Assert.NotEmpty(items);
     }
 
     [VsixFact]

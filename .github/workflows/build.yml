@@ -38,7 +38,9 @@ jobs:
         run: msbuild -r -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
 
       - name: 🧪 test
-        uses: ./.github/workflows/test
+        run: |
+          dotnet test --no-build --filter "VisualStudioVersion!~1"
+          dotnet test --no-build --filter "SanityCheck=true"
 
       - name: 📦 pack
         run: dotnet pack --no-build -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"

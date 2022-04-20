@@ -8,10 +8,10 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-    internal class InterceptingMessageBus : IMessageBus
+    class InterceptingMessageBus : IMessageBus
     {
-        private List<IMessageSinkMessage> _messages = new List<IMessageSinkMessage>();
-        private IMessageBus _innerBus;
+        List<IMessageSinkMessage> _messages = new List<IMessageSinkMessage>();
+        IMessageBus _innerBus;
 
         public InterceptingMessageBus(IMessageBus innerBus = null)
         {
@@ -33,13 +33,13 @@ namespace Xunit
             _innerBus.Dispose();
         }
 
-        private class NullMessageBus : IMessageBus
+        class NullMessageBus : IMessageBus
         {
             public static IMessageBus Instance { get; private set; }
 
             static NullMessageBus() { Instance = new NullMessageBus(); }
 
-            private NullMessageBus() { }
+            NullMessageBus() { }
 
             public void Dispose()
             {

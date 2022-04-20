@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-internal sealed class ErrorHandler
+sealed class ErrorHandler
 {
-    private ErrorHandler()
+    ErrorHandler()
     {
     }
 

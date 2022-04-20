@@ -4,7 +4,7 @@ using Xunit.Sdk;
 namespace Xunit
 {
     [Serializable]
-    internal class VsixRunSummary
+    class VsixRunSummary
     {
         /// <summary>
         /// The total number of tests run.
@@ -43,7 +43,7 @@ namespace Xunit
         }
     }
 
-    internal static class VsixRunSummaryExtensions
+    static class VsixRunSummaryExtensions
     {
         public static VsixRunSummary ToVsixRunSummary(this RunSummary summary)
         {

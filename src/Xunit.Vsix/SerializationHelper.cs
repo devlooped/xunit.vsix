@@ -7,10 +7,10 @@ namespace Xunit
     /// <summary>
     /// Exposes the built-in internal serialization helper in Xunit execution desktop assembly.
     /// </summary>
-    internal static class SerializationHelper
+    static class SerializationHelper
     {
-        private static readonly MethodInfo s_isSerializableMethod;
-        private static readonly MethodInfo s_getTypeMethod;
+        static readonly MethodInfo s_isSerializableMethod;
+        static readonly MethodInfo s_getTypeMethod;
 
         static SerializationHelper()
         {

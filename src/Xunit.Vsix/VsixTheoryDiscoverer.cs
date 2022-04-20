@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Xunit
 {
-    internal class VsixTheoryDiscoverer : IXunitTestCaseDiscoverer
+    class VsixTheoryDiscoverer : IXunitTestCaseDiscoverer
     {
-        private IMessageSink _diagnosticMessageSink;
+        IMessageSink _diagnosticMessageSink;
 
         public VsixTheoryDiscoverer(IMessageSink diagnosticMessageSink)
         //: base (diagnosticMessageSink)
@@ -16,6 +16,7 @@ namespace Xunit
             _diagnosticMessageSink = diagnosticMessageSink;
         }
 
+        [Obsolete]
         public IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo theoryAttribute)
         {
             // Special case Skip, because we want a single Skip (not one per data item); plus, a skipped test may
@@ -74,12 +75,14 @@ namespace Xunit
             return CreateTestCasesForTheory(discoveryOptions, testMethod, validVsVersions, vsix).ToArray();
         }
 
-        private IEnumerable<IXunitTestCase> CreateTestCasesForDataRow(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, string[] vsVersions, IVsixAttribute vsix, object[] dataRow)
+        [Obsolete]
+        IEnumerable<IXunitTestCase> CreateTestCasesForDataRow(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, string[] vsVersions, IVsixAttribute vsix, object[] dataRow)
         {
             return vsVersions.Select(version => new VsixTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod, version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread, dataRow));
         }
 
-        private IEnumerable<IXunitTestCase> CreateTestCasesForTheory(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, string[] vsVersions, IVsixAttribute vsix)
+        [Obsolete]
+        IEnumerable<IXunitTestCase> CreateTestCasesForTheory(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, string[] vsVersions, IVsixAttribute vsix)
         {
             return vsVersions.Select(version => new VsixTheoryTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod, version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread));
         }

@@ -12,9 +12,9 @@ namespace Xunit
     /// <summary>
     /// Processes and loads available VS versions.
     /// </summary>
-    internal class VsVersions
+    class VsVersions
     {
-        private static readonly TraceSource s_tracer = Constants.Tracer;
+        static readonly TraceSource s_tracer = Constants.Tracer;
 
         public static VsVersions Default { get; }
 
@@ -40,7 +40,7 @@ namespace Xunit
             s_tracer.TraceInformation(Strings.VsVersions.InstalledVersions(string.Join(", ", installedVersions)));
             s_tracer.TraceInformation(Strings.VsVersions.LatestVersion(latestVersion));
 
-            if (Environment.GetEnvironmentVariable("VisualStudioVersion") is string envVersion && 
+            if (Environment.GetEnvironmentVariable("VisualStudioVersion") is string envVersion &&
                 !string.IsNullOrEmpty(envVersion))
             {
                 var iniPath = Path.Combine(Environment.GetEnvironmentVariable("VSAPPIDDIR"), "devenv.isolation.ini");
@@ -48,8 +48,8 @@ namespace Xunit
                 if (File.Exists(iniPath) && SemanticVersion.TryParse(File
                     .ReadAllLines(iniPath)
                     .FirstOrDefault(line => line.StartsWith("SemanticVersion="))?
-                    .Substring("SemanticVersion=".Length), 
-                    out var semVer)) 
+                    .Substring("SemanticVersion=".Length),
+                    out var semVer))
                 {
                     envVersion = semVer.Major + "." + semVer.Minor;
                 }

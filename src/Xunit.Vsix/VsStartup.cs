@@ -20,9 +20,9 @@ namespace Xunit
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class VsStartup
     {
-        private static readonly TraceSource s_tracer = Constants.Tracer;
-        private static VsRemoteRunner s_runner;
-        private static Dictionary<string, string> s_localAssemblyNames;
+        static readonly TraceSource s_tracer = Constants.Tracer;
+        static VsRemoteRunner s_runner;
+        static Dictionary<string, string> s_localAssemblyNames;
 
         /// <summary>
         /// This is an internal method, and is not intended to be called from end-user code.
@@ -32,7 +32,7 @@ namespace Xunit
         {
             if (bool.TryParse(Environment.GetEnvironmentVariable(Constants.DebugEnvironmentVariable), out var shouldDebug) && shouldDebug)
                 Debugger.Launch();
-            
+
             var resolveDir = Environment.GetEnvironmentVariable(Constants.BaseDirectoryEnvironmentVariable);
             s_localAssemblyNames = GetLocalAssemblyNames(resolveDir);
 
@@ -54,7 +54,7 @@ namespace Xunit
             }
         }
 
-        private static Dictionary<string, string> GetLocalAssemblyNames(string localDirectory)
+        static Dictionary<string, string> GetLocalAssemblyNames(string localDirectory)
         {
             var names = new Dictionary<string, string>();
             foreach (var file in Directory.EnumerateFiles(localDirectory, "*.dll"))
@@ -77,7 +77,7 @@ namespace Xunit
             return names;
         }
 
-        private static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+        static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
         {
             // NOTE: since we load our full names only in the local assembly set,
             // we will only return our assembly version if it matches exactly the

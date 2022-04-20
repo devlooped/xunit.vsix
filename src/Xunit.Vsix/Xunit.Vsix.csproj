@@ -27,6 +27,8 @@
 
   <ItemGroup>
     <None Remove="@(PackageFile)" />
+    <None Remove="netfx\.editorconfig" />
+    <AdditionalFiles Include="netfx\.editorconfig" />
     <None Include="build\xunit.runner.json" />
     <None Include="build\xunit.vsix.props" />
     <None Include="build\xunit.vsix.targets" />
@@ -34,6 +36,7 @@
 
   <ItemGroup>
     <PackageReference Include="GitInfo" Version="2.2.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.1.2196" PrivateAssets="all" />
     <PackageReference Include="ThisAssembly.Strings" Version="1.0.9" PrivateAssets="all" />
@@ -67,7 +70,5 @@
       </ReferencePath>
     </ItemGroup>
   </Target>
-
-  <Import Project="..\Xunit.Vsix.targets" />
 
 </Project>

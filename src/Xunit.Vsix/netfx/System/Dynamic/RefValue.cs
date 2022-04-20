@@ -5,7 +5,7 @@ namespace System.Dynamic
     /// Allows by-ref values to be passed to reflection dynamic.
     /// This support does not exist in C# 4.0 dynamic out of the box.
     /// </summary>
-    internal abstract partial class RefValue
+    abstract partial class RefValue
     {
         /// <summary>
         /// Creates a value getter/setter delegating reference
@@ -29,10 +29,10 @@ namespace System.Dynamic
     /// Allows by-ref values to be passed to reflection dynamic.
     /// This support does not exist in C# 4.0 dynamic out of the box.
     /// </summary>
-    internal partial class RefValue<T> : RefValue
+    partial class RefValue<T> : RefValue
     {
-        private Func<T> _getter;
-        private Action<T> _setter;
+        Func<T> _getter;
+        Action<T> _setter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RefValue&lt;T&gt;"/> class.

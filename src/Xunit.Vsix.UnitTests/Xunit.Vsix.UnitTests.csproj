@@ -14,6 +14,7 @@
     <PackageReference Include="IsExternalInit" Version="1.0.2" PrivateAssets="all" />
     <PackageReference Include="NuGet.Versioning" Version="6.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.15.103" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
   </ItemGroup>
 
   <ItemGroup>

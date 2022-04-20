@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Remoting;
@@ -10,13 +12,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using Task = System.Threading.Tasks.Task;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Xunit.Abstractions;
 using Xunit.Sdk;
-using System.Collections;
-using System.IO;
+using Task = System.Threading.Tasks.Task;
 
 namespace Xunit
 {
@@ -24,14 +24,14 @@ namespace Xunit
     /// Remote runner instance running in the IDE AppDomain/process
     /// to execute tests on.
     /// </summary>
-    internal class VsRemoteRunner : MarshalByRefObject, IVsRemoteRunner
+    class VsRemoteRunner : MarshalByRefObject, IVsRemoteRunner
     {
-        private string _pipeName;
-        private IChannel _channel;
+        string _pipeName;
+        IChannel _channel;
 
-        private Dictionary<Type, object> _assemblyFixtureMappings = new Dictionary<Type, object>();
-        private Dictionary<Type, object> _collectionFixtureMappings = new Dictionary<Type, object>();
-        private ConcurrentDictionary<ITestCollection, VsRemoteTestCollectionRunner> _collectionRunnerMap = new ConcurrentDictionary<ITestCollection, VsRemoteTestCollectionRunner>();
+        Dictionary<Type, object> _assemblyFixtureMappings = new Dictionary<Type, object>();
+        Dictionary<Type, object> _collectionFixtureMappings = new Dictionary<Type, object>();
+        ConcurrentDictionary<ITestCollection, VsRemoteTestCollectionRunner> _collectionRunnerMap = new ConcurrentDictionary<ITestCollection, VsRemoteTestCollectionRunner>();
 
         public VsRemoteRunner()
         {
@@ -124,9 +124,9 @@ namespace Xunit
             return null;
         }
 
-        private class VsRemoteTestCollectionRunner : XunitTestCollectionRunner
+        class VsRemoteTestCollectionRunner : XunitTestCollectionRunner
         {
-            private readonly Dictionary<Type, object> _assemblyFixtureMappings;
+            readonly Dictionary<Type, object> _assemblyFixtureMappings;
 
             public VsRemoteTestCollectionRunner(ITestCollection testCollection, Dictionary<Type, object> assemblyFixtureMappings, Dictionary<Type, object> collectionFixtureMappings)
                 : base(testCollection, Enumerable.Empty<IXunitTestCase>(), new NullMessageSink(), null,
@@ -170,8 +170,7 @@ namespace Xunit
                             Aggregator.Run(() =>
                             {
                                 var fixture = Activator.CreateInstance(fixtureType);
-                                var asyncFixture = fixture as IAsyncLifetime;
-                                if (asyncFixture != null)
+                                if (fixture is IAsyncLifetime asyncFixture)
                                     Aggregator.RunAsync(asyncFixture.InitializeAsync);
 
                                 _assemblyFixtureMappings.Add(fixtureType, fixture);
@@ -191,7 +190,7 @@ namespace Xunit
             }
         }
 
-        private class VsRemoteTestClassRunner : XunitTestClassRunner
+        class VsRemoteTestClassRunner : XunitTestClassRunner
         {
             public VsRemoteTestClassRunner(ITestClass testClass, IReflectionTypeInfo @class, ExceptionAggregator aggregator, Dictionary<Type, object> collectionFixtureMappings)
                 : base(testClass, @class, Enumerable.Empty<IXunitTestCase>(), new NullMessageSink(), null,
@@ -250,7 +249,7 @@ namespace Xunit
                 }
             }
 
-            private class SyncTestCaseRunner : XunitTestCaseRunner
+            class SyncTestCaseRunner : XunitTestCaseRunner
             {
                 public SyncTestCaseRunner(IXunitTestCase testCase, string displayName, string skipReason, object[] constructorArguments, object[] testMethodArguments, IMessageBus messageBus, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
                     : base(testCase, displayName, skipReason, constructorArguments, testMethodArguments, messageBus, aggregator, cancellationTokenSource)
@@ -262,7 +261,7 @@ namespace Xunit
                     return new SyncTestRunner(new XunitTest(TestCase, DisplayName), MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, SkipReason, BeforeAfterAttributes, new ExceptionAggregator(Aggregator), CancellationTokenSource).RunAsync();
                 }
 
-                private class SyncTestRunner : XunitTestRunner
+                class SyncTestRunner : XunitTestRunner
                 {
                     public SyncTestRunner(ITest test, IMessageBus messageBus, Type testClass, object[] constructorArguments, MethodInfo testMethod, object[] testMethodArguments, string skipReason, IReadOnlyList<BeforeAfterTestAttribute> beforeAfterAttributes, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
                         : base(test, messageBus, testClass, constructorArguments, testMethod, testMethodArguments, skipReason, beforeAfterAttributes, aggregator, cancellationTokenSource)
@@ -274,7 +273,7 @@ namespace Xunit
                         return new SyncTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource).RunAsync();
                     }
 
-                    private class SyncTestInvoker : XunitTestInvoker
+                    class SyncTestInvoker : XunitTestInvoker
                     {
                         public SyncTestInvoker(ITest test, IMessageBus messageBus, Type testClass, object[] constructorArguments, MethodInfo testMethod, object[] testMethodArguments, IReadOnlyList<BeforeAfterTestAttribute> beforeAfterAttributes, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
                             : base(test, messageBus, testClass, constructorArguments, testMethod, testMethodArguments, beforeAfterAttributes, aggregator, cancellationTokenSource)
@@ -298,8 +297,7 @@ namespace Xunit
                                 else
                                 {
                                     var result = CallTestMethod(testClassInstance);
-                                    var task = result as Task;
-                                    if (task != null)
+                                    if (result is Task task)
                                         task.Wait();
                                 }
                             }));
@@ -311,11 +309,11 @@ namespace Xunit
             }
         }
 
-        private class TestMessageBus : IMessageBus
+        class TestMessageBus : IMessageBus
         {
-            private IMessageBus _innerBus;
-            private StringWriter _buffer = new StringWriter();
-            private TraceListener _listener;
+            IMessageBus _innerBus;
+            StringWriter _buffer = new StringWriter();
+            TraceListener _listener;
 
             public TestMessageBus(IMessageBus innerBus)
             {
@@ -354,17 +352,14 @@ namespace Xunit
                 // Inject Trace.WriteLine calls that might have happened as the test output.
                 if (message is ITestResultMessage && !string.IsNullOrEmpty(output))
                 {
-                    var passed = message as ITestPassed;
-                    var failed = message as ITestFailed;
-
-                    if (passed != null)
+                    if (message is ITestPassed passed)
                     {
                         _buffer.GetStringBuilder().Clear();
                         return _innerBus.QueueMessage(new TestPassed(passed.Test, passed.ExecutionTime,
                             string.IsNullOrEmpty(passed.Output) ? output : passed.Output + Environment.NewLine + output));
                     }
 
-                    if (failed != null)
+                    if (message is ITestFailed failed)
                     {
                         _buffer.GetStringBuilder().Clear();
                         return _innerBus.QueueMessage(new TestFailed(failed.Test, failed.ExecutionTime,
@@ -379,7 +374,7 @@ namespace Xunit
                 return true;
             }
 
-            private string GetActualOutput()
+            string GetActualOutput()
             {
                 return string.Join(Environment.NewLine,
                     _buffer.ToString().Split(new[] { Environment.NewLine }, StringSplitOptions.None)

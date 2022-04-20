@@ -7,7 +7,7 @@ using NuGet.Versioning;
 
 namespace Xunit
 {
-    internal class VsSetup
+    class VsSetup
     {
         public static string[] GetInstalled()
         {
@@ -16,7 +16,7 @@ namespace Xunit
                          where productVersion != null
                          let semver = SemanticVersion.Parse(productVersion)
                          select new Version(semver.Major, semver.Minor);
-            
+
             return vs2017.Distinct().Select(v => v.ToString()).ToArray();
         }
 

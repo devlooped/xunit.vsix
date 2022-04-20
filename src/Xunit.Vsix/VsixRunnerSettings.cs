@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Xunit
 {
-    internal class VsixRunnerSettings
+    class VsixRunnerSettings
     {
         public VsixRunnerSettings(int? debuggerAttachRetries = null, int? remoteConnectionRetries = null,
             int? processStartRetries = null, int? retrySleepInterval = null,

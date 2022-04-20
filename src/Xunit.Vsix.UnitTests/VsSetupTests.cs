@@ -12,7 +12,7 @@ namespace Xunit
 {
     public class VsSetupTests
     {
-        private const int REGDB_E_CLASSNOTREG = unchecked((int)0x80040154);
+        const int REGDB_E_CLASSNOTREG = unchecked((int)0x80040154);
         ITestOutputHelper output;
 
         public VsSetupTests(ITestOutputHelper output) => this.output = output;
@@ -71,7 +71,7 @@ namespace Xunit
             var catalog = instance as ISetupInstanceCatalog;
 
             output.WriteLine($"InstallationVersion: {installationVersion} ({version})");
-            
+
             if (catalog != null)
             {
                 var value = (string)catalog?.GetCatalogInfo().GetValue("productSemanticVersion");

@@ -8,9 +8,9 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-    internal class VsixTestMethodRunner : XunitTestMethodRunner
+    class VsixTestMethodRunner : XunitTestMethodRunner
     {
-        private readonly IVsClient _vsClient;
+        readonly IVsClient _vsClient;
 
 
         public VsixTestMethodRunner(IVsClient vsClient, ITestMethod testMethod, IReflectionTypeInfo @class, IReflectionMethodInfo method, IEnumerable<IXunitTestCase> testCases, IMessageSink diagnosticMessageSink, IMessageBus messageBus, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)

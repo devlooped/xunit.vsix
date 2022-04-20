@@ -11,12 +11,13 @@ namespace Xunit
     /// Represents a test case which runs multiple tests for theory data, either because the
     /// data was not enumerable or because the data was not serializable.
     /// </summary>
-    internal class VsixTheoryTestCase : VsixTestCase
+    class VsixTheoryTestCase : VsixTestCase
     {
         [EditorBrowsable(EditorBrowsableState.Never)]
         [Obsolete("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes")]
         public VsixTheoryTestCase() { }
 
+        [Obsolete]
         public VsixTheoryTestCase(IMessageSink diagnosticMessageSink, TestMethodDisplay testMethodDisplay, ITestMethod testMethod,
             string vsVersion, string rootSuffix, bool? newIdeInstance, int timeoutSeconds, bool? recycleOnFailure, bool? runOnUIThread)
             : base(diagnosticMessageSink, testMethodDisplay, testMethod, vsVersion, rootSuffix, newIdeInstance, timeoutSeconds, recycleOnFailure, runOnUIThread)

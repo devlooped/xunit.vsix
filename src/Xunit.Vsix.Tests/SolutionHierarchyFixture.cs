@@ -26,7 +26,7 @@ namespace Xunit
     [Collection("SolutionState")]
     public class SolutionHierarchyFixture
     {
-        private SolutionState _solution;
+        SolutionState _solution;
 
         public SolutionHierarchyFixture(SolutionState solution)
         {

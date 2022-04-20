@@ -4,7 +4,7 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-    internal interface IVsRemoteRunner : IDisposable
+    interface IVsRemoteRunner : IDisposable
     {
         string[][] GetEnvironment();
 

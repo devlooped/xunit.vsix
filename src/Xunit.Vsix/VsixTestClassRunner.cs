@@ -7,9 +7,9 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-    internal class VsixTestClassRunner : XunitTestClassRunner
+    class VsixTestClassRunner : XunitTestClassRunner
     {
-        private IVsClient _vsClient;
+        IVsClient _vsClient;
 
         public VsixTestClassRunner(IVsClient vsClient,
                                    ITestClass testClass,

@@ -6,12 +6,13 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-    internal class VsixTestCase : XunitTestCase
+    class VsixTestCase : XunitTestCase
     {
         [EditorBrowsable(EditorBrowsableState.Never)]
         [Obsolete("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes")]
         public VsixTestCase() { }
 
+        [Obsolete]
         public VsixTestCase(IMessageSink messageSink, TestMethodDisplay defaultMethodDisplay, ITestMethod testMethod,
             string vsVersion, string rootSuffix, bool? newIdeInstance, int timeoutSeconds, bool? recycleOnFailure, bool? runOnUIThread, object[] testMethodArguments = null)
             : base(messageSink, defaultMethodDisplay, testMethod, testMethodArguments)

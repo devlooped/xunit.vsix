@@ -23,8 +23,8 @@ namespace Xunit.AssemblyFixtures
 
     public class TestWithAssemblyFixture : IAssemblyFixture<AssemblyFixture>
     {
-        private ITestOutputHelper _output;
-        private AssemblyFixture _state;
+        ITestOutputHelper _output;
+        AssemblyFixture _state;
 
         public TestWithAssemblyFixture(AssemblyFixture state, ITestOutputHelper output)
         {
@@ -42,8 +42,8 @@ namespace Xunit.AssemblyFixtures
 
     public class TestWithAssemblyFixture2 : IAssemblyFixture<AssemblyFixture>
     {
-        private ITestOutputHelper _output;
-        private AssemblyFixture _state;
+        ITestOutputHelper _output;
+        AssemblyFixture _state;
 
         public TestWithAssemblyFixture2(AssemblyFixture state, ITestOutputHelper output)
         {

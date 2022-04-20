@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Xunit
 {
-    internal static class TaskExtensions
+    static class TaskExtensions
     {
         public static async Task<T> TimeoutAfter<T>(this Task<T> task, int millisecondsTimeout)
         {

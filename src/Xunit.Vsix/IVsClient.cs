@@ -4,7 +4,7 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-    internal interface IVsClient : IDisposable
+    interface IVsClient : IDisposable
     {
         void Recycle();
 

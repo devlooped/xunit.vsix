@@ -11,12 +11,12 @@ namespace Xunit
     /// A VSIX test collection represents the set of tests to run against
     /// a particular IDE/RootSuffix combination.
     /// </summary>
-    internal class VsixTestCollectionRunner : XunitTestCollectionRunner, IDisposable
+    class VsixTestCollectionRunner : XunitTestCollectionRunner, IDisposable
     {
-        private IMessageSink _diagnosticMessageSink;
-        private string _vsVersion;
-        private string _rootSuffix;
-        private IVsClient _vs;
+        IMessageSink _diagnosticMessageSink;
+        string _vsVersion;
+        string _rootSuffix;
+        IVsClient _vs;
 
         public VsixTestCollectionRunner(VsixTestCollection testCollection, IEnumerable<IXunitTestCase> testCases, IMessageSink diagnosticMessageSink,
             IMessageBus messageBus, ITestCaseOrderer testCaseOrderer, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource) :

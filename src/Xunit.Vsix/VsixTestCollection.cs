@@ -5,11 +5,11 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-    internal class VsixTestCollection : TestCollection
+    class VsixTestCollection : TestCollection
     {
         [Obsolete]
         public VsixTestCollection() { }
-        
+
         public VsixTestCollection(ITestAssembly testAssembly, ITypeInfo collectionDefinition,
             string visualStudioVersion, string rootSuffix)
             : base(testAssembly, collectionDefinition, visualStudioVersion + " (" + rootSuffix + ")")

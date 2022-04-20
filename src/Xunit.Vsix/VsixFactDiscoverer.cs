@@ -6,15 +6,16 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-    internal class VsixFactDiscoverer : IXunitTestCaseDiscoverer
+    class VsixFactDiscoverer : IXunitTestCaseDiscoverer
     {
-        private IMessageSink _messageSink;
+        IMessageSink _messageSink;
 
         public VsixFactDiscoverer(IMessageSink messageSink)
         {
             _messageSink = messageSink;
         }
 
+        [System.Obsolete]
         public IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo factAttribute)
         {
             var defaultMethodDisplay = discoveryOptions.MethodDisplayOrDefault();
@@ -34,12 +35,12 @@ namespace Xunit
                     testCases.Add(new XunitSkippedDataRowTestCase(
                         _messageSink, defaultMethodDisplay, testMethod,
                        string.Format(
-                           CultureInfo.CurrentCulture, 
-                           "Cannot execute test for specified {0}={1} because {2}={3} and {4}={5}.", 
-                           nameof(IVsixAttribute.VisualStudioVersions), 
-                           string.Join(",", factAttribute.GetNamedArgument<string[]>(nameof(IVsixAttribute.VisualStudioVersions))), 
-                           nameof(IVsixAttribute.MinimumVisualStudioVersion), 
-                           vsix.MinimumVisualStudioVersion, 
+                           CultureInfo.CurrentCulture,
+                           "Cannot execute test for specified {0}={1} because {2}={3} and {4}={5}.",
+                           nameof(IVsixAttribute.VisualStudioVersions),
+                           string.Join(",", factAttribute.GetNamedArgument<string[]>(nameof(IVsixAttribute.VisualStudioVersions))),
+                           nameof(IVsixAttribute.MinimumVisualStudioVersion),
+                           vsix.MinimumVisualStudioVersion,
                            nameof(IVsixAttribute.MaximumVisualStudioVersion),
                            vsix.MaximumVisualStudioVersion)));
                 }

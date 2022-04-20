@@ -5,7 +5,7 @@ namespace System.Dynamic
     /// Allows output parameters to be passed to reflection dynamic.
     /// This support does not exist in C# 4.0 dynamic out of the box.
     /// </summary>
-    internal abstract partial class OutValue
+    abstract partial class OutValue
     {
         /// <summary>
         /// Creates a value setter delegating reference
@@ -28,9 +28,9 @@ namespace System.Dynamic
     /// Allows output parameters to be passed to reflection dynamic.
     /// This support does not exist in C# 4.0 dynamic out of the box.
     /// </summary>
-    internal partial class OutValue<T> : OutValue
+    partial class OutValue<T> : OutValue
     {
-        private Action<T> _setter;
+        Action<T> _setter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OutValue&lt;T&gt;"/> class.

@@ -10,7 +10,7 @@ namespace Xunit
     /// <summary>
     /// Helpers to retrieve hierarchically inherited attribute values for tests.
     /// </summary>
-    internal static class XunitExtensions
+    static class XunitExtensions
     {
         /// <summary>
         /// Default timeout is 60 seconds.
@@ -20,7 +20,7 @@ namespace Xunit
         public static IVsixAttribute GetVsixAttribute(this ITestMethod testMethod, IAttributeInfo vsixAttribute)
         {
             var vsVersions = testMethod.GetComputedProperty<string[]>(vsixAttribute, nameof(IVsixAttribute.VisualStudioVersions));
-            
+
             // Higher versions always win for MinVersion, since this way we can toggle a minimum version 
             // at the assembly level and override the per-test min version that might be obsolete. It's like 
             // limiting the lower bound of what tests can override
@@ -111,7 +111,7 @@ namespace Xunit
             return values.LastOrDefault();
         }
 
-        private static List<T> GetAggregatedProperties<T>(this ITestMethod testMethod, IAttributeInfo factAttribute, string argumentName)
+        static List<T> GetAggregatedProperties<T>(this ITestMethod testMethod, IAttributeInfo factAttribute, string argumentName)
         {
             var values = new List<T>();
             var value = factAttribute == null ? default(T) : factAttribute.GetNamedArgument<T>(argumentName);
@@ -189,8 +189,7 @@ namespace Xunit
         /// </summary>
         public static T GetInitializedArgument<T>(this IAttributeInfo attribute, string argumentName)
         {
-            var reflected = attribute as ReflectionAttributeInfo;
-            if (reflected == null)
+            if (attribute is not ReflectionAttributeInfo reflected)
                 throw new NotSupportedException("Non reflection-based attribute information is not supported.");
 
             if (!reflected.AttributeData.NamedArguments.Any(x => x.MemberName == argumentName))

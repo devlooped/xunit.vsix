@@ -1,21 +1,21 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Windows;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.VisualStudio.ComponentModelHost;
-using Microsoft.VisualStudio.Shell;
-using System.Windows;
 
 namespace Xamarin.VisualStudio
 {
     public class Misc
     {
-        private ITestOutputHelper _output;
+        ITestOutputHelper _output;
 
         public Misc(ITestOutputHelper output)
         {

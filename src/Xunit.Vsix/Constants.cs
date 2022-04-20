@@ -2,7 +2,7 @@
 
 namespace Xunit
 {
-    internal static class Constants
+    static class Constants
     {
         /// <summary>
         /// This assembly name, for use in Xunit attributes that need to specify an

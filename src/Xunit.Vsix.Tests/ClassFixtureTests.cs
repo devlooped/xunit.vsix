@@ -20,8 +20,8 @@ namespace Xunit.ClassFixtures
 
     public class TestsWithClassFixture : IClassFixture<ClassFixture>
     {
-        private ITestOutputHelper _output;
-        private ClassFixture _state;
+        ITestOutputHelper _output;
+        ClassFixture _state;
 
         public TestsWithClassFixture(ClassFixture state, ITestOutputHelper output)
         {

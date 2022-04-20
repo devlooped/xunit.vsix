@@ -16,7 +16,7 @@ namespace Xunit
 {
     public class SolutionTests
     {
-        private IVsHierarchyItem _item;
+        IVsHierarchyItem _item;
 
         public SolutionTests()
         {
@@ -63,7 +63,7 @@ namespace Xunit
 
     public class EndToEnd
     {
-        private ITestOutputHelper _output;
+        ITestOutputHelper _output;
 
         public EndToEnd(ITestOutputHelper output)
         {

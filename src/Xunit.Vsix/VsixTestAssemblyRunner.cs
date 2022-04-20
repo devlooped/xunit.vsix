@@ -13,9 +13,9 @@ namespace Xunit
     /// Groups test cases by IDE version and root suffix, and
     /// delegates to the <see cref="VsixTestCollectionRunner"/>.
     /// </summary>
-    internal class VsixTestAssemblyRunner : XunitTestAssemblyRunner
+    class VsixTestAssemblyRunner : XunitTestAssemblyRunner
     {
-        private List<IDisposable> _disposables = new List<IDisposable>();
+        List<IDisposable> _disposables = new List<IDisposable>();
 
         public VsixTestAssemblyRunner(ITestAssembly testAssembly,
                                        IEnumerable<IXunitTestCase> testCases,
@@ -80,8 +80,7 @@ namespace Xunit
 
         protected override Task<RunSummary> RunTestCollectionAsync(IMessageBus messageBus, ITestCollection testCollection, IEnumerable<IXunitTestCase> testCases, CancellationTokenSource cancellationTokenSource)
         {
-            var vsixCollection = testCollection as VsixTestCollection;
-            if (vsixCollection != null)
+            if (testCollection is VsixTestCollection vsixCollection)
             {
                 var runner = new VsixTestCollectionRunner(vsixCollection, testCases, DiagnosticMessageSink, messageBus, TestCaseOrderer, new ExceptionAggregator(Aggregator), cancellationTokenSource);
                 _disposables.Add(runner);
@@ -113,7 +112,7 @@ namespace Xunit
         /// Orders the test collections using the TestCollectionOrderer.
         /// </summary>
         /// <returns>Test collections (and the associated test cases) in run order</returns>
-        private List<Tuple<VsixTestCollection, List<IXunitTestCase>>> CreateTestCollections(IEnumerable<VsixTestCase> vsixTests)
+        List<Tuple<VsixTestCollection, List<IXunitTestCase>>> CreateTestCollections(IEnumerable<VsixTestCase> vsixTests)
         {
             var collections = new ConcurrentDictionary<string, ITestCollection>();
 

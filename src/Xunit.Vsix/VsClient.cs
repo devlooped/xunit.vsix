@@ -18,21 +18,21 @@ using static ThisAssembly;
 
 namespace Xunit
 {
-    internal class VsClient : IVsClient
+    class VsClient : IVsClient
     {
-        private static readonly TraceSource s_tracer = Constants.Tracer;
+        static readonly TraceSource s_tracer = Constants.Tracer;
 
-        private string _visualStudioVersion;
-        private string _pipeName;
-        private string _rootSuffix;
-        private string _devEnvPath;
+        string _visualStudioVersion;
+        string _pipeName;
+        string _rootSuffix;
+        string _devEnvPath;
 
-        private IChannel _clientChannel;
-        private IVsRemoteRunner _runner;
-        private VsixRunnerSettings _settings;
+        IChannel _clientChannel;
+        IVsRemoteRunner _runner;
+        VsixRunnerSettings _settings;
 
-        private ConcurrentDictionary<IMessageBus, RemoteMessageBus> _remoteBuses = new ConcurrentDictionary<IMessageBus, RemoteMessageBus>();
-        private ConcurrentBag<MarshalByRefObject> _remoteObjects = new ConcurrentBag<MarshalByRefObject>();
+        ConcurrentDictionary<IMessageBus, RemoteMessageBus> _remoteBuses = new ConcurrentDictionary<IMessageBus, RemoteMessageBus>();
+        ConcurrentBag<MarshalByRefObject> _remoteObjects = new ConcurrentBag<MarshalByRefObject>();
 
         public VsClient(string visualStudioVersion, string rootSuffix, VsixRunnerSettings settings)
         {
@@ -55,9 +55,10 @@ namespace Xunit
             // We don't apply retry behavior when a debugger is attached, since that
             // typically means the developer is actually debugging a failing test.
 #if !DEBUG
-			if (Debugger.IsAttached) {
-				return await RunAsyncCore (vsixTest, messageBus, aggregator);
-			}
+            if (Debugger.IsAttached)
+            {
+                return await RunAsyncCore(vsixTest, messageBus, aggregator);
+            }
 #endif
 
             var bufferBus = new InterceptingMessageBus();
@@ -102,7 +103,7 @@ namespace Xunit
             return summary;
         }
 
-        private async Task<RunSummary> RunAsyncCore(VsixTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator)
+        async Task<RunSummary> RunAsyncCore(VsixTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator)
         {
             if (!EnsureConnected(testCase, messageBus))
             {
@@ -151,7 +152,7 @@ namespace Xunit
             Stop();
         }
 
-        private bool EnsureConnected(VsixTestCase testCase, IMessageBus messageBus)
+        bool EnsureConnected(VsixTestCase testCase, IMessageBus messageBus)
         {
             if (!EnsureStarted(testCase, messageBus))
                 return false;
@@ -203,7 +204,7 @@ namespace Xunit
             return true;
         }
 
-        private bool EnsureStarted(VsixTestCase testCase, IMessageBus messageBus)
+        bool EnsureStarted(VsixTestCase testCase, IMessageBus messageBus)
         {
             if (Process == null)
             {
@@ -233,7 +234,7 @@ namespace Xunit
             return true;
         }
 
-        private bool TryPing(IVsRemoteRunner runner)
+        bool TryPing(IVsRemoteRunner runner)
         {
             try
             {
@@ -246,7 +247,7 @@ namespace Xunit
             }
         }
 
-        private bool Start()
+        bool Start()
         {
             _pipeName = Guid.NewGuid().ToString();
 
@@ -402,7 +403,7 @@ namespace Xunit
             return true;
         }
 
-        private void PropagateProfilingVariables(ProcessStartInfo info)
+        void PropagateProfilingVariables(ProcessStartInfo info)
         {
             var allVars = Environment.GetEnvironmentVariables()
                 .OfType<DictionaryEntry>()
@@ -420,7 +421,7 @@ namespace Xunit
             }
         }
 
-        private void Stop()
+        void Stop()
         {
             try
             {
@@ -433,8 +434,7 @@ namespace Xunit
             {
                 try
                 {
-                    var disposable = mbr as IDisposable;
-                    if (disposable != null)
+                    if (mbr is IDisposable disposable)
                         disposable.Dispose();
                 }
                 catch { }
@@ -461,7 +461,7 @@ namespace Xunit
             }
         }
 
-        private string GetDevEnvPath()
+        string GetDevEnvPath()
         {
             var version = new Version(_visualStudioVersion);
             if (version.Major >= 15)
@@ -483,7 +483,7 @@ namespace Xunit
             return path;
         }
 
-        private IEnumerable<EnvDTE.DTE> GetAllDtes()
+        IEnumerable<EnvDTE.DTE> GetAllDtes()
         {
             IRunningObjectTable table;
             IEnumMoniker moniker;
@@ -512,9 +512,9 @@ namespace Xunit
             }
         }
 
-        private class TraceOutputMessageBus : LongLivedMarshalByRefObject, IMessageBus
+        class TraceOutputMessageBus : LongLivedMarshalByRefObject, IMessageBus
         {
-            private IMessageBus _innerBus;
+            IMessageBus _innerBus;
 
             public TraceOutputMessageBus(IMessageBus innerBus)
             {

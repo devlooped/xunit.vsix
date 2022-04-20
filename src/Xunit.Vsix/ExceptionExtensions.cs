@@ -3,18 +3,16 @@ using System.Reflection;
 
 namespace Xunit
 {
-    internal static class ExceptionExtensions
+    static class ExceptionExtensions
     {
         public static Exception Unwrap(this Exception ex)
         {
             while (true)
             {
-                var aex = ex as AggregateException;
-                if (aex != null)
+                if (ex is AggregateException aex)
                     ex = aex.GetBaseException();
 
-                var tiex = ex as TargetInvocationException;
-                if (tiex == null)
+                if (ex is not TargetInvocationException tiex)
                     return ex;
 
                 ex = tiex.InnerException;

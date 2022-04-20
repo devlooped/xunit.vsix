@@ -5,7 +5,7 @@ namespace System.Dynamic
     /// Represents a runtime type parameter to use to 
     /// make a generic method invocation.
     /// </summary>
-    internal partial class TypeParameter
+    partial class TypeParameter
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TypeParameter"/> class.

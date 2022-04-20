@@ -27,8 +27,8 @@ namespace Xunit.CollectionFixtures
     [Collection("MyCollection")]
     public class TestWithCollectionFixture
     {
-        private ITestOutputHelper _output;
-        private CollectionFixture _state;
+        ITestOutputHelper _output;
+        CollectionFixture _state;
 
         public TestWithCollectionFixture(CollectionFixture state, ITestOutputHelper output)
         {
@@ -47,8 +47,8 @@ namespace Xunit.CollectionFixtures
     [Collection("MyCollection")]
     public class TestWithCollectionFixture2
     {
-        private ITestOutputHelper _output;
-        private CollectionFixture _state;
+        ITestOutputHelper _output;
+        CollectionFixture _state;
 
         public TestWithCollectionFixture2(CollectionFixture state, ITestOutputHelper output)
         {

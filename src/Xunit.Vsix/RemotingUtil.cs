@@ -7,7 +7,7 @@ using System.Runtime.Remoting.Services;
 
 namespace Xunit
 {
-    internal class RemotingUtil
+    class RemotingUtil
     {
         public static string HostName { get { return typeof(IVsRemoteRunner).FullName; } }
 
@@ -44,7 +44,7 @@ namespace Xunit
             return channel;
         }
 
-        private class RemoteTracker : ITrackingHandler
+        class RemoteTracker : ITrackingHandler
         {
             public void DisconnectedObject(object obj)
             {

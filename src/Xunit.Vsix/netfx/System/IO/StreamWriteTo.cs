@@ -22,9 +22,9 @@ using System.IO;
 /// another steam or a target file.
 /// </summary>
 /// <nuget id="netfx-System.IO.StreamWriteTo" />
-internal static class StreamWriteTo
+static class StreamWriteTo
 {
-    private const long BufferSize = 4096;
+    const long BufferSize = 4096;
 
     /// <summary>
     /// Writes the input stream to the target file.

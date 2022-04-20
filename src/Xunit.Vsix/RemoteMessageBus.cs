@@ -3,9 +3,9 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-    internal class RemoteMessageBus : LongLivedMarshalByRefObject, IMessageBus
+    class RemoteMessageBus : LongLivedMarshalByRefObject, IMessageBus
     {
-        private IMessageBus _localMessageBus;
+        IMessageBus _localMessageBus;
 
         public RemoteMessageBus(IMessageBus localMessageBus)
         {

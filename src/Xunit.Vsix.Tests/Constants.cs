@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Xamarin.VisualStudio
 {
-    internal static class Constants
+    static class Constants
     {
         public static string BlankSolution
         {

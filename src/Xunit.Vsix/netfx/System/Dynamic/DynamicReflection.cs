@@ -30,7 +30,7 @@ namespace System.Dynamic
     /// and <see cref="AsDynamicReflection(Type)"/> as entry points.
     /// </summary>
     /// <nuget id="netfx-System.Dynamic.Reflection" />
-    internal static partial class DynamicReflection
+    static partial class DynamicReflection
     {
         /// <summary>
         /// Provides dynamic syntax for accessing the given object members.
@@ -70,12 +70,12 @@ namespace System.Dynamic
             return new TypeParameter(type);
         }
 
-        private class DynamicReflectionObject : DynamicObject
+        class DynamicReflectionObject : DynamicObject
         {
-            private static readonly BindingFlags s_flags = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public;
-            private static readonly MethodInfo s_castMethod = typeof(DynamicReflectionObject).GetMethod("Cast", BindingFlags.Static | BindingFlags.NonPublic);
-            private object _target;
-            private Type _targetType;
+            static readonly BindingFlags s_flags = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public;
+            static readonly MethodInfo s_castMethod = typeof(DynamicReflectionObject).GetMethod("Cast", BindingFlags.Static | BindingFlags.NonPublic);
+            object _target;
+            Type _targetType;
 
             public DynamicReflectionObject(object target)
             {
@@ -226,8 +226,7 @@ namespace System.Dynamic
                 }
                 catch (Exception) { }
 
-                var convertible = _target as IConvertible;
-                if (convertible != null)
+                if (_target is IConvertible convertible)
                 {
                     try
                     {
@@ -242,7 +241,7 @@ namespace System.Dynamic
                 return false;
             }
 
-            private static object Invoke(IInvocable method, object instance, object[] args)
+            static object Invoke(IInvocable method, object instance, object[] args)
             {
                 var finalArgs = args.Where(x => !(x is TypeParameter)).Select(UnboxDynamic).ToArray();
                 var refArgs = new Dictionary<int, RefValue>();
@@ -251,11 +250,9 @@ namespace System.Dynamic
                 {
                     if (method.Parameters[i].ParameterType.IsByRef)
                     {
-                        var refArg = finalArgs[i] as RefValue;
-                        var outArg = finalArgs[i] as OutValue;
-                        if (refArg != null)
+                        if (finalArgs[i] is RefValue refArg)
                             refArgs[i] = refArg;
-                        else if (outArg != null)
+                        else if (finalArgs[i] is OutValue outArg)
                             outArgs[i] = outArg;
                     }
                 }
@@ -287,10 +284,9 @@ namespace System.Dynamic
             /// Converts dynamic objects to object, which may cause unboxing 
             /// of the wrapped dynamic such as in our own DynamicReflectionObject type.
             /// </summary>
-            private static object UnboxDynamic(object maybeDynamic)
+            static object UnboxDynamic(object maybeDynamic)
             {
-                var dyn = maybeDynamic as DynamicObject;
-                if (dyn == null)
+                if (maybeDynamic is not DynamicObject dyn)
                     return maybeDynamic;
 
                 var binder = (ConvertBinder)Microsoft.CSharp.RuntimeBinder.Binder.Convert(CSharpBinderFlags.ConvertExplicit, typeof(object), typeof(DynamicReflectionObject));
@@ -301,7 +297,7 @@ namespace System.Dynamic
                 return result;
             }
 
-            private IInvocable FindBestMatch(DynamicMetaObjectBinder binder, string memberName, object[] args)
+            IInvocable FindBestMatch(DynamicMetaObjectBinder binder, string memberName, object[] args)
             {
                 var finalArgs = args.Where(x => !(x is TypeParameter)).Select(UnboxDynamic).ToArray();
                 var genericTypeArgs = new List<Type>();
@@ -337,8 +333,7 @@ namespace System.Dynamic
                         .Distinct());
                 }
 
-                var methodInvocable = method as MethodInvocable;
-                if (method != null && methodInvocable != null && methodInvocable.Method.IsGenericMethodDefinition)
+                if (method != null && method is MethodInvocable methodInvocable && methodInvocable.Method.IsGenericMethodDefinition)
                 {
                     method = new MethodInvocable(methodInvocable.Method.MakeGenericMethod(genericTypeArgs.ToArray()));
                 }
@@ -346,7 +341,7 @@ namespace System.Dynamic
                 return method;
             }
 
-            private IInvocable FindBestMatch(DynamicMetaObjectBinder binder, object[] args, List<Type> genericArgs, IEnumerable<IInvocable> candidates)
+            IInvocable FindBestMatch(DynamicMetaObjectBinder binder, object[] args, List<Type> genericArgs, IEnumerable<IInvocable> candidates)
             {
                 var result = FindBestMatchImpl(binder, args, genericArgs, candidates, MatchingStyle.ExactType);
                 if (result == null)
@@ -368,7 +363,7 @@ namespace System.Dynamic
             /// <param name="candidates">The candidate methods to use for the match..</param>
             /// <param name="matching">if set to <c>MatchingStyle.AssignableFrom</c>, uses a more lax matching approach for arguments, with IsAssignableFrom instead of == for arg type, 
             /// and <c>MatchingStyle.GenericTypeHint</c> tries to use the generic arguments as type hints if they match the # of args.</param>
-            private IInvocable FindBestMatchImpl(DynamicMetaObjectBinder binder, object[] args, List<Type> genericArgs, IEnumerable<IInvocable> candidates, MatchingStyle matching)
+            IInvocable FindBestMatchImpl(DynamicMetaObjectBinder binder, object[] args, List<Type> genericArgs, IEnumerable<IInvocable> candidates, MatchingStyle matching)
             {
                 dynamic dynamicBinder = binder.AsDynamicReflection();
                 for (int i = 0; i < args.Length; i++)
@@ -410,7 +405,7 @@ namespace System.Dynamic
                 return candidates.FirstOrDefault();
             }
 
-            private static Type GetArgumentType(object arg)
+            static Type GetArgumentType(object arg)
             {
                 if (arg is RefValue || arg is OutValue)
                     return arg.GetType().GetGenericArguments()[0].MakeByRefType();
@@ -420,7 +415,7 @@ namespace System.Dynamic
                 return arg.GetType();
             }
 
-            private object AsDynamicIfNecessary(object value)
+            object AsDynamicIfNecessary(object value)
             {
                 if (value == null)
                     return value;
@@ -432,12 +427,12 @@ namespace System.Dynamic
                 return value;
             }
 
-            private static T Cast<T>(object target)
+            static T Cast<T>(object target)
             {
                 return (T)target;
             }
 
-            private enum MatchingStyle
+            enum MatchingStyle
             {
                 ExactType,
                 AssignableFrom,
@@ -445,7 +440,7 @@ namespace System.Dynamic
                 AssignableFromGenericHint,
             }
 
-            private interface IInvocable
+            interface IInvocable
             {
                 bool IsGeneric { get; }
                 int GenericParameters { get; }
@@ -453,10 +448,10 @@ namespace System.Dynamic
                 object Invoke(object obj, object[] parameters);
             }
 
-            private class MethodInvocable : IInvocable
+            class MethodInvocable : IInvocable
             {
-                private MethodInfo _method;
-                private Lazy<IList<ParameterInfo>> _parameters;
+                MethodInfo _method;
+                Lazy<IList<ParameterInfo>> _parameters;
 
                 public MethodInvocable(MethodInfo method)
                 {
@@ -481,10 +476,10 @@ namespace System.Dynamic
                 public int GenericParameters { get { return _method.GetGenericArguments().Length; } }
             }
 
-            private class ConstructorInvocable : IInvocable
+            class ConstructorInvocable : IInvocable
             {
-                private ConstructorInfo _ctor;
-                private Lazy<IList<ParameterInfo>> _parameters;
+                ConstructorInfo _ctor;
+                Lazy<IList<ParameterInfo>> _parameters;
 
                 public ConstructorInvocable(ConstructorInfo ctor)
                 {

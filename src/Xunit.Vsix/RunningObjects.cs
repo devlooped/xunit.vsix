@@ -8,9 +8,9 @@ using NuGet.Versioning;
 
 namespace Xunit
 {
-    internal static class RunningObjects
+    static class RunningObjects
     {
-        private static readonly Regex s_versionExpr = new Regex(@"Microsoft Visual Studio (?<version>\d\d\.\d)", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+        static readonly Regex s_versionExpr = new Regex(@"Microsoft Visual Studio (?<version>\d\d\.\d)", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
         public static EnvDTE.DTE GetDTE(TimeSpan retryTimeout)
         {
@@ -71,7 +71,7 @@ namespace Xunit
             return (T)comObject;
         }
 
-        private static object GetComObject(string monikerName)
+        static object GetComObject(string monikerName)
         {
             object comObject = null;
             try

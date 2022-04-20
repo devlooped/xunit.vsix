@@ -10,7 +10,7 @@ namespace Xunit
 {
     public class TestOutputTraceListener : TraceListener
     {
-        private ITestOutputHelper _output;
+        ITestOutputHelper _output;
 
         public TestOutputTraceListener(ITestOutputHelper output)
         {

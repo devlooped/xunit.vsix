@@ -30,11 +30,6 @@ jobs:
       - name: ✓ ensure format
         run: dotnet format --verify-no-changes -v:diag --exclude ~/.nuget
 
-      - name: ⚙ update
-        run: |
-          dotnet tool update -g dotnet-vs 
-          vs update -all
-
       - name: ≥ msbuild
         id: msbuild
         uses: microsoft/setup-msbuild@v1.1

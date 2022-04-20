@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Security;
-using Xunit.Properties;
+using static ThisAssembly;
 
 namespace Xunit
 {

@@ -16,7 +16,6 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 using System.Collections;
-using Xunit.Properties;
 using System.IO;
 
 namespace Xunit

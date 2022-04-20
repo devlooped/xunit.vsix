@@ -15,9 +15,9 @@ namespace Xunit
     {
         public SolutionState()
         {
-            var components = GlobalServices.GetService<SComponentModel, IComponentModel>();
+            var components = ServiceProvider.GlobalProvider.GetService<SComponentModel, IComponentModel>();
             var manager = components.GetService<IVsHierarchyItemManager>();
-            Solution = manager.GetHierarchyItem(GlobalServices.GetService<SVsSolution, IVsHierarchy>(), (uint)VSConstants.VSITEMID.Root);
+            Solution = manager.GetHierarchyItem(ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsHierarchy>(), (uint)VSConstants.VSITEMID.Root);
         }
 
         public IVsHierarchyItem Solution { get; private set; }

@@ -20,9 +20,9 @@ namespace Xunit
 
         public SolutionTests()
         {
-            var components = GlobalServices.GetService<SComponentModel, IComponentModel>();
+            var components = ServiceProvider.GlobalProvider.GetService<SComponentModel, IComponentModel>();
             var manager = components.GetService<IVsHierarchyItemManager>();
-            _item = manager.GetHierarchyItem(GlobalServices.GetService<SVsSolution, IVsHierarchy>(), (uint)VSConstants.VSITEMID.Root);
+            _item = manager.GetHierarchyItem(ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsHierarchy>(), (uint)VSConstants.VSITEMID.Root);
             Trace.WriteLine("SolutionTests Created");
         }
 
@@ -126,7 +126,7 @@ namespace Xunit
         [VsixFact]
         public void when_loading_solution_then_succeeds()
         {
-            var dte = GlobalServices.GetService<EnvDTE.DTE>();
+            var dte = ServiceProvider.GlobalProvider.GetService<EnvDTE.DTE>();
 
             Assert.NotNull(dte);
 
@@ -137,10 +137,10 @@ namespace Xunit
             Assert.True(dte.Solution.IsOpen);
         }
 
-        [VsixFact(MinimumVisualStudioVersion = VisualStudioVersion.VS2015, MaximumVisualStudioVersion = VisualStudioVersion.VS2015)]
+        [VsixFact(MinimumVisualStudioVersion = VisualStudioVersion.VS2017, MaximumVisualStudioVersion = VisualStudioVersion.VS2017)]
         public void when_annotating_with_minimum_and_maximum_then_excludes_other_versions()
         {
-            var dte = GlobalServices.GetService<EnvDTE.DTE>();
+            var dte = ServiceProvider.GlobalProvider.GetService<EnvDTE.DTE>();
 
             Assert.NotNull(dte);
 

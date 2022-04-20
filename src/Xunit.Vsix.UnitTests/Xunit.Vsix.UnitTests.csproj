@@ -1,21 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <RootNamespace>Xunit</RootNamespace>
     <TargetFramework>net472</TargetFramework>
     <LangVersion>Latest</LangVersion>
     <Nullable>annotations</Nullable>
-    <IsPackable>false</IsPackable>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\Xunit.Vsix.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="IsExternalInit" Version="1.0.2" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
-    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.15.103" />
+    <PackageReference Include="IsExternalInit" Version="1.0.2" PrivateAssets="all" />
     <PackageReference Include="NuGet.Versioning" Version="6.1.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.15.103" />
   </ItemGroup>
 
   <ItemGroup>

@@ -25,17 +25,17 @@ namespace Xamarin.VisualStudio
         [VsixFact]
         public void when_reopenening_solution_then_vssolution_is_same()
         {
-            var dte = GlobalServices.GetService<DTE>();
-            var solutionEmpty = GlobalServices.GetService<SVsSolution, IVsSolution>();
+            var dte = ServiceProvider.GlobalProvider.GetService<DTE>();
+            var solutionEmpty = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
 
             dte.Solution.Open(new FileInfo(Constants.SingleProjectSolution).FullName);
 
-            var solution1 = GlobalServices.GetService<SVsSolution, IVsSolution>();
+            var solution1 = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
 
             dte.Solution.Close();
             dte.Solution.Open(new FileInfo(Constants.BlankSolution).FullName);
 
-            var solution2 = GlobalServices.GetService<SVsSolution, IVsSolution>();
+            var solution2 = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
 
             Assert.Same(solutionEmpty, solution1);
             Assert.Same(solution1, solution2);
@@ -46,23 +46,23 @@ namespace Xamarin.VisualStudio
         [VsixFact]
         public void when_reopenening_solution_then_hierarchy_item_is_same()
         {
-            var dte = GlobalServices.GetService<DTE>();
-            var solutionEmpty = GlobalServices.GetService<SVsSolution, IVsSolution>();
-            var manager = GlobalServices.GetService<SComponentModel, IComponentModel>().GetService<IVsHierarchyItemManager>();
+            var dte = ServiceProvider.GlobalProvider.GetService<DTE>();
+            var solutionEmpty = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
+            var manager = ServiceProvider.GlobalProvider.GetService<SComponentModel, IComponentModel>().GetService<IVsHierarchyItemManager>();
 
             var solutionEmptyItem = manager.GetHierarchyItem(solutionEmpty as IVsHierarchy, (uint)VSConstants.VSITEMID.Root);
             Assert.NotNull(solutionEmptyItem);
 
             dte.Solution.Open(new FileInfo(Constants.SingleProjectSolution).FullName);
 
-            var solution1 = GlobalServices.GetService<SVsSolution, IVsSolution>();
+            var solution1 = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
             var solution1Item = manager.GetHierarchyItem(solution1 as IVsHierarchy, (uint)VSConstants.VSITEMID.Root);
 
             dte.Solution.Close();
 
             dte.Solution.Open(new FileInfo(Constants.BlankSolution).FullName);
 
-            var solution2 = GlobalServices.GetService<SVsSolution, IVsSolution>();
+            var solution2 = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
             var solution2Item = manager.GetHierarchyItem(solution2 as IVsHierarchy, (uint)VSConstants.VSITEMID.Root);
 
             Assert.NotNull(solution1Item);

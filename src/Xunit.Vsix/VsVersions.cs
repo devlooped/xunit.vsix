@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Win32;
 using NuGet.Versioning;
-using Xunit.Properties;
+using static ThisAssembly;
 
 namespace Xunit
 {

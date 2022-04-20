@@ -1,44 +1,46 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <PropertyGroup>
     <RootNamespace>Xunit</RootNamespace>
-    <AssemblyName>xunit.vsix.tests</AssemblyName>
     <TargetFramework>net472</TargetFramework>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
+    <Nullable>annotations</Nullable>
+
+    <VisualStudioVersions Condition="'$(Configuration)' == 'Release' or '$(BuildingInsideVisualStudio)' != 'true'">All</VisualStudioVersions>
+    <VisualStudioVersions Condition="'$(Configuration)' == 'Debug'">$(VisualStudioVersion)</VisualStudioVersions>
+    
+    <!-- Change the default hive to run on depending on CI vs local builds. -->
+    <RootSuffix Condition="!$(CI)">Exp</RootSuffix>
+    <RootSuffix Condition="$(CI)"></RootSuffix>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\Xunit.Vsix.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include="..\Xunit.Vsix.snk">
-      <Link>Xunit.Vsix.snk</Link>
-    </None>
-    <None Include="App.config" />
-    <None Include="xunit.runner.json" />
-  </ItemGroup>
+
   <ItemGroup>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationFramework" />
   </ItemGroup>
+  
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.15.103" />
-    <PackageReference Include="MSBuilder.CI" Version="0.1.2" />
-    <PackageReference Include="NuGet.Versioning" Version="4.4.0" />
-    <PackageReference Include="StrongNamer" Version="0.0.6" />
-    <PackageReference Include="VSSDK.DTE.8" Version="8.0.4" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
+    <PackageReference Include="IsExternalInit" Version="1.0.2" PrivateAssets="all" />
+    <PackageReference Include="NuGet.Versioning" Version="6.1.0" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="16.0.202" />
     <PackageReference Include="Octokit" Version="0.28.0" />
-    <PackageReference Include="Xamarin.VSSDK" Version="0.2.30-alpha" />
   </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\Xunit.Vsix\Xunit.Vsix.csproj" />
   </ItemGroup>
-  <Import Project="Xunit.Vsix.Tests.targets" />
+  
+  <ItemGroup>
+    <Compile Remove="Content\**\*.*" />
+    <None Remove="Content\**\*.*" />
+    <Content Include="Content\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  
   <Import Project="..\Xunit.Vsix\build\xunit.vsix.props" />
-  <Import Project="..\Xunit.Vsix.targets" />
-  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">
-    <VisualStudioVersions>All</VisualStudioVersions>
-  </PropertyGroup>
   <Import Project="..\Xunit.Vsix\build\xunit.vsix.targets" />
+  
 </Project>

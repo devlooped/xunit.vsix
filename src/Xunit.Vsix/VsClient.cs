@@ -13,8 +13,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Xunit.Abstractions;
-using Xunit.Properties;
 using Xunit.Sdk;
+using static ThisAssembly;
 
 namespace Xunit
 {

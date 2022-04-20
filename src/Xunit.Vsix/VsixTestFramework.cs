@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 using Xunit.Sdk;
 using System.Linq;
 using System.IO;
-using Xunit.Properties;
+using static ThisAssembly;
 
 namespace Xunit
 {

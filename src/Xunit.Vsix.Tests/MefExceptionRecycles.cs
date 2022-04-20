@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace Xunit
 {
@@ -26,7 +22,7 @@ namespace Xunit
             throw ex;
         }
 
-        [VsixFact(VisualStudioVersion.VS2015, Skip = "Manual faking of MEF invalid cache.")]
+        [VsixFact(VisualStudioVersion.VS2017, Skip = "Manual faking of MEF invalid cache.")]
         public void when_throwing_mef_exception_then_recycles()
         {
         }

@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.Setup.Configuration;
 using NuGet.Versioning;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Xunit

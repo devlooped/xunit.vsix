@@ -12,8 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 using Task = System.Threading.Tasks.Task;

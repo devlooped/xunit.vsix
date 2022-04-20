@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Microsoft.Win32;
 using NuGet.Versioning;
 using static ThisAssembly;
 

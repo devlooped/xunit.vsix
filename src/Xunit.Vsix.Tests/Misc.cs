@@ -1,9 +1,5 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Windows;
+﻿using System.IO;
 using EnvDTE;
-using EnvDTE80;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;

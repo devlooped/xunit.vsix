@@ -14,10 +14,7 @@ namespace Xunit
         /// <summary>
         /// Sets default values for properties other than the VS version.
         /// </summary>
-        public VsixFactAttribute()
-            : this(new[] { VisualStudioVersion.All })
-        {
-        }
+        public VsixFactAttribute() { }
 
         /// <summary>
         /// Overrides the default Visual Studio version for the test.

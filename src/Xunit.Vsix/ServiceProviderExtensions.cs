@@ -19,7 +19,7 @@ namespace Xunit
         /// Retrieves a service from the provider with the given registration and casts it
         /// to the given service.
         /// </summary>
-        public static TService GetService<TRegistration, TService>(this IServiceProvider services)
+        internal static TService GetService<TRegistration, TService>(this IServiceProvider services)
         {
             return (TService)services.GetService(typeof(TRegistration));
         }

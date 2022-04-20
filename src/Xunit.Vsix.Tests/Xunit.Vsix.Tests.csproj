@@ -5,12 +5,17 @@
     <TargetFramework>net472</TargetFramework>
     <Nullable>annotations</Nullable>
 
+    <!--
     <VisualStudioVersions Condition="'$(Configuration)' == 'Release' or '$(BuildingInsideVisualStudio)' != 'true'">All</VisualStudioVersions>
     <VisualStudioVersions Condition="'$(Configuration)' == 'Debug'">$(VisualStudioVersion)</VisualStudioVersions>
+    -->
     
     <!-- Change the default hive to run on depending on CI vs local builds. -->
     <RootSuffix Condition="!$(CI)">Exp</RootSuffix>
     <RootSuffix Condition="$(CI)"></RootSuffix>
+
+    <!-- ThisAssembly conflicts due to InternalsVisibleTo -->
+    <NoWarn>CS0436</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,8 +31,9 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
     <PackageReference Include="IsExternalInit" Version="1.0.2" PrivateAssets="all" />
     <PackageReference Include="NuGet.Versioning" Version="6.1.0" />
-    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="16.0.202" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.1.*" />
     <PackageReference Include="Octokit" Version="0.28.0" />
+    <PackageReference Include="ThisAssembly" Version="1.0.9" />
   </ItemGroup>
   
   <ItemGroup>
@@ -40,9 +46,12 @@
     <Content Include="Content\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <FileConstant Include="@(Content)" />
+    <ProjectProperty Include="MSBuildProjectDirectory" />
+    <ProjectProperty Include="OutputPath" />
   </ItemGroup>
   
   <Import Project="..\Xunit.Vsix\build\xunit.vsix.props" />
   <Import Project="..\Xunit.Vsix\build\xunit.vsix.targets" />
-  
+
 </Project>

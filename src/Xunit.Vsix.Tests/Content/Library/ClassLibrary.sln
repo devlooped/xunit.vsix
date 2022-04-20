@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SingleProject", "SingleProject.csproj", "{18235503-98B0-4A13-AA8B-530ADB2C1014}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary", "ClassLibrary.csproj", "{18235503-98B0-4A13-AA8B-530ADB2C1014}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

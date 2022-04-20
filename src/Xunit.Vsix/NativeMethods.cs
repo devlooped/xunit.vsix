@@ -1,56 +1,56 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 
-namespace Microsoft.VisualStudio.ComponentModelHost
+namespace Xunit.Interop
 {
     [Guid("FD57C398-FDE3-42c2-A358-660F269CBE43")]
     interface SComponentModel
     {
     }
-}
 
-namespace Microsoft.VisualStudio.OLE.Interop
-{
+    /// <summary />
     [ComImport]
     [TypeIdentifier]
     [Guid("6D5140C1-7436-11CE-8034-00AA006009FA")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    interface IServiceProvider
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public interface IServiceProvider
     {
+        /// <summary />
         [MethodImpl(MethodImplOptions.PreserveSig | MethodImplOptions.InternalCall)]
         int QueryService([In][ComAliasName("Microsoft.VisualStudio.OLE.Interop.REFGUID")] ref Guid guidService, [In][ComAliasName("Microsoft.VisualStudio.OLE.Interop.REFIID")] ref Guid riid, out IntPtr ppvObject);
     }
-}
 
-namespace Microsoft.VisualStudio.Shell.Interop
-{
-    //[TypeIdentifier]
     [Guid("FD9DC8E3-2FFC-446D-8C50-99CA4A3D2D1C")]
     interface SVsShell
     {
     }
 
+    /// <summary />
     [ComImport]
     [TypeIdentifier]
     [Guid("FD9DC8E3-2FFC-446D-8C50-99CA4A3D2D1C")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    interface IVsShell
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public interface IVsShell
     {
+        /// <summary />
         [MethodImpl(MethodImplOptions.PreserveSig | MethodImplOptions.InternalCall)]
         int GetProperty([In][ComAliasName("Microsoft.VisualStudio.Shell.Interop.VSSPROPID")] int propid, [MarshalAs(UnmanagedType.Struct)] out object pvar);
     }
-}
 
-namespace EnvDTE
-{
+    /// <summary />
     [TypeIdentifier]
     [ComImport]
     [TypeLibType(4160)]
     [Guid("04A72314-32E9-48E2-9B87-A63603454F3E")]
-    interface DTE
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public interface DTE
     {
+        /// <summary />
         [DispId(100)]
         string Version
         {
@@ -70,7 +70,7 @@ static class NativeMethods
     public const int PROCESS_QUERY_INFORMATION = 0x400;
     public const int TH32CS_SNAPPROCESS = 2;
 
-    public static readonly Guid IID_IServiceProvider = typeof(Microsoft.VisualStudio.OLE.Interop.IServiceProvider).GUID;
+    public static readonly Guid IID_IServiceProvider = new Guid("6D5140C1-7436-11CE-8034-00AA006009FA");
     public static readonly Guid IID_IObjectWithSite = new Guid("FC4801A3-2BA9-11CF-A229-00AA003D7352");
     public static Guid IID_IUnknown = new Guid("00000000-0000-0000-C000-000000000046");
 

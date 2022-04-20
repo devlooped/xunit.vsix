@@ -27,18 +27,19 @@
 
   <ItemGroup>
     <None Remove="@(PackageFile)" />
-    <None Remove="netfx\.editorconfig" />
-    <AdditionalFiles Include="netfx\.editorconfig" />
     <None Include="build\xunit.runner.json" />
     <None Include="build\xunit.vsix.props" />
     <None Include="build\xunit.vsix.targets" />
   </ItemGroup>
 
   <ItemGroup>
+    <!--<PackageReference Include="envdte" Version="8.0.2" />-->
     <PackageReference Include="GitInfo" Version="2.2.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <!--<PackageReference Include="Microsoft.VisualStudio.OLE.Interop" Version="7.10.6072" />-->
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.1.2196" PrivateAssets="all" />
+    <!--<PackageReference Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6073" />-->
     <PackageReference Include="ThisAssembly.Strings" Version="1.0.9" PrivateAssets="all" />
     <PackageReference Include="Devlooped.Injector" Version="42.42.42-main.7" />
     <PackageReference Include="xunit" Version="2.4.1" />
@@ -60,7 +61,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="xunit.vsix.unittests" />
+    <InternalsVisibleTo Include="xunit.vsix.tests" />
   </ItemGroup>
   
   <Target Name="_EmbedInteropTypes" AfterTargets="ResolveAssemblyReferences">

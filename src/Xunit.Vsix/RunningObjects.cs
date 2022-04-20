@@ -12,7 +12,7 @@ namespace Xunit
     {
         static readonly Regex s_versionExpr = new Regex(@"Microsoft Visual Studio (?<version>\d\d\.\d)", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
-        public static EnvDTE.DTE GetDTE(TimeSpan retryTimeout)
+        public static Interop.DTE GetDTE(TimeSpan retryTimeout)
         {
             var processId = Process.GetCurrentProcess().Id;
             var devEnv = Process.GetCurrentProcess().MainModule.FileName;
@@ -36,20 +36,20 @@ namespace Xunit
                 if (semver == null)
                     throw new NotSupportedException("Could not determine the SemanticVersion for Visual Studio from devenv.isolation.ini at " + ini);
 
-                return GetComObject<EnvDTE.DTE>(string.Format("!{0}.{1}.0:{2}",
+                return GetComObject<Interop.DTE>(string.Format("!{0}.{1}.0:{2}",
                     "VisualStudio.DTE", semver.Major, processId), retryTimeout);
             }
             else
             {
-                return GetComObject<EnvDTE.DTE>(string.Format("!{0}.{1}:{2}",
+                return GetComObject<Interop.DTE>(string.Format("!{0}.{1}:{2}",
                     "VisualStudio.DTE", version.Value, processId), retryTimeout);
             }
         }
 
-        public static EnvDTE.DTE GetDTE(string visualStudioVersion, int processId, TimeSpan retryTimeout)
+        public static Interop.DTE GetDTE(string visualStudioVersion, int processId, TimeSpan retryTimeout)
         {
             var version = Version.Parse(visualStudioVersion);
-            return GetComObject<EnvDTE.DTE>(string.Format("!{0}.{1}:{2}",
+            return GetComObject<Interop.DTE>(string.Format("!{0}.{1}:{2}",
                 "VisualStudio.DTE", version.Major + ".0", processId), retryTimeout);
         }
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Xunit.Abstractions;
@@ -6,15 +7,19 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-    class VsixFactDiscoverer : IXunitTestCaseDiscoverer
+    /// <summary />
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public class VsixFactDiscoverer : IXunitTestCaseDiscoverer
     {
         IMessageSink _messageSink;
 
+        /// <summary />
         public VsixFactDiscoverer(IMessageSink messageSink)
         {
             _messageSink = messageSink;
         }
 
+        /// <summary />
         [System.Obsolete]
         public IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo factAttribute)
         {

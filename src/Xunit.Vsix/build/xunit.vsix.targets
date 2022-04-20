@@ -10,6 +10,12 @@
     <Content Update="@(Content -> WithMetadataValue('NuGetPackageId', 'Devlooped.Injector'))">
       <Visible>false</Visible>
     </Content>
+    <!-- This file is used to avoid VS starting up with the default dialog -->
+    <Content Include="$(MSBuildThisFileDirectory)EmptyStartup.vssettings"
+             Link="EmptyStartup.vssettings"
+             CopyToOutputDirectory="PreserveNewest"
+             NuGetPackageId="xunit.vsix"
+             Visible="false" />
   </ItemGroup>
 
   <Target Name="VsixFrameworkInfo"

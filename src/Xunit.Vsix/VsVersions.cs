@@ -42,15 +42,25 @@ namespace Xunit
             if (Environment.GetEnvironmentVariable("VisualStudioVersion") is string envVersion &&
                 !string.IsNullOrEmpty(envVersion))
             {
-                var iniPath = Path.Combine(Environment.GetEnvironmentVariable("VSAPPIDDIR"), "devenv.isolation.ini");
-                // The above envvar will be 17.0 for 17.x, so first try to get the specific semver, if possible.
-                if (File.Exists(iniPath) && SemanticVersion.TryParse(File
-                    .ReadAllLines(iniPath)
-                    .FirstOrDefault(line => line.StartsWith("SemanticVersion="))?
-                    .Substring("SemanticVersion=".Length),
-                    out var semVer))
+                var devEnvDir = Environment.GetEnvironmentVariable("DevEnvDir") ?? 
+                    Environment.GetEnvironmentVariable("VSAPPIDDIR");
+
+                if (devEnvDir == null &&
+                    Environment.GetEnvironmentVariable("VSINSTALLDIR") is string vsInstallDir)
+                    devEnvDir = Path.Combine(vsInstallDir, @"Common7\IDE");
+
+                if (!string.IsNullOrEmpty(devEnvDir) && Directory.Exists(devEnvDir))
                 {
-                    envVersion = semVer.Major + "." + semVer.Minor;
+                    var iniPath = Path.Combine(devEnvDir, "devenv.isolation.ini");
+                    // The above envvar will be 17.0 for 17.x, so first try to get the specific semver, if possible.
+                    if (File.Exists(iniPath) && SemanticVersion.TryParse(File
+                        .ReadAllLines(iniPath)
+                        .FirstOrDefault(line => line.StartsWith("SemanticVersion="))?
+                        .Substring("SemanticVersion=".Length),
+                        out var semVer))
+                    {
+                        envVersion = semVer.Major + "." + semVer.Minor;
+                    }
                 }
 
                 // Ensures we get one of the installed ones. If the envvar results in no installed one, that's a bug.
@@ -87,7 +97,13 @@ namespace Xunit
                 new[] { "[" + LatestVersion + "]" } :
                 new[] { version }).ToList();
 
-            var ranges = vsVersions.Distinct().Select(x => VersionRange.Parse(x)).ToList();
+            var ranges = vsVersions.Distinct().Select(x =>
+            {
+                if (!VersionRange.TryParse(x, out var range))
+                    Debug.Fail($"Could not parse {x} as a version range.");
+
+                return VersionRange.Parse(x);
+            }).ToList();
 
             var final = installedSemVer.Where(semVer =>
             {

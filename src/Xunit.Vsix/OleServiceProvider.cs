@@ -5,13 +5,13 @@ namespace Xunit
 {
     class OleServiceProvider : IServiceProvider
     {
-        Microsoft.VisualStudio.OLE.Interop.IServiceProvider serviceProvider;
+        Interop.IServiceProvider serviceProvider;
 
-        public OleServiceProvider(Microsoft.VisualStudio.OLE.Interop.IServiceProvider serviceProvider)
+        public OleServiceProvider(Interop.IServiceProvider serviceProvider)
             => this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
-        public OleServiceProvider(EnvDTE.DTE dte)
-            : this((Microsoft.VisualStudio.OLE.Interop.IServiceProvider)dte) { }
+        public OleServiceProvider(Interop.DTE dte)
+            : this((Interop.IServiceProvider)dte) { }
 
         public object GetService(Type serviceType)
             => GetService((serviceType ?? throw new ArgumentNullException(nameof(serviceType))).GUID);

@@ -11,7 +11,6 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.ComponentModelHost;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 using static ThisAssembly;
@@ -250,8 +249,15 @@ namespace Xunit
         bool Start()
         {
             _pipeName = Guid.NewGuid().ToString();
+            var args = "";
 
-            var info = new ProcessStartInfo(_devEnvPath, string.IsNullOrEmpty(_rootSuffix) ? "" : "/RootSuffix " + _rootSuffix)
+            if (Version.Parse(_visualStudioVersion) >= new Version("16.0"))
+                args = "/ResetSettings EmptyStartup.vssettings ";
+
+            if (!string.IsNullOrEmpty(_rootSuffix))
+                args += "/RootSuffix " + _rootSuffix;
+
+            var info = new ProcessStartInfo(_devEnvPath, args)
             {
                 UseShellExecute = false,
                 WorkingDirectory = Directory.GetCurrentDirectory(),
@@ -308,7 +314,7 @@ namespace Xunit
 
             // Retrieve the component model service, which could also now take time depending on new
             // extensions being installed or updated before the first launch.
-            var components = services.GetService<SComponentModel, object>();
+            var components = services.GetService<Interop.SComponentModel, object>();
 
             //if (Debugger.IsAttached)
             //{
@@ -483,7 +489,7 @@ namespace Xunit
             return path;
         }
 
-        IEnumerable<EnvDTE.DTE> GetAllDtes()
+        IEnumerable<Interop.DTE> GetAllDtes()
         {
             IRunningObjectTable table;
             IEnumMoniker moniker;
@@ -506,7 +512,7 @@ namespace Xunit
                     {
                         object comObject;
                         table.GetObject(rgelt[0], out comObject);
-                        yield return (EnvDTE.DTE)comObject;
+                        yield return (Interop.DTE)comObject;
                     }
                 }
             }

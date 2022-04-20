@@ -19,7 +19,7 @@
     <!-- Specify 'All' to set the assembly-level default to use all installed VS versions. -->
     <!-- Specify a semicolon-separated list for specific versions, such as '11.0, 12.0' . -->
     <!-- Default is current VS version being used to build -->
-    <VisualStudioVersions Condition=" '$(VisualStudioVersions)' == '' ">$(DefaultVisualStudioVersion)</VisualStudioVersions>
+    <VisualStudioVersions Condition=" '$(VisualStudioVersions)' == '' ">[$(DefaultVisualStudioVersion)]</VisualStudioVersions>
 
     <!-- The following two values are useful in combination with All for $(VisualStudioVersion) -->
     <!-- Optionally specify the defautl minimum version required by tests in this assembly -->

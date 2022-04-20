@@ -1,21 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Xunit
 {
-    class VsixTheoryDiscoverer : IXunitTestCaseDiscoverer
+    /// <summary />
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public class VsixTheoryDiscoverer : IXunitTestCaseDiscoverer
     {
         IMessageSink _diagnosticMessageSink;
 
+        /// <summary />
         public VsixTheoryDiscoverer(IMessageSink diagnosticMessageSink)
         //: base (diagnosticMessageSink)
         {
             _diagnosticMessageSink = diagnosticMessageSink;
         }
 
+        /// <summary />
         [Obsolete]
         public IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo theoryAttribute)
         {

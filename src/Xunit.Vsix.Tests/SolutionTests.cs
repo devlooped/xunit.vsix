@@ -80,8 +80,8 @@ namespace Xunit
             Assert.NotNull(dte);
 
             dte.Solution.Open(Path.Combine(
-                ThisAssembly.Project.MSBuildProjectDirectory, 
-                ThisAssembly.Project.OutputPath, 
+                ThisAssembly.Project.MSBuildProjectDirectory,
+                ThisAssembly.Project.OutputPath,
                 ThisAssembly.Constants.Content.Blank));
 
             Assert.True(dte.Solution.IsOpen);

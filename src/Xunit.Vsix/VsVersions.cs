@@ -42,7 +42,7 @@ namespace Xunit
             if (Environment.GetEnvironmentVariable("VisualStudioVersion") is string envVersion &&
                 !string.IsNullOrEmpty(envVersion))
             {
-                var devEnvDir = Environment.GetEnvironmentVariable("DevEnvDir") ?? 
+                var devEnvDir = Environment.GetEnvironmentVariable("DevEnvDir") ??
                     Environment.GetEnvironmentVariable("VSAPPIDDIR");
 
                 if (devEnvDir == null &&

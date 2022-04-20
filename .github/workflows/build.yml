@@ -17,10 +17,6 @@ on:
 env:
   DOTNET_NOLOGO: true
 
-defaults:
-  run:
-    shell: bash
-
 jobs:
   build:
     runs-on: windows-latest
@@ -44,13 +40,13 @@ jobs:
         uses: microsoft/setup-msbuild@v1.1
 
       - name: 🙏 build
-        run: msbuild -r -m:1 -p:VersionLabel="$GITHUB_REF.$GITHUB_RUN_NUMBER"
+        run: msbuild -r -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
 
       - name: 🧪 test
         uses: ./.github/workflows/test
 
       - name: 📦 pack
-        run: dotnet pack --no-build -m:1 -p:VersionLabel="$GITHUB_REF.$GITHUB_RUN_NUMBER"
+        run: dotnet pack --no-build -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
 
       # Only push CI package to sleet feed if building on ubuntu (fastest)
       - name: 🚀 sleet

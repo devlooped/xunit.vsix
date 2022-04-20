@@ -4,21 +4,35 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Setup.Configuration;
+using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Xunit
 {
-    public class Setup
+    public class VsSetupTests
     {
         private const int REGDB_E_CLASSNOTREG = unchecked((int)0x80040154);
         ITestOutputHelper output;
 
-        public Setup(ITestOutputHelper output) => this.output = output;
+        public VsSetupTests(ITestOutputHelper output) => this.output = output;
 
-        [InlineData("Microsoft.VisualStudio.Component.Roslyn.Compiler")]
+        [Fact]
+        public void GetAllVsVersions()
+        {
+            output.WriteLine(VsVersions.Default.InstalledVersions.Length.ToString());
+        }
+
+        [Fact]
+        public void GetInstalled()
+        {
+            output.WriteLine(VsSetup.GetInstalled().Length.ToString());
+        }
+
+        //[InlineData("Microsoft.VisualStudio.Component.Roslyn.Compiler")]
         //[InlineData("Microsoft.VisualStudio.Component.Merq")]
-        [Theory(Skip = "Just testing the setup APIs")]
+        [InlineData("Microsoft.VisualStudio.Component.CoreEditor")]
+        [Theory]//(Skip = "Just testing the setup APIs")]
         public void when_enumerating_vs_then_retrieves_all_instances(string prerequisite)
         {
             var query = new SetupConfiguration();
@@ -63,7 +77,7 @@ namespace Xunit
                 var value = (string)catalog?.GetCatalogInfo().GetValue("productSemanticVersion");
                 if (value != null)
                 {
-                    var semver = NuGet.Versioning.SemanticVersion.Parse(value);
+                    var semver = SemanticVersion.Parse(value);
                     output.WriteLine($"SemanticVersion: {semver.Major}.{semver.Minor}.{semver.Patch} (Normalized: {semver.ToNormalizedString()}, Full: {semver.ToFullString()})");
                 }
             }

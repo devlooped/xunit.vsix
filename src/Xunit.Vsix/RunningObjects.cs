@@ -48,8 +48,9 @@ namespace Xunit
 
         public static EnvDTE.DTE GetDTE(string visualStudioVersion, int processId, TimeSpan retryTimeout)
         {
+            var version = Version.Parse(visualStudioVersion);
             return GetComObject<EnvDTE.DTE>(string.Format("!{0}.{1}:{2}",
-                "VisualStudio.DTE", visualStudioVersion, processId), retryTimeout);
+                "VisualStudio.DTE", version.Major + ".0", processId), retryTimeout);
         }
 
         public static T GetComObject<T>(string monikerName, TimeSpan retryTimeout)

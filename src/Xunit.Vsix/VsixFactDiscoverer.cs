@@ -47,12 +47,12 @@ namespace Xunit
                 {
                     // Add invalid VS versions.
                     testCases.AddRange(vsix.VisualStudioVersions
-                        .Where(version => !VsVersions.InstalledVersions.Contains(version))
+                        .Where(version => !VsVersions.Default.InstalledVersions.Contains(version))
                         .Select(v => new ExecutionErrorTestCase(_messageSink, defaultMethodDisplay, testMethod,
-                           string.Format("Cannot execute test for specified {0}={1} because there is no VSSDK installed for that version.", nameof(IVsixAttribute.VisualStudioVersions), v))));
+                           string.Format("Cannot execute test for specified {0}={1} because no installation was found for it.", nameof(IVsixAttribute.VisualStudioVersions), v))));
 
                     testCases.AddRange(vsix.VisualStudioVersions
-                        .Where(version => VsVersions.InstalledVersions.Contains(version))
+                        .Where(version => VsVersions.Default.InstalledVersions.Contains(version))
                         .Select(version => new VsixTestCase(_messageSink, defaultMethodDisplay, testMethod, version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread)));
                 }
 

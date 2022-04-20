@@ -8,9 +8,9 @@ namespace Xunit
     {
         /// <summary>
         /// Specifies that the test should be run against all installed 
-        /// Visual Studio versions that have a corresponding VSSDK installed.
+        /// Visual Studio versions.
         /// </summary>
-        public const string All = "All";
+        public const string All = "*";
 
         /// <summary>
         /// Specifies that the test should be run against the currently running 
@@ -26,28 +26,18 @@ namespace Xunit
         public const string Latest = "Latest";
 
         /// <summary>
-        /// Visual Studio 2012.
-        /// </summary>
-        public const string VS2012 = "11.0";
-
-        /// <summary>
-        /// Visual Studio 2013.
-        /// </summary>
-        public const string VS2013 = "12.0";
-
-        /// <summary>
-        /// Visual Studio 2015.
-        /// </summary>
-        public const string VS2015 = "14.0";
-
-        /// <summary>
         /// Visual Studio 2017.
         /// </summary>
-        public const string VS2017 = "15.0";
+        public const string VS2017 = "[15.0,15.99]";
 
         /// <summary>
         /// Visual Studio 2019.
         /// </summary>
-        public const string VS2019 = "16.0";
+        public const string VS2019 = "[16.0,16.99]";
+
+        /// <summary>
+        /// Visual Studio 2022.
+        /// </summary>
+        public const string VS2022 = "[17.0,17.99]";
     }
 }

@@ -133,10 +133,10 @@ namespace Xunit
                 SetupTracing(TestAssembly.Assembly);
 
                 // Always run at least with one thread per VS version.
-                if (executionOptions.MaxParallelThreadsOrDefault() < VsVersions.InstalledVersions.Length && !Debugger.IsAttached)
+                if (executionOptions.MaxParallelThreadsOrDefault() < VsVersions.Default.InstalledVersions.Length && !Debugger.IsAttached)
                 {
-                    executionOptions.SetValue("xunit.execution.MaxParallelThreads", VsVersions.InstalledVersions.Length);
-                    Constants.Tracer.TraceEvent(TraceEventType.Verbose, 0, Strings.VsixTestFramework.SettingMaxThreads(VsVersions.InstalledVersions.Length));
+                    executionOptions.SetValue("xunit.execution.MaxParallelThreads", VsVersions.Default.InstalledVersions.Length);
+                    Constants.Tracer.TraceEvent(TraceEventType.Verbose, 0, Strings.VsixTestFramework.SettingMaxThreads(VsVersions.Default.InstalledVersions.Length));
                 }
                 // If debugger is attached, don't run multiple instances simultaneously since that makes debugging much harder.
                 if (Debugger.IsAttached)

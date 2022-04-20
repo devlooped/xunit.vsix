@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.Setup.Configuration;
+using NuGet.Versioning;
 
 namespace Xunit
 {
@@ -13,9 +14,9 @@ namespace Xunit
             var vs2017 = from instance in EnumerateUsableInstances()
                          let productVersion = (string)(instance as ISetupInstanceCatalog)?.GetCatalogInfo()?.GetValue("productSemanticVersion")
                          where productVersion != null
-                         let semver = NuGet.Versioning.SemanticVersion.Parse(productVersion)
-                         select new Version(semver.Major, 0);
-
+                         let semver = SemanticVersion.Parse(productVersion)
+                         select new Version(semver.Major, semver.Minor);
+            
             return vs2017.Distinct().Select(v => v.ToString()).ToArray();
         }
 
@@ -24,9 +25,8 @@ namespace Xunit
             var vs = from instance in EnumerateUsableInstances()
                      let productVersion = (string)(instance as ISetupInstanceCatalog)?.GetCatalogInfo()?.GetValue("productSemanticVersion")
                      where productVersion != null
-                     let semver = NuGet.Versioning.SemanticVersion.Parse(productVersion)
-                     // TODO: eventually, compare both major.minor when supported in the attributes.
-                     where semver.Major == version.Major
+                     let semver = SemanticVersion.Parse(productVersion)
+                     where semver.Major == version.Major && semver.Minor == version.Minor
                      orderby semver descending
                      select Path.Combine(instance.GetInstallationPath(), @"Common7\IDE\devenv.exe");
 
@@ -63,7 +63,8 @@ namespace Xunit
             => from instance in EnumerateInstances()
                let state = instance.GetState()
                where state == InstanceState.Complete &&
-               (state & InstanceState.Local) == InstanceState.Local
+               (state & InstanceState.Local) == InstanceState.Local &&
+               instance.GetPackages().Any(package => package.GetId() == "Microsoft.VisualStudio.Component.CoreEditor")
                select instance;
 
         static IEnumerable<ISetupInstance2> EnumerateInstances()

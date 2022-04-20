@@ -37,8 +37,8 @@ namespace Xunit
                 var xunitSummary = await base.RunTestCollectionsAsync(messageBus, cancellationTokenSource);
 
                 var maxParallelThreads = base.ExecutionOptions.MaxParallelThreadsOrDefault();
-                if (maxParallelThreads < VsVersions.InstalledVersions.Length)
-                    maxParallelThreads = VsVersions.InstalledVersions.Length;
+                if (maxParallelThreads < VsVersions.Default.InstalledVersions.Length)
+                    maxParallelThreads = VsVersions.Default.InstalledVersions.Length;
 
                 Func<Func<Task<RunSummary>>, Task<RunSummary>> taskRunner;
                 if (SynchronizationContext.Current != null)

@@ -1,28 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  
   <PropertyGroup>
     <AssemblyName>xunit.vsix</AssemblyName>
-    <TargetFramework>net452</TargetFramework>
+    <TargetFrameworks>net46;net472</TargetFrameworks>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Platforms>AnyCPU;x86</Platforms>
-    <Platform>x86</Platform>
     <AssemblyTitle>Xunit.Vsix</AssemblyTitle>
     <AssemblyCopyright>Copyright © Mobile Essentials 2015</AssemblyCopyright>
     <Authors>Daniel Cazzulino</Authors>
     <Company>Mobile Essentials</Company>
     <Product>Xunit.Vsix</Product>
     <RootNamespace>Xunit</RootNamespace>
-    <IncludeWindowsInjectorContent>false</IncludeWindowsInjectorContent>
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
     <WarningsAsErrors>NU1605;NU1603</WarningsAsErrors>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Xunit.Vsix.snk</AssemblyOriginatorKeyFile>
+    <PackContent>true</PackContent>
   </PropertyGroup>
 
   <PropertyGroup>
-    <InferPackageContents>false</InferPackageContents>
     <PackOnBuild Condition="'$(Configuration)' == 'Release'">true</PackOnBuild>
 
     <PackageId>$(AssemblyName)</PackageId>
@@ -35,45 +33,30 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageFile Include="xunit" Version="2.3.1" Kind="Dependency" />
-    <PackageFile Include="xunit.extensibility.execution" Version="2.3.1" Kind="Dependency" />
-    <PackageFile Include="xunit.runner.visualstudio" Version="2.3.1" Kind="Dependency" />
-    <PackageFile Include="EnvDTE" Version="8.0.1" Kind="Dependency" />
-    <PackageFile Include="Microsoft.VisualStudio.OLE.Interop" Version="7.10.6071" Kind="Dependency" />
-    <PackageFile Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6071" Kind="Dependency" />
-    
     <PackageFile Include="Readme.txt" PackagePath="Readme.txt" />
-    <PackageFile Include="build\xunit.vsix.props" Kind="Build" />
-    <PackageFile Include="build\xunit.vsix.targets" Kind="Build" />
+    <PackageFile Include="build\*.*" Kind="Build" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="@(PackageFile)" />
-    <None Include="..\Xunit.Vsix.snk">
-      <Link>Xunit.Vsix.snk</Link>
-    </None>
+    <None Include="build\xunit.runner.json" />
     <None Include="build\xunit.vsix.props" />
     <None Include="build\xunit.vsix.targets" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GitInfo" Version="2.0.6" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="1.15.103" PrivateAssets="all" />
-    <PackageReference Include="netfx-System.StringResources" Version="3.1.9" PrivateAssets="all" />
-    <PackageReference Include="NuGet.Build.Packaging" Version="0.2.2" PrivateAssets="all" />
-    <PackageReference Include="VSSDK.ComponentModelHost.11" Version="11.0.4" />
-    <PackageReference Include="EnvDTE" Version="8.0.1" />
-    <PackageReference Include="Microsoft.VisualStudio.OLE.Interop" Version="7.10.6071" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6071" />
-
-    <PackageReference Include="Xamarin.Windows.Injector" Version="1.0.0-beta-build013" />
-    <PackageReference Include="xunit" Version="2.3.1" />
-    <PackageReference Include="xunit.extensibility.execution" Version="2.3.1" />
-    <PackageReference Include="NuGet.Versioning" Version="4.4.0" />
+    <PackageReference Include="GitInfo" Version="2.2.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.1.2196" PrivateAssets="all" />
+    <PackageReference Include="netfx-System.StringResources" Version="3.1.11" PrivateAssets="all" />
+    <PackageReference Include="Devlooped.Injector" Version="42.42.42-main.7" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.extensibility.execution" Version="2.4.1" />
+    <PackageReference Include="NuGet.Versioning" Version="6.1.0" PrivateAssets="all" />
+    <PackageReference Include="NuGetizer" Version="0.7.5" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationFramework" />
@@ -100,22 +83,8 @@
       </ReferencePath>
     </ItemGroup>
   </Target>
-  
-  <Target Name="_AddPackageContent" BeforeTargets="GetPackageContents">
-    <ItemGroup>
-      <PackageFile Include="$(OutputPath)\xunit.vsix.*" Kind="Lib" />
-      <PackageFile Include="$(OutputPath)\NuGet.Versioning.dll" Kind="Lib" />
-      <PackageFile Include="$(OutputPath)\bootstrap.*" Kind="Lib" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="LocalPublish" Condition="'$(CI)' != 'true'" AfterTargets="Pack">
-    <Exec Command="rd &quot;$(NuGetPackageRoot)$(PackageId.ToLowerInvariant())&quot; /q /s" Condition="Exists('$(NuGetPackageRoot)$(PackageId.ToLowerInvariant())')" />
-    <Exec Command="del $(TEMP)\packages\$(PackageId)*.nupkg" Condition="Exists('$(TEMP)\packages')" ContinueOnError="true" />
-    <MakeDir Directories="$(TEMP)\packages" Condition="!Exists('$(TEMP)\packages')" />
-    <Copy SourceFiles="$(PackageTargetPath)" DestinationFolder="$(TEMP)\packages" />
-  </Target>
 
   <Import Project="..\Version.targets" />
   <Import Project="..\Xunit.Vsix.targets" />
+
 </Project>

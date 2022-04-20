@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Xunit</RootNamespace>
     <AssemblyName>xunit.vsix.tests</AssemblyName>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
   </PropertyGroup>

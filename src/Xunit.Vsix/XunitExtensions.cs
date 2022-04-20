@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Versioning;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -19,16 +20,24 @@ namespace Xunit
         public static IVsixAttribute GetVsixAttribute(this ITestMethod testMethod, IAttributeInfo vsixAttribute)
         {
             var vsVersions = testMethod.GetComputedProperty<string[]>(vsixAttribute, nameof(IVsixAttribute.VisualStudioVersions));
+            
             // Higher versions always win for MinVersion, since this way we can toggle a minimum version 
             // at the assembly level and override the per-test min version that might be obsolete. It's like 
             // limiting the lower bound of what tests can override
             var minVersion = testMethod.GetComputedMaxProperty<string>(vsixAttribute, nameof(IVsixAttribute.MinimumVisualStudioVersion));
+            NuGetVersion minSemVer = default;
+            if (!string.IsNullOrEmpty(minVersion) && !NuGetVersion.TryParse(minVersion, out minSemVer))
+                throw new NotSupportedException($"{nameof(IVsixAttribute.MinimumVisualStudioVersion)} '{minVersion}' is not a valid semantic version.");
+
             // Conversely, for max verison we want the opposite, for the upper bound of supportability, we want 
             // to be able to limit it to lower than a certain version (i.e. tests specify Latest, but we want to 
             // say at the assembly-level that we end support at version X).
             var maxVersion = testMethod.GetComputedMinProperty<string>(vsixAttribute, nameof(IVsixAttribute.MaximumVisualStudioVersion));
+            NuGetVersion maxSemVer = default;
+            if (!string.IsNullOrEmpty(maxVersion) && !NuGetVersion.TryParse(maxVersion, out maxSemVer))
+                throw new NotSupportedException($"{nameof(IVsixAttribute.MaximumVisualStudioVersion)} '{maxVersion}' is not a valid semantic version.");
 
-            var finalVersions = VsVersions.GetFinalVersions(vsVersions, minVersion, maxVersion);
+            var finalVersions = VsVersions.Default.GetFinalVersions(vsVersions, minSemVer, maxSemVer);
 
             // Process VS-specific traits.
             var suffix = testMethod.GetComputedArgument<string>(vsixAttribute, nameof(IVsixAttribute.RootSuffix)) ?? "Exp";

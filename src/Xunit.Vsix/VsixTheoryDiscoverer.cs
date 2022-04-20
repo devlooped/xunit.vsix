@@ -25,7 +25,7 @@ namespace Xunit
                 return new[] { new XunitTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod) };
 
             var vsix = testMethod.GetVsixAttribute(theoryAttribute);
-            var validVsVersions = vsix.VisualStudioVersions.Where(v => VsVersions.InstalledVersions.Contains(v)).ToArray();
+            var validVsVersions = vsix.VisualStudioVersions.Where(v => VsVersions.Default.InstalledVersions.Contains(v)).ToArray();
 
             // We always pre-enumerate theories, since that's how we build the concrete test cases.
             try
@@ -63,7 +63,7 @@ namespace Xunit
 
                 // Add invalid VS versions.
                 results.AddRange(vsix.VisualStudioVersions
-                    .Where(version => !VsVersions.InstalledVersions.Contains(version))
+                    .Where(version => !VsVersions.Default.InstalledVersions.Contains(version))
                     .Select(version => new ExecutionErrorTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod,
                        string.Format("Cannot execute test for specified {0}={1} because there is no VSSDK installed for that version.", nameof(IVsixAttribute.VisualStudioVersions), version))));
 

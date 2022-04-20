@@ -6,6 +6,12 @@
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Content Update="@(Content -> WithMetadataValue('NuGetPackageId', 'Devlooped.Injector'))">
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
+
   <Target Name="VsixFrameworkInfo"
           DependsOnTargets="GetVsixFrameworkInfoFile;GenerateVsixFrameworkInfo;IncludeVsixFrameworkInfo"
           BeforeTargets="CoreCompile" />

@@ -30,10 +30,9 @@ namespace Xunit
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static bool Start()
         {
-            var debug = Environment.GetEnvironmentVariable(Constants.DebugEnvironmentVariable);
-            if (bool.TryParse(debug, out var shouldDebug) && shouldDebug)
+            if (bool.TryParse(Environment.GetEnvironmentVariable(Constants.DebugEnvironmentVariable), out var shouldDebug) && shouldDebug)
                 Debugger.Launch();
-
+            
             var resolveDir = Environment.GetEnvironmentVariable(Constants.BaseDirectoryEnvironmentVariable);
             s_localAssemblyNames = GetLocalAssemblyNames(resolveDir);
 
@@ -41,7 +40,6 @@ namespace Xunit
             try
             {
                 s_tracer.TraceEvent(TraceEventType.Verbose, 0, Strings.VsStartup.Starting);
-                GlobalServices.Initialize();
 
                 s_runner = new VsRemoteRunner();
                 s_runner.Start();

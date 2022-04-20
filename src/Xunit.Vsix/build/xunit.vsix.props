@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	<!-- When $(GenerateAssemblyVsixAttribute) == 'true', these attributes affect an 
+  <!-- When $(GenerateAssemblyVsixAttribute) == 'true', these attributes affect an 
 		 [assembly: Xunit.Vsix(...)] that is generated at build time. 
 		 
 		 This attribute provides assembly-level defaults that can be overriden by 
@@ -9,37 +9,50 @@
 		 require a minimum VS version of '11.0'.
 	-->
 
-	<PropertyGroup>
-		<!-- Whether to generate assembly-level defaults from MSBuild properties. -->
-		<GenerateAssemblyVsixAttribute Condition=" '$(GenerateAssemblyVsixAttribute)' == '' ">true</GenerateAssemblyVsixAttribute>
+  <PropertyGroup>
+    <!-- Whether to generate assembly-level defaults from MSBuild properties. -->
+    <GenerateAssemblyVsixAttribute Condition=" '$(GenerateAssemblyVsixAttribute)' == '' ">true</GenerateAssemblyVsixAttribute>
 
-		<!-- Specify 'All' to set the assembly-level default to use all installed VS versions. -->
-		<!-- Specify a semicolon-separated list for specific versions, such as '11.0, 12.0' . -->
-		<!-- Default is current VS version being used to build -->
-		<VisualStudioVersions Condition=" '$(VisualStudioVersions)' == '' ">$(VisualStudioVersion)</VisualStudioVersions>
+    <DefaultVisualStudioVersion>$(MSBuildVersion.Substring(0, 4))</DefaultVisualStudioVersion>
+    <DefaultVisualStudioVersion Condition="'$(DefaultVisualStudioVersion)' == ''">$(VisualStudioVersion)</DefaultVisualStudioVersion>
 
-		<!-- The following two values are useful in combination with All for $(VisualStudioVersion) -->
-		<!-- Optionally specify the defautl minimum version required by tests in this assembly -->
-		<MinimumVisualStudioVersion />
-		<!-- As well as the maximum version. -->
-		<MaximumVisualStudioVersion />
+    <!-- Specify 'All' to set the assembly-level default to use all installed VS versions. -->
+    <!-- Specify a semicolon-separated list for specific versions, such as '11.0, 12.0' . -->
+    <!-- Default is current VS version being used to build -->
+    <VisualStudioVersions Condition=" '$(VisualStudioVersions)' == '' ">$(DefaultVisualStudioVersion)</VisualStudioVersions>
 
-		<!-- The root suffix for Visual Studio, like "Exp" (the default). Specify '.' (a dot) to explicitly choose the regular VS instance/hive. -->
-		<RootSuffix />
+    <!-- The following two values are useful in combination with All for $(VisualStudioVersion) -->
+    <!-- Optionally specify the defautl minimum version required by tests in this assembly -->
+    <MinimumVisualStudioVersion />
+    <!-- As well as the maximum version. -->
+    <MaximumVisualStudioVersion />
 
-		<!-- Whether to start a new instance of Visual Studio for each test run (defaults to false). -->
-		<NewIdeInstance />
+    <!-- The root suffix for Visual Studio, like "Exp" (the default). Specify '.' (a dot) to explicitly choose the regular VS instance/hive. -->
+    <RootSuffix />
 
-		<!-- Timeout in seconds for the test to complete its run, excluding the
+    <!-- Whether to start a new instance of Visual Studio for each test run (defaults to false). -->
+    <NewIdeInstance />
+
+    <!-- Timeout in seconds for the test to complete its run, excluding the
 			 time that it takes to launch VS and set up the test run context (defaults to 60 seconds). -->
-		<TimeoutSeconds />
+    <TimeoutSeconds />
 
-		<!-- Whether to retry once in a clean Visual Studio instance a failing
+    <!-- Whether to retry once in a clean Visual Studio instance a failing
 			 test. Defaults to false. -->
-		<RecycleOnFailure />
+    <RecycleOnFailure />
 
-		<!-- Whether to run the tests in the UI thread. Defaults to false. -->
-		<RunOnUIThread />
-	</PropertyGroup>
+    <!-- Whether to run the tests in the UI thread. Defaults to false. -->
+    <RunOnUIThread />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- We want this to be visible, since users won't be able to have their own json unless they remove 
+         our file from their .csproj and add theirs instead. -->
+    <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json"
+             Link="xunit.runner.json"
+             CopyToOutputDirectory="PreserveNewest"
+             NuGetPackageId="xunit.vsix"
+             Visible="true" />
+  </ItemGroup>
 
 </Project>

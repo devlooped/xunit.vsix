@@ -5,14 +5,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Threading;
 using System.Threading.Tasks;
-using Bootstrap;
 using Microsoft.VisualStudio.ComponentModelHost;
-using Microsoft.VisualStudio.Shell.Interop;
 using Xunit.Abstractions;
 using Xunit.Properties;
 using Xunit.Sdk;
@@ -260,10 +259,10 @@ namespace Xunit
             // This environment variable is used by the VsRemoveRunner to set up the right
             // server channel named pipe, which is later used by the test runner to execute
             // tests in the VS app domain.
-            info.EnvironmentVariables.Add(Constants.PipeNameEnvironmentVariable, _pipeName);
-            info.EnvironmentVariables.Add(Constants.BaseDirectoryEnvironmentVariable, Directory.GetCurrentDirectory());
+            info.EnvironmentVariables[Constants.PipeNameEnvironmentVariable] = _pipeName;
+            info.EnvironmentVariables[Constants.BaseDirectoryEnvironmentVariable] = Directory.GetCurrentDirectory();
             // Allow debugging xunit.vsix itself by setting the `xunit.vsix.debug=true` envvar in the current VS.
-            info.EnvironmentVariables.Add(Constants.DebugEnvironmentVariable, Environment.GetEnvironmentVariable(Constants.DebugEnvironmentVariable));
+            info.EnvironmentVariables[Constants.DebugEnvironmentVariable] = Environment.GetEnvironmentVariable(Constants.DebugEnvironmentVariable);
 
             // Propagate profiling values to support OpenCover or any third party profiler
             // already attached to the current process.
@@ -292,67 +291,107 @@ namespace Xunit
                 return false;
 
             var services = new OleServiceProvider(dte);
-            IVsShell shell;
-            while ((shell = (IVsShell)services.GetService(typeof(SVsShell))) == null)
-            {
-                Thread.Sleep(_settings.RetrySleepInterval);
-            }
+            // These casts don't work on this side of the client, for some reason. 
+            //IVsShell shell;
+            //while ((shell = services.GetService<SVsShell, IVsShell>()) == null)
+            //{
+            //    Thread.Sleep(_settings.RetrySleepInterval);
+            //}
 
-            object zombie;
-            while ((int?)(zombie = shell.GetProperty((int)__VSSPROPID.VSSPROPID_Zombie, out zombie)) != 0)
-            {
-                Thread.Sleep(_settings.RetrySleepInterval);
-            }
+            //object zombie;
+            //// __VSSPROPID.VSSPROPID_Zombie
+            //while ((int?)(zombie = shell.GetProperty(-9014, out zombie)) != 0)
+            //{
+            //    Thread.Sleep(_settings.RetrySleepInterval);
+            //}
 
             // Retrieve the component model service, which could also now take time depending on new
             // extensions being installed or updated before the first launch.
             var components = services.GetService<SComponentModel, object>();
 
-            if (Debugger.IsAttached)
-            {
-                // When attached via TD.NET, there will be an environment variable named DTE_MainWindow=2296172
-                var mainWindow = Environment.GetEnvironmentVariable("DTE_MainWindow");
-                if (!string.IsNullOrEmpty(mainWindow))
-                {
-                    var attached = false;
-                    var retries = 0;
-                    var sleep = _settings.RetrySleepInterval;
-                    while (retries++ < _settings.DebuggerAttachRetries && !attached)
-                    {
-                        try
-                        {
-                            var mainHWnd = int.Parse(mainWindow);
-                            var mainDte = GetAllDtes().FirstOrDefault(x => x.MainWindow.HWnd == mainHWnd);
-                            if (mainDte != null)
-                            {
-                                var startedVs = mainDte.Debugger.LocalProcesses.OfType<EnvDTE.Process>().FirstOrDefault(x => x.ProcessID == Process.Id);
-                                if (startedVs != null)
-                                {
-                                    startedVs.Attach();
-                                    attached = true;
-                                    break;
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            s_tracer.TraceEvent(TraceEventType.Warning, 0, Strings.VsClient.RetryAttach(retries, _settings.DebuggerAttachRetries) + Environment.NewLine + ex.ToString());
-                        }
+            //if (Debugger.IsAttached)
+            //{
+            //    // When attached via TD.NET, there will be an environment variable named DTE_MainWindow=2296172
+            //    var mainWindow = Environment.GetEnvironmentVariable("DTE_MainWindow");
+            //    if (!string.IsNullOrEmpty(mainWindow))
+            //    {
+            //        var attached = false;
+            //        var retries = 0;
+            //        var sleep = _settings.RetrySleepInterval;
+            //        while (retries++ < _settings.DebuggerAttachRetries && !attached)
+            //        {
+            //            try
+            //            {
+            //                var mainHWnd = int.Parse(mainWindow);
+            //                var mainDte = GetAllDtes().FirstOrDefault(x => x.MainWindow.HWnd == mainHWnd);
+            //                if (mainDte != null)
+            //                {
+            //                    var startedVs = mainDte.Debugger.LocalProcesses.OfType<EnvDTE.Process>().FirstOrDefault(x => x.ProcessID == Process.Id);
+            //                    if (startedVs != null)
+            //                    {
+            //                        startedVs.Attach();
+            //                        attached = true;
+            //                        break;
+            //                    }
+            //                }
+            //            }
+            //            catch (Exception ex)
+            //            {
+            //                s_tracer.TraceEvent(TraceEventType.Warning, 0, Strings.VsClient.RetryAttach(retries, _settings.DebuggerAttachRetries) + Environment.NewLine + ex.ToString());
+            //            }
 
-                        Thread.Sleep(sleep);
-                        sleep = sleep * retries;
-                    }
+            //            Thread.Sleep(sleep);
+            //            sleep = sleep * retries;
+            //        }
 
-                    if (!attached)
-                        s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToAttach(_visualStudioVersion, _rootSuffix));
-                }
-            }
+            //        if (!attached)
+            //            s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToAttach(_visualStudioVersion, _rootSuffix));
+            //    }
+            //}
 
             try
             {
-                Injector.Launch(Process.MainWindowHandle,
-                    GetType().Assembly.Location,
-                    typeof(VsStartup).FullName, $"Start");
+                NativeMethods.IsWow64Process(Process.Handle, out var isWow);
+                var platform = isWow ? "x86" : "x64";
+                var thisFile = Assembly.GetExecutingAssembly().Location;
+                if (thisFile.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)))
+                {
+                    s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id) + ": xunit.vsix seems to be running in shadow copy mode, which is not supported.");
+                    return false;
+                }
+
+                var toolPath = Path.Combine(Path.GetDirectoryName(thisFile), "Injector", platform, "Injector.exe");
+                if (!File.Exists(toolPath))
+                {
+                    s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id) + $": could not find .NET injector helper at {toolPath}.");
+                    return false;
+                }
+
+                var launchDebugger = bool.TryParse(Environment.GetEnvironmentVariable(Constants.DebugEnvironmentVariable), out var shouldDebug) && shouldDebug;
+
+#if DEBUG
+                // We'll only auto-launch on the client side of the debugger for debug builds of 
+                // xunit.vsix (local dev) *and* an already attached debugger on the xunit side.
+                launchDebugger |= Debugger.IsAttached;
+#endif
+
+                var injector = Process.Start(
+                    new ProcessStartInfo(toolPath,
+                        Process.MainWindowHandle + " " +
+                        thisFile + " " +
+                        typeof(VsStartup).FullName + " " +
+                        nameof(VsStartup.Start))
+                    {
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                    });
+
+                // Wait max 10 seconds for the injection to succeed
+                if (!injector.WaitForExit(10000))
+                {
+                    s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id));
+                    return false;
+                }
             }
             catch (Exception ex)
             {

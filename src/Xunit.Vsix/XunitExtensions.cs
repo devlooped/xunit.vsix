@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using NuGet.Versioning;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -62,9 +64,7 @@ namespace Xunit
         }
 
         public static T GetComputedProperty<T>(this ITestMethod testMethod, string argumentName)
-        {
-            return GetComputedProperty<T>(testMethod, testMethod.Method.GetCustomAttributes(typeof(IVsixAttribute)).FirstOrDefault(), argumentName);
-        }
+            => GetComputedProperty<T>(testMethod, testMethod.Method.GetCustomAttributes(typeof(IVsixAttribute)).FirstOrDefault(), argumentName);
 
         public static T GetComputedProperty<T>(this ITestMethod testMethod, IAttributeInfo factAttribute, string argumentName)
         {
@@ -82,7 +82,7 @@ namespace Xunit
                     return value;
             }
 
-            // Finally assembly level.
+            // Assembly level.
             vsixAttr = testMethod.TestClass.Class.Assembly.GetCustomAttributes(typeof(IVsixAttribute)).FirstOrDefault();
             if (vsixAttr != null)
             {
@@ -90,6 +90,34 @@ namespace Xunit
 
                 if (!Object.Equals(value, default(T)))
                     return value;
+            }
+
+            // Finally, assembly metadata level
+            var metadata = testMethod.TestClass.Class.Assembly.GetCustomAttributes(typeof(AssemblyMetadataAttribute))
+                .FirstOrDefault(x => argumentName.Equals(x.GetConstructorArguments()?.FirstOrDefault()));
+
+            if (metadata?.GetConstructorArguments().Last() is string str &&
+                TypeDescriptor.GetConverter(typeof(T)) is TypeConverter converter)
+            {
+                if (converter.CanConvertFrom(typeof(string)) &&
+                    converter.ConvertFromString(str) is T typed)
+                {
+                    value = typed;
+
+                    if (!Object.Equals(value, default(T)))
+                        return value;
+                }
+                else if (typeof(T).GetElementType() is Type elementType &&
+                    TypeDescriptor.GetConverter(elementType) is TypeConverter elementConverter && 
+                    elementConverter.CanConvertFrom(typeof(string)))
+                {
+                    var values = str.Split(',');
+                    var elements = values.Select(x => elementConverter.ConvertFromString(x)).ToArray();
+                    var result = Array.CreateInstance(elementType, elements.Length);
+                    Array.Copy(elements, result, elements.Length);
+
+                    return (T)(object)result;
+                }
             }
 
             return default(T);
@@ -128,7 +156,7 @@ namespace Xunit
                     values.Add(value);
             }
 
-            // Finally assembly level.
+            // Assembly level.
             vsixAttr = testMethod.TestClass.Class.Assembly.GetCustomAttributes(typeof(IVsixAttribute)).FirstOrDefault();
             if (vsixAttr != null)
             {
@@ -138,13 +166,23 @@ namespace Xunit
                     values.Add(value);
             }
 
+            // Finally, assembly metadata level
+            var metadata = testMethod.TestClass.Class.Assembly.GetCustomAttributes(typeof(AssemblyMetadataAttribute))
+                .FirstOrDefault(x => argumentName.Equals(x.GetConstructorArguments()?.FirstOrDefault()));
+
+            if (metadata?.GetConstructorArguments().Last() is string str &&
+                TypeDescriptor.GetConverter(typeof(T)) is TypeConverter converter &&
+                converter.CanConvertFrom(typeof(string)) &&
+                converter.ConvertFromString(str) is T typed)
+            {
+                values.Add(typed);
+            }
+
             return values;
         }
 
         public static T GetComputedArgument<T>(this ITestMethod testMethod, string argumentName)
-        {
-            return GetComputedArgument<T>(testMethod, testMethod.Method.GetCustomAttributes(typeof(IVsixAttribute)).FirstOrDefault(), argumentName);
-        }
+            => GetComputedArgument<T>(testMethod, testMethod.Method.GetCustomAttributes(typeof(IVsixAttribute)).FirstOrDefault(), argumentName);
 
         public static T GetComputedArgument<T>(this ITestMethod testMethod, IAttributeInfo factAttribute, string argumentName)
         {
@@ -168,11 +206,26 @@ namespace Xunit
                 testClass = testClass.BaseType;
             }
 
-            // Finally assembly level.
+            // Assembly level.
             vsixAttr = testMethod.TestClass.Class.Assembly.GetCustomAttributes(typeof(IVsixAttribute)).FirstOrDefault();
             if (vsixAttr != null)
             {
                 value = GetInitializedArgument<T>(vsixAttr, argumentName);
+
+                if (!Object.Equals(value, default(T)))
+                    return value;
+            }
+
+            // Finally, assembly metadata level
+            var metadata = testMethod.TestClass.Class.Assembly.GetCustomAttributes(typeof(AssemblyMetadataAttribute))
+                .FirstOrDefault(x => argumentName.Equals(x.GetConstructorArguments()?.FirstOrDefault()));
+
+            if (metadata?.GetConstructorArguments().Last() is string str &&
+                TypeDescriptor.GetConverter(typeof(T)) is TypeConverter converter &&
+                converter.CanConvertFrom(typeof(string)) &&
+                converter.ConvertFromString(str) is T typed)
+            {
+                value = typed;
 
                 if (!Object.Equals(value, default(T)))
                     return value;

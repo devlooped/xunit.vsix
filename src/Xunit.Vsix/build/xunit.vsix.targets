@@ -4,7 +4,26 @@
   <PropertyGroup>
     <!-- Ignore warning about xunit.vsix.bootstrap being x86 -->
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+
+    <!-- Whether to generate assembly-level defaults from MSBuild properties. -->
+    <GenerateAssemblyVsixAttribute Condition=" '$(GenerateAssemblyVsixAttribute)' == '' ">true</GenerateAssemblyVsixAttribute>
+
+    <!-- Specify 'All' to set the assembly-level default to use all installed VS versions. -->
+    <!-- Specify a semicolon-separated list for specific versions, such as '11.0, 12.0' . -->
+    <!-- Default is current VS version being used to build -->
+    <VisualStudioVersions Condition=" '$(VisualStudioVersions)' == '' ">[$(DefaultVisualStudioVersion)]</VisualStudioVersions>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="VisualStudioVersions" Value="$(VisualStudioVersions)" Condition="'$(VisualStudioVersions)' != ''" />
+    <AssemblyMetadata Include="RootSuffix" Value="$(RootSuffix)" Condition="'$(RootSuffix)' != ''" />
+    <AssemblyMetadata Include="MinimumVisualStudioVersion" Value="$(MinimumVisualStudioVersion)" Condition="'$(MinimumVisualStudioVersion)' != ''" />
+    <AssemblyMetadata Include="MaximumVisualStudioVersion" Value="$(MaximumVisualStudioVersion)" Condition="'$(MaximumVisualStudioVersion)' != ''" />
+    <AssemblyMetadata Include="NewIdeInstance" Value="$(NewIdeInstance.ToLowerInvariant())" Condition="'$(NewIdeInstance)' != ''" />
+    <AssemblyMetadata Include="TimeoutSeconds" Value="$(TimeoutSeconds)" Condition="'$(TimeoutSeconds)' != ''" />
+    <AssemblyMetadata Include="RecycleOnFailure" Value="$(RecycleOnFailure.ToLowerInvariant())" Condition="'$(RecycleOnFailure)' != ''" />
+    <AssemblyMetadata Include="RunOnUIThread" Value="$(RunOnUIThread)" Condition="'$(RunOnUIThread)' != ''" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Update="@(Content -> WithMetadataValue('NuGetPackageId', 'Devlooped.Injector'))">
@@ -26,9 +45,10 @@
     <ItemGroup>
       <VisualStudioVersion Include="$(VisualStudioVersions)" />
     </ItemGroup>
-    <PropertyGroup>
+    <PropertyGroup Condition="'$(VsixFrameworkInfoFile)' == ''">
       <!-- The item list concatenation wouldn't work outside a target -->
-      <VsixFrameworkInfoFile Condition="'$(VsixFrameworkInfoFile)' == ''">$(IntermediateOutputPath)AssemblyInfo.VsixFramework-@(VisualStudioVersion, '-')-$(RootSuffix).g$(DefaultLanguageSourceExtension)</VsixFrameworkInfoFile>
+      <VsixFrameworkInfoFile Condition="'$(VisualStudioVersions)' != '*'">$(IntermediateOutputPath)AssemblyInfo.VsixFramework-@(VisualStudioVersion, '-')-$(RootSuffix).g$(DefaultLanguageSourceExtension)</VsixFrameworkInfoFile>
+      <VsixFrameworkInfoFile Condition="'$(VisualStudioVersions)' == '*'">$(IntermediateOutputPath)AssemblyInfo.VsixFramework-$(RootSuffix).g$(DefaultLanguageSourceExtension)</VsixFrameworkInfoFile>
     </PropertyGroup>
   </Target>
 
@@ -36,10 +56,14 @@
 			  Inputs="$(MSBuildProjectFullPath)"
 			  Outputs="$(VsixFrameworkInfoFile)">
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(VisualStudioVersions)' != '' and '$(VisualStudioVersions)' != '*'" >
       <_VisualStudioVersion Include="$(VisualStudioVersions)" />
       <_QuotedVisualStudioVersion Include="@(_VisualStudioVersion -> '&quot;%(Identity)&quot;')" />
-      <AttributeArgument Include="@(_QuotedVisualStudioVersion, ', ')" Condition="'$(VisualStudioVersions)' != ''" />
+      <AttributeArgument Include="@(_QuotedVisualStudioVersion, ', ')" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AttributeArgument Include='"*"' Condition="'$(VisualStudioVersions)' == '*'" />
       <AttributeArgument Include='RootSuffix = "$(RootSuffix)"' Condition="'$(RootSuffix)' != ''" />
       <AttributeArgument Include='MinimumVisualStudioVersion = "$(MinimumVisualStudioVersion)"' Condition="'$(MinimumVisualStudioVersion)' != ''" />
       <AttributeArgument Include='MaximumVisualStudioVersion = "$(MaximumVisualStudioVersion)"' Condition="'$(MaximumVisualStudioVersion)' != ''" />

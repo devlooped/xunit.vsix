@@ -4,15 +4,20 @@
     <RootNamespace>Xunit</RootNamespace>
     <TargetFramework>net472</TargetFramework>
     <Nullable>annotations</Nullable>
+    <GenerateAssemblyVsixAttribute>false</GenerateAssemblyVsixAttribute>
+  </PropertyGroup>
 
+  <Import Project="..\Xunit.Vsix\build\xunit.vsix.props" />
+
+  <PropertyGroup>
     <!--
-    <VisualStudioVersions Condition="'$(Configuration)' == 'Release' or '$(BuildingInsideVisualStudio)' != 'true'">All</VisualStudioVersions>
+    <VisualStudioVersions Condition="'$(Configuration)' == 'Release' or '$(BuildingInsideVisualStudio)' != 'true'">*</VisualStudioVersions>
     <VisualStudioVersions Condition="'$(Configuration)' == 'Debug'">$(VisualStudioVersion)</VisualStudioVersions>
     -->
-    
+
     <!-- Change the default hive to run on depending on CI vs local builds. -->
     <RootSuffix Condition="!$(CI)">Exp</RootSuffix>
-    <RootSuffix Condition="$(CI)"></RootSuffix>
+    <RootSuffix Condition="$(CI)">.</RootSuffix>
 
     <!-- ThisAssembly conflicts due to InternalsVisibleTo -->
     <NoWarn>CS0436</NoWarn>
@@ -51,7 +56,6 @@
     <ProjectProperty Include="OutputPath" />
   </ItemGroup>
   
-  <Import Project="..\Xunit.Vsix\build\xunit.vsix.props" />
   <Import Project="..\Xunit.Vsix\build\xunit.vsix.targets" />
 
 </Project>

@@ -108,7 +108,7 @@ namespace Xunit
                         return value;
                 }
                 else if (typeof(T).GetElementType() is Type elementType &&
-                    TypeDescriptor.GetConverter(elementType) is TypeConverter elementConverter && 
+                    TypeDescriptor.GetConverter(elementType) is TypeConverter elementConverter &&
                     elementConverter.CanConvertFrom(typeof(string)))
                 {
                     var values = str.Split(',');

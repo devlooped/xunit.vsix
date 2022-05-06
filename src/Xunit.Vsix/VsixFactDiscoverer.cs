@@ -35,7 +35,7 @@ namespace Xunit
                 var vsix = testMethod.GetVsixAttribute(factAttribute);
                 var testCases = new List<IXunitTestCase>();
 
-                if (vsix.VisualStudioVersions == null)
+                if (vsix.VisualStudioVersions == null || vsix.VisualStudioVersions.Length == 0)
                 {
                     // Didn't find any VS versions to run against. Report as a skipped test.
                     testCases.Add(new VsixTestCase(

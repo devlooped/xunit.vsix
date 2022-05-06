@@ -31,7 +31,6 @@ namespace Xunit
                 return new[] { new XunitTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod) };
 
             var vsix = testMethod.GetVsixAttribute(theoryAttribute);
-            var validVsVersions = vsix.VisualStudioVersions.Where(v => VsVersions.Default.InstalledVersions.Contains(v)).ToArray();
 
             // We always pre-enumerate theories, since that's how we build the concrete test cases.
             try
@@ -44,7 +43,7 @@ namespace Xunit
                     var discovererAttribute = dataAttribute.GetCustomAttributes(typeof(DataDiscovererAttribute)).First();
                     var discoverer = ExtensibilityPointFactory.GetDataDiscoverer(_diagnosticMessageSink, discovererAttribute);
                     if (!discoverer.SupportsDiscoveryEnumeration(dataAttribute, testMethod.Method))
-                        return CreateTestCasesForTheory(discoveryOptions, testMethod, validVsVersions, vsix).ToArray();
+                        return CreateTestCasesForTheory(discoveryOptions, testMethod, vsix.VisualStudioVersions, vsix).ToArray();
 
                     // GetData may return null, but that's okay; we'll let the NullRef happen and then catch it
                     // down below so that we get the composite test case.
@@ -54,9 +53,9 @@ namespace Xunit
                         // identify a test and serialization is the best way to do that. If it's not serializable,
                         // this will throw and we will fall back to a single theory test case that gets its data at runtime.
                         if (!SerializationHelper.IsSerializable(dataRow))
-                            return CreateTestCasesForTheory(discoveryOptions, testMethod, validVsVersions, vsix).ToArray();
+                            return CreateTestCasesForTheory(discoveryOptions, testMethod, vsix.VisualStudioVersions, vsix).ToArray();
 
-                        var testCases = CreateTestCasesForDataRow(discoveryOptions, testMethod, validVsVersions, vsix, dataRow);
+                        var testCases = CreateTestCasesForDataRow(discoveryOptions, testMethod, vsix.VisualStudioVersions, vsix, dataRow);
                         results.AddRange(testCases);
                     }
                 }
@@ -67,29 +66,57 @@ namespace Xunit
                                                            testMethod,
                                                            $"No data found for {testMethod.TestClass.Class.Name}.{testMethod.Method.Name}"));
 
-                // Add invalid VS versions.
-                results.AddRange(vsix.VisualStudioVersions
-                    .Where(version => !VsVersions.Default.InstalledVersions.Contains(version))
-                    .Select(version => new ExecutionErrorTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod,
-                       string.Format("Cannot execute test for specified {0}={1} because there is no VSSDK installed for that version.", nameof(IVsixAttribute.VisualStudioVersions), version))));
-
                 return results;
             }
             catch { }  // If something goes wrong, fall through to return just the XunitTestCase
 
-            return CreateTestCasesForTheory(discoveryOptions, testMethod, validVsVersions, vsix).ToArray();
+            return CreateTestCasesForTheory(discoveryOptions, testMethod, vsix.VisualStudioVersions, vsix).ToArray();
         }
 
         [Obsolete]
         IEnumerable<IXunitTestCase> CreateTestCasesForDataRow(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, string[] vsVersions, IVsixAttribute vsix, object[] dataRow)
         {
-            return vsVersions.Select(version => new VsixTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod, version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread, dataRow));
+            if (vsVersions.Length == 0)
+            {
+                var versions = string.Join(", ", testMethod.GetComputedProperty<string[]>(nameof(IVsixAttribute.VisualStudioVersions)));
+                // Didn't find any VS versions to run against. Report as a skipped test.
+                return new[]
+                {
+                    new VsixTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod,
+                        versions, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread, dataRow)
+                    {
+                        SkipReason = $"Cannot execute test because no matching installation was found for Visual Studio version(s) '{versions}'.",
+                    }
+                };
+            }
+            else
+            {
+                return vsVersions.Select(version => new VsixTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod, version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread, dataRow));
+            }
         }
 
         [Obsolete]
         IEnumerable<IXunitTestCase> CreateTestCasesForTheory(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, string[] vsVersions, IVsixAttribute vsix)
         {
-            return vsVersions.Select(version => new VsixTheoryTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod, version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread));
+            if (vsVersions.Length == 0)
+            {
+                var versions = string.Join(", ", testMethod.GetComputedProperty<string[]>(nameof(IVsixAttribute.VisualStudioVersions)));
+                // Didn't find any VS versions to run against. Report as a skipped test.
+                return new[]
+                {
+                    new VsixTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod,
+                        versions, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread)
+                    {
+                        SkipReason = $"Cannot execute test because no matching installation was found for Visual Studio version(s) '{versions}'.",
+                    }
+                };
+            }
+            else
+            {
+                return vsVersions.Select(version =>
+                    new VsixTheoryTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod,
+                        version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread));
+            }
         }
     }
 }

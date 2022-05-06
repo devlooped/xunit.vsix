@@ -19,10 +19,10 @@ namespace Xunit
             _output = output;
         }
 
-        [VsixFact]
+        [VsixFact(RunOnUIThread = true)]
         public void when_executing_then_runs_on_main_thread()
         {
-            Assert.Equal(Application.Current.Dispatcher.Thread, Thread.CurrentThread);
+            Assert.Equal(Application.Current.Dispatcher.Thread.ManagedThreadId, Thread.CurrentThread.ManagedThreadId);
         }
 
         [InlineData("foo")]
@@ -47,7 +47,7 @@ namespace Xunit
             Assert.Equal(expected, actual);
         }
 
-        [VsixFact(TimeoutSeconds = 2)]
+        [VsixFact(TimeoutSeconds = 2, Skip = "Can only be verified manually")]
         public void when_execution_times_out_then_restarts_vs_for_other_tests()
         {
             Thread.Sleep(TimeSpan.FromSeconds(3));
@@ -59,7 +59,7 @@ namespace Xunit
             Assert.Equal("foo", "foobar");
         }
 
-        [VsixFact]
+        [VsixFact(Skip = "Can only be verified manually")]
         public void when_failing_then_reports()
         {
             Assert.Equal("foo", "foobar");
@@ -81,8 +81,7 @@ namespace Xunit
 
             dte.Solution.Open(Path.Combine(
                 ThisAssembly.Project.MSBuildProjectDirectory,
-                ThisAssembly.Project.OutputPath,
-                ThisAssembly.Constants.Content.Blank));
+                "Content", "Blank.sln"));
 
             Assert.True(dte.Solution.IsOpen);
         }

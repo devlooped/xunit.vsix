@@ -38,7 +38,7 @@
     <PackageReference Include="NuGet.Versioning" Version="6.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.1.*" />
     <PackageReference Include="Octokit" Version="0.28.0" />
-    <PackageReference Include="ThisAssembly" Version="1.0.9" />
+    <PackageReference Include="ThisAssembly.Project" Version="1.0.9" />
   </ItemGroup>
   
   <ItemGroup>
@@ -47,11 +47,11 @@
   
   <ItemGroup>
     <Compile Remove="Content\**\*.*" />
-    <None Remove="Content\**\*.*" />
-    <Content Include="Content\**\*.*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <None Include="Content\**\*.*" />
+    <!--
+    <Content Include="Content\**\*.*" CopyToOutputDirectory="PreserveNewest" />
     <FileConstant Include="@(Content)" />
+    -->
     <ProjectProperty Include="MSBuildProjectDirectory" />
     <ProjectProperty Include="OutputPath" />
   </ItemGroup>

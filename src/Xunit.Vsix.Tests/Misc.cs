@@ -14,7 +14,7 @@ public class Misc
 {
     ITestOutputHelper _output;
 
-    static readonly string BaseDir = Path.Combine(ThisAssembly.Project.MSBuildProjectDirectory, ThisAssembly.Project.OutputPath);
+    static readonly string BaseDir = Path.Combine(ThisAssembly.Project.MSBuildProjectDirectory);
 
     public Misc(ITestOutputHelper output)
     {
@@ -65,12 +65,12 @@ public class Misc
         var dte = ServiceProvider.GlobalProvider.GetService<DTE>();
         var solutionEmpty = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
 
-        dte.Solution.Open(Path.Combine(BaseDir, ThisAssembly.Constants.Content.Library.ClassLibrary));
+        dte.Solution.Open(Path.Combine(BaseDir, "Content", "Library", "ClassLibrary.sln"));
 
         var solution1 = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
 
         dte.Solution.Close();
-        dte.Solution.Open(Path.Combine(BaseDir, ThisAssembly.Constants.Content.Blank));
+        dte.Solution.Open(Path.Combine(BaseDir, "Content", "Blank.sln"));
 
         var solution2 = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
 
@@ -90,14 +90,14 @@ public class Misc
         var solutionEmptyItem = manager.GetHierarchyItem(solutionEmpty as IVsHierarchy, (uint)VSConstants.VSITEMID.Root);
         Assert.NotNull(solutionEmptyItem);
 
-        dte.Solution.Open(Path.Combine(BaseDir, ThisAssembly.Constants.Content.Library.ClassLibrary));
+        dte.Solution.Open(Path.Combine(BaseDir, "Content", "Blank.sln"));
 
         var solution1 = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
         var solution1Item = manager.GetHierarchyItem(solution1 as IVsHierarchy, (uint)VSConstants.VSITEMID.Root);
 
         dte.Solution.Close();
 
-        dte.Solution.Open(Path.Combine(BaseDir, ThisAssembly.Constants.Content.Blank));
+        dte.Solution.Open(Path.Combine(BaseDir, "Content", "Blank.sln"));
 
         var solution2 = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
         var solution2Item = manager.GetHierarchyItem(solution2 as IVsHierarchy, (uint)VSConstants.VSITEMID.Root);

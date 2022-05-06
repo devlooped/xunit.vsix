@@ -16,6 +16,7 @@ on:
 
 env:
   DOTNET_NOLOGO: true
+  Configuration: Release
 
 jobs:
   build:
@@ -30,12 +31,8 @@ jobs:
       - name: ✓ ensure format
         run: dotnet format --verify-no-changes -v:diag --exclude ~/.nuget
 
-      - name: ≥ msbuild
-        id: msbuild
-        uses: microsoft/setup-msbuild@v1.1
-
       - name: 🙏 build
-        run: msbuild -r -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
+        run: dotnet build -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
 
       - name: 🧪 tests
         run: |

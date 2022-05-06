@@ -39,14 +39,7 @@ jobs:
 
       - name: 🧪 test
         run: |
-          dotnet test --no-build -m:1 -v:d --blame-hang-timeout 5m --filter "VisualStudioVersion!~1" -r "./out"
-
-      - name: 📦 artifact
-        uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: tests-${{ github.run_number }}
-          path: ./out
+          dotnet test --no-build -m:1 --filter "VisualStudioVersion!~1"
 
       - name: 📦 pack
         if: always()

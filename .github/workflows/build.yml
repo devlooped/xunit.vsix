@@ -34,9 +34,23 @@ jobs:
       - name: 🙏 build
         run: dotnet build -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
 
-      - name: 🧪 tests
+      - name: 🛠 vs
         run: |
-          dotnet test --no-build -m:1 --filter "Vsix!=true"
+          dotnet tool install -g dotnet-vs
+          vs where --prop=EnginePath >> $env:GITHUB_PATH
+
+      - name: ⚙ vsix
+        run: | 
+          vs /NoSplash /ResetSettings CSharp /Command "File.Exit"
+          wait-process -name 'devenv'
+          vs
+
+      - name: 🧪 test
+        run: |
+          dotnet test --no-build -m:1
+
+      - name: ❎ vs
+        run: vs kill all
 
       - name: 📦 pack
         if: always()

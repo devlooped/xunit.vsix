@@ -53,13 +53,15 @@ jobs:
           dotnet tool install -g dotnet-vs
           vs /NoSplash /ResetSettings CSharp /Command "File.Exit"
           wait-process -name 'devenv'
+          vs
 
       - name: 🧪 integration tests
         working-directory: src/Xunit.Vsix.Tests
         run: |
-          vs
           dotnet test -m:1 -p:PkgBin="$env:GITHUB_WORKSPACE\bin" -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER" --filter "SanityCheck=true" --blame-hang-timeout 5m --blame-hang-dump-type full -r .\out
-          vs kill all
+
+      - name: ❎ vs
+        run: vs kill all
 
       - name: 📦 artifact
         uses: actions/upload-artifact@v2

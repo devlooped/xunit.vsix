@@ -51,14 +51,14 @@ jobs:
       - name: 🛠 vs
         run: |
           dotnet tool install -g dotnet-vs
-          vs /NoSplash /ResetSettings CSharp /Command "File.Exit"
+          vs /NoSplash /ResetSettings General /Command "File.Exit"
           wait-process -name 'devenv'
           vs
 
       - name: 🧪 integration tests
         working-directory: src/Xunit.Vsix.Tests
         run: |
-          dotnet test -m:1 -p:PkgBin="$env:GITHUB_WORKSPACE\bin" -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER" --filter "SanityCheck=true" --blame-hang-timeout 5m --blame-hang-dump-type full -r .\out
+          dotnet test -m:1 -p:PkgBin="$env:GITHUB_WORKSPACE\bin" -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER" --filter "SanityCheck=true" --blame-hang-timeout 10m --blame-hang-dump-type full -r .\out
 
       - name: ❎ vs
         run: vs kill all

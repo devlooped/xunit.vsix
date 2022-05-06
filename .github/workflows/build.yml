@@ -39,7 +39,7 @@ jobs:
 
       - name: 🧪 test
         run: |
-          dotnet test --no-build -m:1 --filter "VisualStudioVersion!~1"
+          dotnet test --no-build -m:1 --filter --filter "(VisualStudioVersion!~[)&(VisualStudioVersion!~1)&(VisualStudioVersion!~*)"
 
       - name: 📦 pack
         if: always()

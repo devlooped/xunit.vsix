@@ -37,20 +37,14 @@ jobs:
       - name: 🛠 vs
         run: |
           dotnet tool install -g dotnet-vs
-          vs where --prop=EnginePath >> $env:GITHUB_PATH
-
-      - name: ⚙ vsix
-        run: | 
           vs /NoSplash /ResetSettings CSharp /Command "File.Exit"
           wait-process -name 'devenv'
-          vs
 
       - name: 🧪 test
         run: |
+          vs
           dotnet test --no-build -m:1
-
-      - name: ❎ vs
-        run: vs kill all
+          vs kill all
 
       - name: 📦 pack
         if: always()

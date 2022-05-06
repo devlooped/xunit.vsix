@@ -38,6 +38,12 @@ jobs:
         if: always()
         run: dotnet pack --no-build -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
 
+      - name: 🛠 vs
+        run: |
+          dotnet tool install -g dotnet-vs
+          $version = [System.Version]::Parse($(vs where --prop=InstallationVersion)).ToString(2)
+          echo "VisualStudioVersion=$version" >> $env:GITHUB_ENV
+
       - name: 🧪 unit tests
         working-directory: src/Xunit.Vsix.Tests
         run: dotnet test -m:1 -p:PkgBin="$env:GITHUB_WORKSPACE\bin" -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER" --filter "Vsix!=true" --blame-hang-timeout 5m --blame-hang-dump-type full -r .\out

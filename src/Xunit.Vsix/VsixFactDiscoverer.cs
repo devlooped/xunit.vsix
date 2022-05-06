@@ -37,28 +37,18 @@ namespace Xunit
 
                 if (vsix.VisualStudioVersions == null)
                 {
-                    testCases.Add(new XunitSkippedDataRowTestCase(
+                    // Didn't find any VS versions to run against. Report as a skipped test.
+                    testCases.Add(new VsixTestCase(
                         _messageSink, defaultMethodDisplay, testMethod,
-                       string.Format(
-                           CultureInfo.CurrentCulture,
-                           "Cannot execute test for specified {0}={1} because {2}={3} and {4}={5}.",
-                           nameof(IVsixAttribute.VisualStudioVersions),
-                           string.Join(",", factAttribute.GetNamedArgument<string[]>(nameof(IVsixAttribute.VisualStudioVersions))),
-                           nameof(IVsixAttribute.MinimumVisualStudioVersion),
-                           vsix.MinimumVisualStudioVersion,
-                           nameof(IVsixAttribute.MaximumVisualStudioVersion),
-                           vsix.MaximumVisualStudioVersion)));
+                        string.Join(", ", testMethod.GetComputedProperty<string[]>(factAttribute, nameof(IVsixAttribute.VisualStudioVersions))),
+                        vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread)
+                    {
+                        SkipReason = $"Cannot execute test because no matching installation was found for Visual Studio version(s) '{string.Join(",", factAttribute.GetNamedArgument<string[]>(nameof(IVsixAttribute.VisualStudioVersions)))}'.",
+                    });
                 }
                 else
                 {
-                    // Add invalid VS versions.
                     testCases.AddRange(vsix.VisualStudioVersions
-                        .Where(version => !VsVersions.Default.InstalledVersions.Contains(version))
-                        .Select(v => new ExecutionErrorTestCase(_messageSink, defaultMethodDisplay, testMethod,
-                           string.Format("Cannot execute test for specified {0}={1} because no installation was found for it.", nameof(IVsixAttribute.VisualStudioVersions), v))));
-
-                    testCases.AddRange(vsix.VisualStudioVersions
-                        .Where(version => VsVersions.Default.InstalledVersions.Contains(version))
                         .Select(version => new VsixTestCase(_messageSink, defaultMethodDisplay, testMethod, version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread)));
                 }
 

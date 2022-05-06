@@ -25,13 +25,22 @@ namespace Xunit
             : base(testAssembly, testCases, diagnosticMessageSink, executionMessageSink, executionOptions)
         { }
 
+        class SkippedTest : ITest
+        {
+            public string DisplayName { get; set; }
+
+            public ITestCase TestCase { get; set; }
+        }
+
         protected override async Task<RunSummary> RunTestCollectionsAsync(IMessageBus messageBus, CancellationTokenSource cancellationTokenSource)
         {
             var allTests = TestCases;
 
             try
             {
-                TestCases = allTests.Where(tc => !(tc is VsixTestCase));
+                TestCases = allTests.Where(tc => 
+                    (tc is not VsixTestCase vtc || vtc.SkipReason != null) && 
+                    tc is not XunitSkippedDataRowTestCase);
 
                 // Preserves base xunit run behavior.
                 var xunitSummary = await base.RunTestCollectionsAsync(messageBus, cancellationTokenSource);
@@ -39,7 +48,7 @@ namespace Xunit
                 var maxParallelThreads = base.ExecutionOptions.MaxParallelThreadsOrDefault();
                 if (maxParallelThreads < VsVersions.Default.InstalledVersions.Length)
                     maxParallelThreads = VsVersions.Default.InstalledVersions.Length;
-
+                
                 Func<Func<Task<RunSummary>>, Task<RunSummary>> taskRunner;
                 if (SynchronizationContext.Current != null)
                 {

@@ -88,7 +88,7 @@ namespace Xunit
         }
 
         [VsixFact(VisualStudioVersion.VS2017)]
-        public void when_annotating_with_minimum_and_maximum_then_excludes_other_versions()
+        public void when_specific_version_then_runs_on_it()
         {
             var dte = GlobalServiceProvider.GetService<EnvDTE.DTE>();
 

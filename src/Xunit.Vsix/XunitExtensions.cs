@@ -51,6 +51,8 @@ namespace Xunit
             var recycle = testMethod.GetComputedArgument<bool?>(vsixAttribute, nameof(IVsixAttribute.RecycleOnFailure));
             var uiThread = testMethod.GetComputedArgument<bool?>(vsixAttribute, nameof(IVsixAttribute.RunOnUIThread));
 
+            var name = testMethod.Method.Name;
+
             return new VsixAttribute(finalVersions)
             {
                 MinimumVisualStudioVersion = minVersion,

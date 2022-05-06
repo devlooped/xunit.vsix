@@ -37,6 +37,12 @@ namespace Xunit
 
         public bool? RunOnUIThread { get; private set; }
 
+        public new string SkipReason
+        {
+            get => base.SkipReason;
+            set => base.SkipReason = value;
+        }
+
         protected override void Initialize()
         {
             base.Initialize();
@@ -66,6 +72,7 @@ namespace Xunit
             data.AddValue(nameof(IVsixAttribute.TimeoutSeconds), TimeoutSeconds);
             data.AddValue(nameof(IVsixAttribute.RecycleOnFailure), RecycleOnFailure);
             data.AddValue(nameof(IVsixAttribute.RunOnUIThread), RunOnUIThread);
+            data.AddValue(nameof(SkipReason), SkipReason, typeof(string));
         }
 
         /// <inheritdoc/>
@@ -78,6 +85,7 @@ namespace Xunit
             TimeoutSeconds = data.GetValue<int>(nameof(IVsixAttribute.TimeoutSeconds));
             RecycleOnFailure = data.GetValue<bool?>(nameof(IVsixAttribute.RecycleOnFailure));
             RunOnUIThread = data.GetValue<bool?>(nameof(IVsixAttribute.RunOnUIThread));
+            SkipReason = data.GetValue<string>(nameof(SkipReason));
         }
     }
 }

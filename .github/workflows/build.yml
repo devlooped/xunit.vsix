@@ -37,9 +37,9 @@ jobs:
       - name: 🙏 build
         run: msbuild -r -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
 
-      - name: 🧪 test
+      - name: 🧪 tests
         run: |
-          dotnet test --no-build -m:1 --filter --filter "(VisualStudioVersion!~[)&(VisualStudioVersion!~1)&(VisualStudioVersion!~*)"
+          dotnet test --no-build -m:1 --filter "Vsix!=true"
 
       - name: 📦 pack
         if: always()

@@ -50,7 +50,7 @@ namespace Xunit
             // Register VS version as a trait, so that it can be used to group runs.
             Traits["VisualStudioVersion"] = new List<string>(new[] { VisualStudioVersion });
             Traits["RootSuffix"] = new List<string>(new[] { RootSuffix });
-            Traits["Vsix"] = new List<string>(new[] { "" });
+            Traits["Vsix"] = new List<string>(new[] { "true" });
         }
 
         protected override string GetDisplayName(IAttributeInfo factAttribute, string displayName)

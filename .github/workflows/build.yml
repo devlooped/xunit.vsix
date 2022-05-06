@@ -34,8 +34,13 @@ jobs:
       - name: 🙏 build
         run: dotnet build -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
 
+      - name: 📦 pack
+        if: always()
+        run: dotnet pack --no-build -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
+
       - name: 🧪 unit tests
-        run: dotnet test --no-build -m:1 --filter "Vsix!=true" --blame-hang-timeout 5m --blame-hang-dump-type full -r ./out
+        working-directory: src/Xunit.Vsix.Tests
+        run: dotnet test -m:1 -p:PkgBin="$env:GITHUB_WORKSPACE\bin" -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER" --filter "Vsix!=true" --blame-hang-timeout 5m --blame-hang-dump-type full -r .\out
 
       - name: 🛠 vs
         run: |
@@ -44,9 +49,10 @@ jobs:
           wait-process -name 'devenv'
 
       - name: 🧪 integration tests
+        working-directory: src/Xunit.Vsix.Tests
         run: |
           vs
-          dotnet test --no-build -m:1 --filter "SanityCheck=true" --blame-hang-timeout 5m --blame-hang-dump-type full -r ./out
+          dotnet test -m:1 -p:PkgBin="$env:GITHUB_WORKSPACE\bin" -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER" --filter "SanityCheck=true" --blame-hang-timeout 5m --blame-hang-dump-type full -r .\out
           vs kill all
 
       - name: 📦 artifact
@@ -55,10 +61,6 @@ jobs:
         with:
           name: tests-${{ github.run_number }}
           path: ./out
-
-      - name: 📦 pack
-        if: always()
-        run: dotnet pack --no-build -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
 
       # Only push CI package to sleet feed if building on ubuntu (fastest)
       - name: 🚀 sleet

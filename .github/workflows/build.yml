@@ -35,8 +35,7 @@ jobs:
         run: dotnet build -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
 
       - name: 🧪 unit tests
-        run: |
-          dotnet test --no-build -m:1 --filter "Vsix!=true"
+        run: dotnet test --no-build -m:1 --filter "Vsix!=true" --blame-hang-timeout 5m --blame-hang-dump-type full -r ./out
 
       - name: 🛠 vs
         run: |
@@ -47,8 +46,15 @@ jobs:
       - name: 🧪 integration tests
         run: |
           vs
-          dotnet test --no-build -m:1 --filter "SanityCheck=true"
+          dotnet test --no-build -m:1 --filter "SanityCheck=true" --blame-hang-timeout 5m --blame-hang-dump-type full -r ./out
           vs kill all
+
+      - name: 📦 artifact
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: tests-${{ github.run_number }}
+          path: ./out
 
       - name: 📦 pack
         if: always()

@@ -7,7 +7,11 @@
     <GenerateAssemblyVsixAttribute>false</GenerateAssemblyVsixAttribute>
   </PropertyGroup>
 
-  <Import Project="..\Xunit.Vsix\build\xunit.vsix.props" />
+  <PropertyGroup Condition="'$(PkgBin)' != ''">
+    <RestoreSources>https://api.nuget.org/v3/index.json;$(PkgBin);$(RestoreSources)</RestoreSources>
+  </PropertyGroup>
+
+  <Import Project="..\Xunit.Vsix\build\xunit.vsix.props" Condition="'$(PkgBin)' != ''" />
 
   <PropertyGroup>
     <!--
@@ -41,21 +45,22 @@
     <PackageReference Include="ThisAssembly.Project" Version="1.0.9" />
   </ItemGroup>
   
-  <ItemGroup>
+  <ItemGroup Condition="'$(PkgBin)' == ''" >
     <ProjectReference Include="..\Xunit.Vsix\Xunit.Vsix.csproj" />
   </ItemGroup>
-  
+
+  <ItemGroup Condition="'$(PkgBin)' != ''" >
+    <PackageReference Include="xunit.vsix" Version="$(VersionPrefix)-$(VersionSuffix)" Condition="'$(VersionSuffix)' != ''" />
+    <PackageReference Include="xunit.vsix" Version="$(VersionPrefix)" Condition="'$(VersionSuffix)' == ''" />
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Remove="Content\**\*.*" />
     <None Include="Content\**\*.*" />
-    <!--
-    <Content Include="Content\**\*.*" CopyToOutputDirectory="PreserveNewest" />
-    <FileConstant Include="@(Content)" />
-    -->
     <ProjectProperty Include="MSBuildProjectDirectory" />
     <ProjectProperty Include="OutputPath" />
   </ItemGroup>
   
-  <Import Project="..\Xunit.Vsix\build\xunit.vsix.targets" />
+  <Import Project="..\Xunit.Vsix\build\xunit.vsix.targets" Condition="'$(PkgBin)' == ''" />
 
 </Project>

@@ -66,7 +66,7 @@ jobs:
         if: always()
         with:
           name: tests-${{ github.run_number }}
-          path: ./out
+          path: src\Xunit.Vsix.Tests\out
 
       # Only push CI package to sleet feed if building on ubuntu (fastest)
       - name: 🚀 sleet

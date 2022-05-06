@@ -34,16 +34,20 @@ jobs:
       - name: 🙏 build
         run: dotnet build -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
 
+      - name: 🧪 unit tests
+        run: |
+          dotnet test --no-build -m:1 --filter "Vsix!=true"
+
       - name: 🛠 vs
         run: |
           dotnet tool install -g dotnet-vs
           vs /NoSplash /ResetSettings CSharp /Command "File.Exit"
           wait-process -name 'devenv'
 
-      - name: 🧪 test
+      - name: 🧪 integration tests
         run: |
           vs
-          dotnet test --no-build -m:1
+          dotnet test --no-build -m:1 --filter "SanityCheck=true"
           vs kill all
 
       - name: 📦 pack

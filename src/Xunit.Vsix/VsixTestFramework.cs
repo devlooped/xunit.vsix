@@ -20,7 +20,7 @@ namespace Xunit
             var debug = Environment.GetEnvironmentVariable(Constants.DebugEnvironmentVariable);
             if (bool.TryParse(debug, out var shouldDebug) && shouldDebug)
                 Debugger.Launch();
-            
+
             //Debugger.Launch();
             s_tracer.Switch.Level = SourceLevels.Error;
             Trace.AutoFlush = true;

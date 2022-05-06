@@ -38,8 +38,8 @@ namespace Xunit
 
             try
             {
-                TestCases = allTests.Where(tc => 
-                    (tc is not VsixTestCase vtc || vtc.SkipReason != null) && 
+                TestCases = allTests.Where(tc =>
+                    (tc is not VsixTestCase vtc || vtc.SkipReason != null) &&
                     tc is not XunitSkippedDataRowTestCase);
 
                 // Preserves base xunit run behavior.
@@ -48,7 +48,7 @@ namespace Xunit
                 var maxParallelThreads = base.ExecutionOptions.MaxParallelThreadsOrDefault();
                 if (maxParallelThreads < VsVersions.Default.InstalledVersions.Length)
                     maxParallelThreads = VsVersions.Default.InstalledVersions.Length;
-                
+
                 Func<Func<Task<RunSummary>>, Task<RunSummary>> taskRunner;
                 if (SynchronizationContext.Current != null)
                 {

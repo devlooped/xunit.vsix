@@ -31,22 +31,24 @@ jobs:
       - name: ✓ ensure format
         run: dotnet format --verify-no-changes -v:diag --exclude ~/.nuget
 
+      - name: ⚙ msbuild
+        uses: microsoft/setup-msbuild@v1.1
+
       - name: 🙏 build
-        run: dotnet build -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
+        run: msbuild -r -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
 
       - name: 📦 pack
         if: always()
         run: dotnet pack --no-build -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
 
       - name: 🛠 vs
-        run: |
-          dotnet tool install -g dotnet-vs
-          $version = [System.Version]::Parse($(vs where --prop=InstallationVersion)).ToString(2)
-          echo "VisualStudioVersion=$version" >> $env:GITHUB_ENV
+        run: dotnet tool install -g dotnet-vs
 
       - name: 🧪 unit tests
         working-directory: src/Xunit.Vsix.Tests
-        run: dotnet test -m:1 -p:PkgBin="$env:GITHUB_WORKSPACE\bin" -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER" --filter "Vsix!=true" --blame-hang-timeout 5m --blame-hang-dump-type full -r .\out
+        run: |
+          msbuild -r -m:1 -p:PkgBin="$env:GITHUB_WORKSPACE\bin" -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER" -bl:.\..\..\out\test.binlog
+          dotnet test --no-build --filter "Vsix!=true" --blame-hang-timeout 5m --blame-hang-dump-type full -r .\..\..\out
 
       - name: 🛠 vs
         run: |
@@ -58,7 +60,7 @@ jobs:
       - name: 🧪 integration tests
         working-directory: src/Xunit.Vsix.Tests
         run: |
-          dotnet test -m:1 -p:PkgBin="$env:GITHUB_WORKSPACE\bin" -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER" --filter "Vsix=true" --blame-hang-timeout 10m --blame-hang-dump-type full -r .\out
+          dotnet test --no-build --filter "Vsix=true" --blame-hang-timeout 10m --blame-hang-dump-type full -r .\..\..\out
 
       - name: ❎ vs
         run: vs kill all
@@ -68,7 +70,7 @@ jobs:
         if: always()
         with:
           name: tests-${{ github.run_number }}
-          path: src\Xunit.Vsix.Tests\out
+          path: .\out
 
       # Only push CI package to sleet feed if building on ubuntu (fastest)
       - name: 🚀 sleet

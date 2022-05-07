@@ -20,15 +20,15 @@ runs:
                 echo -e "${warn}Retry $counter for $filter ${reset}"
             fi
             # run test and forward output also to a file in addition to stdout (tee command)
-            dotnet test --no-build -m:1 --blame-hang --blame-hang-timeout 10m --filter=$filter | tee ./output.log
+            dotnet test --no-build -m:1 --blame-hang --blame-hang-timeout 5m --filter=$filter | tee ./output.log
             # capture dotnet test exit status, different from tee
             exitcode=${PIPESTATUS[0]}
             if [ $exitcode == 0 ]
             then
                 exit 0
             fi
-            # cat output, get failed test names, join as DisplayName=TEST with |, remove trailing |.
-            filter=$(cat ./output.log | grep -o -P '(?<=\sFailed\s)[^\s]*' | awk 'BEGIN { ORS="|" } { print("DisplayName=" $0) }' | grep -o -P '.*(?=\|$)')
+            # cat output, get failed test names, remove trailing whitespace, sort+dedupe, join as FQN~TEST with |, remove trailing |.
+            filter=$(cat ./output.log | grep -o -P '(?<=\sFailed\s)[\w\._]*' | sed 's/ *$//g' | sort -u | awk 'BEGIN { ORS="|" } { print("FullyQualifiedName~" $0) }' | grep -o -P '.*(?=\|$)')
             ((counter++))
         done
         exit $exitcode

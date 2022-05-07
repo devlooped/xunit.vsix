@@ -78,8 +78,8 @@
 	weak
 [file ".github/workflows/test/action.yml"]
 	url = https://github.com/devlooped/oss/blob/main/.github/workflows/test/action.yml
-	sha = 2c82d7d80183eb619d48cddada414ff3c471303a
-	etag = 93a510692a6f4b5350ba486d1e944ea444612f137730f649ae6a2f96d7d970d0
+	sha = fca55bc0e439be202a4480a682415a92c09b7672
+	etag = e75412a4af8b83897504e754f9a95cd4ebcd95b358857047afeb3cd97b2497ba
 	weak
 [file ".gitignore"]
 	url = https://github.com/devlooped/oss/blob/main/.gitignore
@@ -123,8 +123,8 @@
 	weak
 [file "src/Directory.Build.targets"]
 	url = https://github.com/devlooped/oss/blob/main/src/Directory.Build.targets
-	sha = 4f57ffe1d48addf16641934e7b1e47ef70204e6e
-	etag = 87c4dff4b44072c6825b451957af6d920616d77c50152a7d99719151c3d24639
+	sha = 024f73321ffe4e927151ff94666c52c2d425139a
+	etag = 816dff7cb821a885da46ad200f9b8bea3438d74da3172bc43716d5670abaee6c
 	weak
 [file "src/kzu.snk"]
 	url = https://github.com/devlooped/oss/blob/main/src/kzu.snk

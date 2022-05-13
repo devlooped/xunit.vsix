@@ -63,10 +63,20 @@ namespace Xunit
                     }
                 }
 
-                // Ensures we get one of the installed ones. If the envvar results in no installed one, that's a bug.
-                currentVersion = installedVersions.FirstOrDefault(x => x == envVersion);
+                // Ensures we get one of the installed ones.
+                currentVersion = installedVersions.FirstOrDefault(x => x == envVersion) ??
+                    // If we can't find exact match, assume lowest version that starts with 
+                    // same major version. Note installedVersions is sorted ascending already.
+                    installedVersions.FirstOrDefault(x => x.StartsWith(envVersion.Substring(0, 3)));
+
                 Debug.Assert(currentVersion != null);
+
                 s_tracer.TraceInformation(Strings.VsVersions.CurrentVersion(currentVersion));
+            }
+            else
+            {
+                // Pick one arbitrarily
+                currentVersion = installedVersions.FirstOrDefault();
             }
 
             Default = new VsVersions(currentVersion, latestVersion, installedVersions);

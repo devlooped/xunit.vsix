@@ -5,9 +5,6 @@
     <!-- Ignore warning about xunit.vsix.bootstrap being x86 -->
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
 
-    <!-- Whether to generate assembly-level defaults from MSBuild properties. -->
-    <GenerateAssemblyVsixAttribute Condition=" '$(GenerateAssemblyVsixAttribute)' == '' ">true</GenerateAssemblyVsixAttribute>
-
     <!-- Specify '*' to set the assembly-level default to use all installed VS versions. -->
     <!-- Specify a semicolon-separated list for specific versions, such as '11.0, 12.0' . -->
     <!-- Default is current VS version being used to build -->
@@ -35,61 +32,11 @@
              CopyToOutputDirectory="PreserveNewest"
              NuGetPackageId="xunit.vsix"
              Visible="false" />
+    <!-- Provides the [assembly: Xunit.TestFrameworkAttribute("Xunit.VsixTestFramework", "xunit.vsix")] assembly attriute -->
+    <AssemblyAttribute Include="Xunit.TestFrameworkAttribute">
+      <_Parameter1>Xunit.VsixTestFramework</_Parameter1>
+      <_Parameter2>xunit.vsix</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
-
-  <Target Name="VsixFrameworkInfo"
-          DependsOnTargets="GetVsixFrameworkInfoFile;GenerateVsixFrameworkInfo;IncludeVsixFrameworkInfo"
-          BeforeTargets="CoreCompile" />
-
-  <Target Name="GetVsixFrameworkInfoFile">
-    <ItemGroup>
-      <VisualStudioVersion Include="$(VisualStudioVersions)" />
-    </ItemGroup>
-    <PropertyGroup Condition="'$(VsixFrameworkInfoFile)' == ''">
-      <!-- The item list concatenation wouldn't work outside a target -->
-      <VsixFrameworkInfoFile Condition="'$(VisualStudioVersions)' != '*'">$(IntermediateOutputPath)AssemblyInfo.VsixFramework-@(VisualStudioVersion, '-')-$(RootSuffix).g$(DefaultLanguageSourceExtension)</VsixFrameworkInfoFile>
-      <VsixFrameworkInfoFile Condition="'$(VisualStudioVersions)' == '*'">$(IntermediateOutputPath)AssemblyInfo.VsixFramework-$(RootSuffix).g$(DefaultLanguageSourceExtension)</VsixFrameworkInfoFile>
-    </PropertyGroup>
-  </Target>
-
-  <Target Name="GenerateVsixFrameworkInfo"
-			  Inputs="$(MSBuildProjectFullPath)"
-			  Outputs="$(VsixFrameworkInfoFile)">
-
-    <ItemGroup Condition="'$(VisualStudioVersions)' != '' and '$(VisualStudioVersions)' != '*'" >
-      <_VisualStudioVersion Include="$(VisualStudioVersions)" />
-      <_QuotedVisualStudioVersion Include="@(_VisualStudioVersion -> '&quot;%(Identity)&quot;')" />
-      <AttributeArgument Include="@(_QuotedVisualStudioVersion, ', ')" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <AttributeArgument Include='"*"' Condition="'$(VisualStudioVersions)' == '*'" />
-      <AttributeArgument Include='RootSuffix = "$(RootSuffix)"' Condition="'$(RootSuffix)' != ''" />
-      <AttributeArgument Include='MinimumVisualStudioVersion = "$(MinimumVisualStudioVersion)"' Condition="'$(MinimumVisualStudioVersion)' != ''" />
-      <AttributeArgument Include='MaximumVisualStudioVersion = "$(MaximumVisualStudioVersion)"' Condition="'$(MaximumVisualStudioVersion)' != ''" />
-      <AttributeArgument Include='NewIdeInstance = $(NewIdeInstance.ToLowerInvariant())' Condition="'$(NewIdeInstance)' != ''" />
-      <AttributeArgument Include='TimeoutSeconds = $(TimeoutSeconds)' Condition="'$(TimeoutSeconds)' != ''" />
-      <AttributeArgument Include='RecycleOnFailure = $(RecycleOnFailure.ToLowerInvariant())' Condition="'$(RecycleOnFailure)' != ''" />
-      <AttributeArgument Include='RunOnUIThread = $(RunOnUIThread.ToLowerInvariant())' Condition="'$(RunOnUIThread)' != ''" />
-    </ItemGroup>
-    <PropertyGroup>
-      <AttributeArguments>@(AttributeArgument, ', ')</AttributeArguments>
-    </PropertyGroup>
-
-    <WriteLinesToFile File="$(VsixFrameworkInfoFile)" Lines="[assembly: Xunit.TestFrameworkAttribute (&quot;Xunit.VsixTestFramework&quot;, &quot;xunit.vsix&quot;)]" Overwrite="true" />
-    <WriteLinesToFile Condition=" '$(GenerateAssemblyVsixAttribute)' == 'true' " File="$(VsixFrameworkInfoFile)" Lines="// Customize by providing %24(VisualStudioVersions), and the rest of the available MSBuild properties as shown in the imported xunit.vsix.props." Overwrite="false" />
-    <WriteLinesToFile Condition=" '$(GenerateAssemblyVsixAttribute)' == 'true' " File="$(VsixFrameworkInfoFile)" Lines="// Turn off attribute generation by setting %24(GenerateAssemblyVsixAttribute) to 'false'" Overwrite="false" />
-    <WriteLinesToFile Condition=" '$(GenerateAssemblyVsixAttribute)' == 'true' " File="$(VsixFrameworkInfoFile)" Lines="[assembly: Xunit.Vsix ($(AttributeArguments))]" Overwrite="false" />
-
-    <ItemGroup>
-      <FileWrites Include="$(VsixFrameworkInfoFile)" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="IncludeVsixFrameworkInfo">
-    <ItemGroup>
-      <Compile Include="$(VsixFrameworkInfoFile)" />
-    </ItemGroup>
-  </Target>
 
 </Project>

@@ -13,6 +13,8 @@ on:
       - support.md
   pull_request:
     types: [opened, synchronize, reopened]
+  release:
+    types: [released]
 
 env:
   DOTNET_NOLOGO: true
@@ -80,3 +82,8 @@ jobs:
         run: |
           dotnet tool install -g --version 4.0.18 sleet 
           sleet push bin --config none -f --verbose -p "SLEET_FEED_CONTAINER=nuget" -p "SLEET_FEED_CONNECTIONSTRING=${{ secrets.SLEET_CONNECTION }}" -p "SLEET_FEED_TYPE=azure" || echo "No packages found"
+
+      # Only push CI package to nuget.org for releases
+      - name: 🚀 nuget
+        if: github.event_name == 'release'
+        run: dotnet nuget push bin\*.nupkg -s https://api.nuget.org/v3/index.json -k ${{secrets.NUGET_API_KEY}} --skip-duplicate

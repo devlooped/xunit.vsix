@@ -44,7 +44,7 @@
     <PackageReference Include="Devlooped.Injector" Version="42.42.42-main.7" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.extensibility.execution" Version="2.4.1" />
-    <PackageReference Include="NuGet.Versioning" Version="6.1.0" PrivateAssets="all" />
+    <PackageReference Include="NuGet.Versioning" Version="6.2.0" PrivateAssets="all" />
     <PackageReference Include="NuGetizer" Version="0.7.5" PrivateAssets="all" />
   </ItemGroup>
 

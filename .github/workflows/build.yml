@@ -36,6 +36,10 @@ jobs:
       - name: ⚙ msbuild
         uses: microsoft/setup-msbuild@v1.1
 
+      - name: ≥ version
+        if: github.event_name == 'release'
+        run: echo "Version=${GITHUB_REF#refs/*/v}" >> $GITHUB_ENV
+
       - name: 🙏 build
         run: msbuild -r -m:1 -p:VersionLabel="$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER"
 

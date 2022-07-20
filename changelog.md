@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.5.0-beta](https://github.com/devlooped/xunit.vsix/tree/v0.5.0-beta) (2022-07-20)
+
+[Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.4.0...v0.5.0-beta)
+
 ## [v0.4.0](https://github.com/devlooped/xunit.vsix/tree/v0.4.0) (2022-05-13)
 
 [Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.1.0...v0.4.0)

@@ -38,6 +38,7 @@ jobs:
 
       - name: ≥ version
         if: github.event_name == 'release'
+        shell: bash
         run: echo "Version=${GITHUB_REF#refs/*/v}" >> $GITHUB_ENV
 
       - name: 🙏 build

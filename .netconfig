@@ -12,6 +12,9 @@
 [file ".github/ISSUE_TEMPLATE/config.yml"]
 	url = https://github.com/devlooped/oss/blob/main/.github/ISSUE_TEMPLATE/config.yml
 	skip
+[file ".github/workflows/build.yml"]
+	url = https://github.com/devlooped/oss/blob/main/.github/workflows/build.yml
+	skip
 [file ".github/workflows/release-artifacts.yml"]
 	url = https://github.com/devlooped/oss/blob/main/.github/workflows/release-artifacts.yml
 	skip
@@ -50,11 +53,6 @@
 	url = https://github.com/devlooped/oss/blob/main/.github/dependabot.yml
 	sha = 0683ee777d7d878d4bf013d7deea352685135a05
 	etag = 2fc8a0d2b47091b058ae3e1f68333492044b49a684621f4939a0bce5bff869d5
-	weak
-[file ".github/workflows/build.yml"]
-	url = https://github.com/devlooped/oss/blob/main/.github/workflows/build.yml
-	sha = bbf637b2a565073a89783c9eb4ebd9c460823fe4
-	etag = 6b9139f22428851c8d7329973f3d92802d25e70a5e0c1b24604c23db991ac8e2
 	weak
 [file ".github/workflows/changelog.yml"]
 	url = https://github.com/devlooped/oss/blob/main/.github/workflows/changelog.yml

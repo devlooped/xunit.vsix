@@ -60,9 +60,8 @@ namespace Xunit
             }
 #endif
 
-            var bufferBus = new InterceptingMessageBus();
-            var summary = await RunAsyncCore(vsixTest, bufferBus, aggregator);
-
+            using var bufferBus = new InterceptingMessageBus(messageBus);
+            var summary = await RunAsyncCore(vsixTest, messageBus, aggregator);
             var shouldRecycle = vsixTest.RecycleOnFailure.GetValueOrDefault();
 
             // Special case for MEF cache corruption, clear cache and restart the test.
@@ -88,15 +87,7 @@ namespace Xunit
             {
                 Recycle();
                 aggregator.Clear();
-                summary = await RunAsyncCore(vsixTest, messageBus, aggregator);
-            }
-            else
-            {
-                // Dispatch messages from the first run to actual bus.
-                foreach (var msg in bufferBus.Messages)
-                {
-                    messageBus.QueueMessage(msg);
-                }
+                return await RunAsyncCore(vsixTest, messageBus, aggregator);
             }
 
             return summary;
@@ -136,6 +127,9 @@ namespace Xunit
             {
                 if (ex is RemotingException || ex is TimeoutException)
                     Stop();
+
+                if (ex is RemotingException)
+                    ex = new Exception("Connection to running IDE lost.");
 
                 aggregator.Add(ex);
                 messageBus.QueueMessage(new TestFailed(xunitTest, 0, ex.Message, ex));
@@ -252,7 +246,7 @@ namespace Xunit
             var args = "";
 
             if (Version.Parse(_visualStudioVersion) >= new Version("16.0"))
-                args = "/ResetSettings EmptyStartup.vssettings ";
+                args = "/NoSplash /ResetSettings General ";
 
             if (!string.IsNullOrEmpty(_rootSuffix))
                 args += "/RootSuffix " + _rootSuffix;

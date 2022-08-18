@@ -59,7 +59,7 @@ public class Misc
         Assert.Equal(currentThreadId, Application.Current.Dispatcher.Thread.ManagedThreadId);
     }
 
-    [VsixFact(RunOnUIThread = true)]
+    [VsixFact(RunOnUIThread = true, RecycleOnFailure = true)]
     public void when_reopenening_solution_then_vssolution_is_same()
     {
         var dte = ServiceProvider.GlobalProvider.GetService<DTE>();

@@ -42,7 +42,8 @@ jobs:
         run: echo "Version=${GITHUB_REF#refs/*/v}" >> $GITHUB_ENV
 
       - name: ≥ version label
-        run: echo "VersionLabel=$env:GITHUB_REF.$env:GITHUB_RUN_NUMBER" >> $GITHUB_ENV
+        shell: bash
+        run: echo "VersionLabel=$GITHUB_REF.$GITHUB_RUN_NUMBER" >> $GITHUB_ENV
         
       - name: 🙏 build
         run: msbuild -r -m:1

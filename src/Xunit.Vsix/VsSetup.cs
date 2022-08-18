@@ -11,18 +11,18 @@ namespace Xunit
     {
         public static string[] GetInstalled()
         {
-            var vs2017 = from instance in EnumerateUsableInstances()
+            var versions = from instance in EnumerateInstances()
                          let productVersion = (string)(instance as ISetupInstanceCatalog)?.GetCatalogInfo()?.GetValue("productSemanticVersion")
                          where productVersion != null
                          let semver = SemanticVersion.Parse(productVersion)
                          select new Version(semver.Major, semver.Minor);
 
-            return vs2017.Distinct().Select(v => v.ToString()).ToArray();
+            return versions.Distinct().Select(v => v.ToString()).ToArray();
         }
 
         public static string GetDevEnv(Version version)
         {
-            var vs = from instance in EnumerateUsableInstances()
+            var vs = from instance in EnumerateInstances()
                      let productVersion = (string)(instance as ISetupInstanceCatalog)?.GetCatalogInfo()?.GetValue("productSemanticVersion")
                      where productVersion != null
                      let semver = SemanticVersion.Parse(productVersion)
@@ -54,18 +54,6 @@ namespace Xunit
                     $@"Microsoft\VisualStudio\{version.Major}.0_{instanceId}{rootSuffix}\ComponentModelCache"))
                 .FirstOrDefault();
         }
-
-        /// <summary>
-        /// Filters the <see cref="EnumerateInstances"/> by those that are locally installed and 
-        /// have the VSSDK workload installed.
-        /// </summary>
-        static IEnumerable<ISetupInstance2> EnumerateUsableInstances()
-            => from instance in EnumerateInstances()
-               let state = instance.GetState()
-               where state == InstanceState.Complete &&
-               (state & InstanceState.Local) == InstanceState.Local &&
-               instance.GetPackages().Any(package => package.GetId() == "Microsoft.VisualStudio.Component.CoreEditor")
-               select instance;
 
         static IEnumerable<ISetupInstance2> EnumerateInstances()
         {

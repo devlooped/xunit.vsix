@@ -60,27 +60,6 @@ public class Misc
         Assert.Equal(currentThreadId, Application.Current.Dispatcher.Thread.ManagedThreadId);
     }
 
-    [VsixFact(RunOnUIThread = true, NewIdeInstance = true)]
-    public void when_reopenening_solution_then_vssolution_is_same()
-    {
-        var dte = ServiceProvider.GlobalProvider.GetService<DTE>();
-        var solutionEmpty = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
-
-        dte.Solution.Open(Path.Combine(BaseDir, "Content", "Library", "ClassLibrary.sln"));
-
-        var solution1 = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
-
-        dte.Solution.Close();
-        dte.Solution.Open(Path.Combine(BaseDir, "Content", "Blank.sln"));
-
-        var solution2 = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
-
-        Assert.Same(solutionEmpty, solution1);
-        Assert.Same(solution1, solution2);
-        Assert.Same(solutionEmpty as IVsHierarchy, solution1 as IVsHierarchy);
-        Assert.Same(solution1 as IVsHierarchy, solution2 as IVsHierarchy);
-    }
-
     [VsixFact(RunOnUIThread = true)]
     public void when_reopenening_solution_then_hierarchy_item_is_same()
     {

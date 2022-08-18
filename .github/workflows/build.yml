@@ -68,6 +68,7 @@ jobs:
           vs
 
       - name: 🧪 integration tests
+        timeout-minutes: 10
         working-directory: src/Xunit.Vsix.Tests
         run: |
           while ($true) {

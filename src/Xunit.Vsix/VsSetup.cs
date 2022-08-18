@@ -12,10 +12,10 @@ namespace Xunit
         public static string[] GetInstalled()
         {
             var versions = from instance in EnumerateInstances()
-                         let productVersion = (string)(instance as ISetupInstanceCatalog)?.GetCatalogInfo()?.GetValue("productSemanticVersion")
-                         where productVersion != null
-                         let semver = SemanticVersion.Parse(productVersion)
-                         select new Version(semver.Major, semver.Minor);
+                           let productVersion = (string)(instance as ISetupInstanceCatalog)?.GetCatalogInfo()?.GetValue("productSemanticVersion")
+                           where productVersion != null
+                           let semver = SemanticVersion.Parse(productVersion)
+                           select new Version(semver.Major, semver.Minor);
 
             return versions.Distinct().Select(v => v.ToString()).ToArray();
         }

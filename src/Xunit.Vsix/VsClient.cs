@@ -263,7 +263,7 @@ namespace Xunit
             if (!string.IsNullOrEmpty(_rootSuffix))
                 args += "/NoSplash /RootSuffix " + _rootSuffix;
 
-            var info = new ProcessStartInfo(_devEnvPath, args)
+            var info = new ProcessStartInfo(_devEnvPath, args + " /log")
             {
                 UseShellExecute = false,
                 WorkingDirectory = Directory.GetCurrentDirectory(),

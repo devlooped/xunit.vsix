@@ -22,7 +22,7 @@ public class Misc
     }
 
     [Trait("SanityCheck", "true")]
-    [VsixFact]
+    [VsixFact(RunOnUIThread = true)]
     public async System.Threading.Tasks.Task SanityCheck()
     {
         await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -59,7 +59,7 @@ public class Misc
         Assert.Equal(currentThreadId, Application.Current.Dispatcher.Thread.ManagedThreadId);
     }
 
-    [VsixFact]
+    [VsixFact(RunOnUIThread = true)]
     public void when_reopenening_solution_then_vssolution_is_same()
     {
         var dte = ServiceProvider.GlobalProvider.GetService<DTE>();

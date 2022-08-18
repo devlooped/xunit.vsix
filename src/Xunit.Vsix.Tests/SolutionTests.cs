@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 [assembly: VsixRunner(TraceLevel = SourceLevels.All)]
 
-namespace Xunit
+namespace Xunit.Vsix.Tests
 {
     public class SolutionTests
     {

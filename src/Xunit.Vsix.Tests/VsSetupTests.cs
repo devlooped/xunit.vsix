@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.Setup.Configuration;
 using NuGet.Versioning;
 using Xunit.Abstractions;
 
-namespace Xunit
+namespace Xunit.Vsix.Tests
 {
     public class VsSetupTests
     {

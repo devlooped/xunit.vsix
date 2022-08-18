@@ -1,7 +1,7 @@
 ﻿using System;
 using Xunit.Abstractions;
 
-namespace Xunit.CollectionFixtures
+namespace Xunit.Vsix.Tests.CollectionFixtures
 {
     [CollectionDefinition("MyCollection")]
     public class MyCollection : ICollectionFixture<CollectionFixture> { }

@@ -1,7 +1,7 @@
 ﻿using System;
 using Xunit.Abstractions;
 
-namespace Xunit.AssemblyFixtures
+namespace Xunit.Vsix.Tests.AssemblyFixtures
 {
     public class AssemblyFixture : IDisposable
     {

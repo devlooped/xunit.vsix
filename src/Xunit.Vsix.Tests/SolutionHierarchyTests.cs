@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
-namespace Xunit
+namespace Xunit.Vsix.Tests
 {
     // All of these tests need to run on the UI thread because we use the IVsHierarchyItemManager 
     // which is not thread-safe and should always be accessed from the UI thread.

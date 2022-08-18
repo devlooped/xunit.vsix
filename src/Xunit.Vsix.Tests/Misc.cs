@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Utilities;
 using Xunit.Abstractions;
 
-namespace Xunit;
+namespace Xunit.Vsix.Tests;
 
 public class Misc
 {

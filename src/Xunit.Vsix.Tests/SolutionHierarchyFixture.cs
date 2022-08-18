@@ -6,7 +6,7 @@ using Xunit;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
-namespace Xunit
+namespace Xunit.Vsix.Tests
 {
     [CollectionDefinition("SolutionState")]
     public class SolutionStateCollection : ICollectionFixture<SolutionState> { }

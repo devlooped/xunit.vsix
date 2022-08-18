@@ -1,7 +1,7 @@
 ﻿using NuGet.Versioning;
 using Xunit.Abstractions;
 
-namespace Xunit;
+namespace Xunit.Vsix.Tests;
 
 public record class VsVersionsTests(ITestOutputHelper Output)
 {

@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
-namespace Xunit
+namespace Xunit.Vsix.Tests
 {
     public class MefExceptionRecycles
     {

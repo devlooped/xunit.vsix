@@ -67,7 +67,7 @@ jobs:
       - name: 🧪 integration tests
         working-directory: src/Xunit.Vsix.Tests
         run: |
-          dotnet test --no-build --filter "Vsix=true" --blame-hang-timeout 10m --blame-hang-dump-type full -r .\..\..\out
+          dotnet test --filter "Vsix=true" --blame-hang-timeout 10m --blame-hang-dump-type full -r .\..\..\out
 
       - name: ❎ vs
         run: vs kill all

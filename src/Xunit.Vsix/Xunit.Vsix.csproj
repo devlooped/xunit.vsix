@@ -22,7 +22,9 @@
 
   <ItemGroup>
     <PackageFile Include="Readme.txt" PackagePath="Readme.txt" />
-    <PackageFile Include="build\*.*" Kind="Build" />
+    <PackageFile Include="build\*.*" PackFolder="build" />
+    <!-- Pack also alongside assembly for easier location at run-time -->
+    <PackageFile Include="build\EmptyStartup.vssettings" PackFolder="lib" />
   </ItemGroup>
 
   <ItemGroup>

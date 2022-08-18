@@ -29,12 +29,24 @@ namespace Xunit
         IChannel _clientChannel;
         IVsRemoteRunner _runner;
         VsixRunnerSettings _settings;
+        string _emptySettings;
 
         ConcurrentDictionary<IMessageBus, RemoteMessageBus> _remoteBuses = new ConcurrentDictionary<IMessageBus, RemoteMessageBus>();
         ConcurrentBag<MarshalByRefObject> _remoteObjects = new ConcurrentBag<MarshalByRefObject>();
 
         public VsClient(string visualStudioVersion, string rootSuffix, VsixRunnerSettings settings)
         {
+            // NOTE: the EmptyStartup.vssettings file is included via .targets as a content file 
+            // from the xunit.vsix package. This means it will be copied to the output, which would 
+            // be the current directory when the test is run.
+            _emptySettings = "EmptyStartup.vssettings";
+            if (!File.Exists(_emptySettings))
+            {
+                _emptySettings = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), _emptySettings);
+                if (!File.Exists(_emptySettings))
+                    throw new InvalidOperationException("Unable to find EmptyStartup.vssettings to properly reset the environment");
+            }
+
             _visualStudioVersion = visualStudioVersion;
             _rootSuffix = rootSuffix;
             _settings = settings;
@@ -246,10 +258,10 @@ namespace Xunit
             var args = "";
 
             if (Version.Parse(_visualStudioVersion) >= new Version("16.0"))
-                args = "/NoSplash /ResetSettings General ";
+                args = $"/ResetSettings {_emptySettings} ";
 
             if (!string.IsNullOrEmpty(_rootSuffix))
-                args += "/RootSuffix " + _rootSuffix;
+                args += "/NoSplash /RootSuffix " + _rootSuffix;
 
             var info = new ProcessStartInfo(_devEnvPath, args)
             {

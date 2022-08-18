@@ -1,7 +1,9 @@
-﻿using Microsoft.VisualStudio;
+﻿using System.Threading.Tasks;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using Xunit;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
@@ -15,12 +17,16 @@ namespace Xunit.Vsix.Tests
     {
         public SolutionState()
         {
-            var components = ServiceProvider.GlobalProvider.GetService<SComponentModel, IComponentModel>();
-            var manager = components.GetService<IVsHierarchyItemManager>();
-            Solution = manager.GetHierarchyItem(ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsHierarchy>(), (uint)VSConstants.VSITEMID.Root);
+            Solution = new AsyncLazy<IVsHierarchyItem>(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                var components = ServiceProvider.GlobalProvider.GetService<SComponentModel, IComponentModel>();
+                var manager = components.GetService<IVsHierarchyItemManager>();
+                return manager.GetHierarchyItem(ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsHierarchy>(), (uint)VSConstants.VSITEMID.Root);
+            });
         }
 
-        public IVsHierarchyItem Solution { get; private set; }
+        public AsyncLazy<IVsHierarchyItem> Solution { get; private set; }
     }
 
     [Collection("SolutionState")]
@@ -34,9 +40,9 @@ namespace Xunit.Vsix.Tests
         }
 
         [VsixFact]
-        public void when_running_then_solution_exists()
+        public async Task when_running_then_solution_existsAsync()
         {
-            Assert.NotNull(_solution);
+            Assert.NotNull(await _solution.Solution.GetValueAsync());
         }
     }
 }

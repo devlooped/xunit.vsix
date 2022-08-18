@@ -89,7 +89,7 @@ jobs:
               break
             }
               
-            echo "Expected total not found. Retrying..."
+            write-warning "Expected total tests $total but was $run. Retrying..."
           } 
 
       - name: ❎ vs

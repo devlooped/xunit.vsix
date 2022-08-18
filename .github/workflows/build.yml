@@ -58,7 +58,7 @@ jobs:
       - name: 🧪 unit tests
         working-directory: src/Xunit.Vsix.Tests
         run: |
-          msbuild -r -m:1 -p:PkgBin="$env:GITHUB_WORKSPACE\bin" -bl:.\..\..\out\test.binlog
+          msbuild -r -m:1 -p:PackOnBuild=false -p:PkgBin="$env:GITHUB_WORKSPACE\bin" -bl:.\..\..\out\test.binlog
           dotnet test --no-build --filter "Vsix!=true" --blame-hang-timeout 5m --blame-hang-dump-type full -r .\..\..\out
 
       - name: 🛠 vs
@@ -69,7 +69,7 @@ jobs:
           vs
 
       - name: 🧪 integration tests
-        timeout-minutes: 10
+        timeout-minutes: 15
         working-directory: src/Xunit.Vsix.Tests
         run: |
           while ($true) {
@@ -83,7 +83,7 @@ jobs:
           echo "Ensuring all $total integration tests are run..."
             
           while ($true) {
-            dotnet test --filter "Vsix=true" --blame-hang-timeout 10m --blame-hang-dump-type full -r .\..\..\out | tee -variable results
+            dotnet test --no-build --filter "Vsix=true" --blame-hang-timeout 10m --blame-hang-dump-type full -r .\..\..\out | tee -variable results
             $run = [int][regex]::Match($results, 'Total:\s+(?<run>\d+)').Groups['run'].Value
             if ($run -ge $total) {
               break

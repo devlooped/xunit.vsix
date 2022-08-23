@@ -59,7 +59,7 @@ jobs:
         working-directory: src/Xunit.Vsix.Tests
         run: |
           msbuild -r -m:1 -p:PackOnBuild=false -p:PkgBin="$env:GITHUB_WORKSPACE\bin" -bl:.\..\..\out\test.binlog
-          dotnet test --no-build --filter "Vsix!=true" --blame-hang-timeout 5m --blame-hang-dump-type full -r .\..\..\out
+          dotnet test --no-build --filter "Vsix!=true" --blame-hang-timeout 3m
 
       - name: 🛠 vs
         run: |
@@ -83,7 +83,7 @@ jobs:
           write-warning "Ensuring all $total integration tests are run..."
             
           while ($true) {
-            dotnet test --no-build --filter "Vsix=true" --blame-hang-timeout 3m --blame-hang-dump-type full -r .\..\..\out | tee -variable results
+            dotnet test --no-build --filter "Vsix=true" --blame-hang-timeout 3m | tee -variable results
             $run = [int][regex]::Match($results, 'Total:\s+(?<run>\d+)').Groups['run'].Value
             if ($run -ge $total) {
               break
@@ -100,7 +100,9 @@ jobs:
         if: always()
         with:
           name: tests-${{ github.run_number }}
-          path: .\out
+          path: |
+            ./out
+            ./**/*.dmp
 
       # Only push CI package to sleet feed if building on ubuntu (fastest)
       - name: 🚀 sleet

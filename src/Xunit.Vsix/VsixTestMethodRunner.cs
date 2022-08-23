@@ -22,7 +22,7 @@ namespace Xunit
         {
             if (testCase.SkipReason != null)
                 return base.RunTestCaseAsync(testCase);
-            
+
             if (!CancellationTokenSource.IsCancellationRequested)
                 return _vsClient.RunAsync((VsixTestCase)testCase, MessageBus, Aggregator);
             else

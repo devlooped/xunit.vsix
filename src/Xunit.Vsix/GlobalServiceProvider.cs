@@ -32,7 +32,7 @@ public static class GlobalServiceProvider
                 instance = new OleServiceProvider(dte);
             }
 
-            components = new Lazy<dynamic>(() => 
+            components = new Lazy<dynamic>(() =>
                 instance.GetService<Interop.SComponentModel, object>().AsDynamicReflection());
         }
         catch (NotSupportedException)

@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.6.1](https://github.com/devlooped/xunit.vsix/tree/v0.6.1) (2022-08-23)
+
+[Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.6.0...v0.6.1)
+
+:bug: Fixed bugs:
+
+- After a new deployment of a VSIX, first test run randomly hangs VS [\#34](https://github.com/devlooped/xunit.vsix/issues/34)
+
 ## [v0.6.0](https://github.com/devlooped/xunit.vsix/tree/v0.6.0) (2022-08-23)
 
 [Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.5.0...v0.6.0)

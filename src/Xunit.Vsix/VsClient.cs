@@ -320,7 +320,7 @@ namespace Xunit
 
             // Retrieve the component model service, which could also now take time depending on new
             // extensions being installed or updated before the first launch.
-            var components = services.GetService<Interop.SComponentModel, object>();
+            //var components = services.GetService<Interop.SComponentModel, object>();
 
             //if (Debugger.IsAttached)
             //{

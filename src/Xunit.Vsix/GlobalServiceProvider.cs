@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Dynamic;
 using static ThisAssembly;
@@ -10,6 +11,7 @@ namespace Xunit;
 /// Exposes the global <see cref="IServiceProvider"/> retrieved from 
 /// the current process DTE instance.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class GlobalServiceProvider
 {
     static readonly IServiceProvider instance;

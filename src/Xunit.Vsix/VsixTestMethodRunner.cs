@@ -20,6 +20,9 @@ namespace Xunit
 
         protected override Task<RunSummary> RunTestCaseAsync(IXunitTestCase testCase)
         {
+            if (testCase.SkipReason != null)
+                return base.RunTestCaseAsync(testCase);
+            
             if (!CancellationTokenSource.IsCancellationRequested)
                 return _vsClient.RunAsync((VsixTestCase)testCase, MessageBus, Aggregator);
             else

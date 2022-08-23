@@ -8,9 +8,9 @@ namespace Xunit
     {
         public static async Task<T> TimeoutAfter<T>(this Task<T> task, int millisecondsTimeout)
         {
-            var timeout = bool.TryParse(Environment.GetEnvironmentVariable(Constants.DebugTimeoutsEnvironmentVariable), out var shouldTimeout) && shouldTimeout;
+            var disableTimeout = bool.TryParse(Environment.GetEnvironmentVariable(Constants.DisableTimeoutsEnvironmentVariable), out var noTimeout) && noTimeout;
             // Never timeout if a debugger is attached.
-            if (Debugger.IsAttached && timeout != true)
+            if (Debugger.IsAttached || disableTimeout == true)
                 return await task;
 
             if (task == await Task.WhenAny(task, Task.Delay(millisecondsTimeout)))

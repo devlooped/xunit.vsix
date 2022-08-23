@@ -26,6 +26,7 @@ namespace Xunit
     {
         string _pipeName;
         IChannel _channel;
+        IServiceProvider _services;
 
         Dictionary<Type, object> _assemblyFixtureMappings = new Dictionary<Type, object>();
         Dictionary<Type, object> _collectionFixtureMappings = new Dictionary<Type, object>();
@@ -55,6 +56,10 @@ namespace Xunit
 
         public VsixRunSummary Run(VsixTestCase testCase, IMessageBus messageBus)
         {
+            // Before the first test is run, ensure we have initialized the global services 
+            // which in turn requests the component model which ensures MEF is initialized.
+            _services ??= GlobalServiceProvider.Default;
+
             messageBus.QueueMessage(new DiagnosticMessage("Running {0}", testCase.DisplayName));
 
             var aggregator = new ExceptionAggregator();

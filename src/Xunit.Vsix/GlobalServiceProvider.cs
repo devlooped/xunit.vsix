@@ -14,8 +14,8 @@ namespace Xunit;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class GlobalServiceProvider
 {
-    static readonly IServiceProvider instance;
-    static readonly dynamic components;
+    static readonly System.IServiceProvider instance;
+    static readonly Lazy<dynamic> components;
 
     static GlobalServiceProvider()
     {
@@ -30,8 +30,10 @@ public static class GlobalServiceProvider
             else
             {
                 instance = new OleServiceProvider(dte);
-                components = instance.GetService<Interop.SComponentModel, object>().AsDynamicReflection();
             }
+
+            components = new Lazy<dynamic>(() => 
+                instance.GetService<Interop.SComponentModel, object>().AsDynamicReflection());
         }
         catch (NotSupportedException)
         {
@@ -64,12 +66,12 @@ public static class GlobalServiceProvider
     /// <summary>
     /// Retrieves an exported MEF component from the currently running Visual Studio.
     /// </summary>
-    public static T GetExport<T>() => components == null ? null : components?.GetService<T>();
+    public static T GetExport<T>() => components == null ? null : components.Value?.GetService<T>();
 
     /// <summary>
     /// Retrieves exported MEF components from the currently running Visual Studio.
     /// </summary>
-    public static IEnumerable<T> GetExports<T>() => components?.GetExtensions<T>() ?? Array.Empty<T>();
+    public static IEnumerable<T> GetExports<T>() => components.Value?.GetExtensions<T>() ?? Array.Empty<T>();
 
     class NullServices : IServiceProvider
     {

@@ -276,6 +276,8 @@ namespace Xunit
             info.EnvironmentVariables[Constants.BaseDirectoryEnvironmentVariable] = Directory.GetCurrentDirectory();
             // Allow debugging xunit.vsix itself by setting the `xunit.vsix.debug=true` envvar in the current VS.
             info.EnvironmentVariables[Constants.DebugEnvironmentVariable] = Environment.GetEnvironmentVariable(Constants.DebugEnvironmentVariable);
+            // Allow debugging the tests via CLI
+            info.EnvironmentVariables[Constants.DebugRemoteEnvironmentVariable] = Environment.GetEnvironmentVariable(Constants.DebugRemoteEnvironmentVariable);
 
             // Propagate profiling values to support OpenCover or any third party profiler
             // already attached to the current process.
@@ -303,7 +305,7 @@ namespace Xunit
             if (dte == null)
                 return false;
 
-            var services = new OleServiceProvider(dte);
+            //var services = new OleServiceProvider(dte);
             // These casts don't work on this side of the client, for some reason. 
             //IVsShell shell;
             //while ((shell = services.GetService<SVsShell, IVsShell>()) == null)

@@ -17,8 +17,21 @@ namespace Xunit
 
         public const string PipeNameEnvironmentVariable = "xunit.vsix.pipe";
         public const string BaseDirectoryEnvironmentVariable = "xunit.vsix.directory";
+
+        /// <summary>
+        /// Set to 'true' to launch a debugger in the xunit process.
+        /// </summary>
         public const string DebugEnvironmentVariable = "XUNIT_VSIX_DEBUG";
-        public const string DebugTimeoutsEnvironmentVariable = "XUNIT_VSIX_DEBUG_TIMEOUT";
+        
+        /// <summary>
+        /// Set to 'true' to launch a debugger in the remote VS process.
+        /// </summary>
+        public const string DebugRemoteEnvironmentVariable = "XUNIT_VSIX_DEBUG_REMOTE";
+
+        /// <summary>
+        /// Environment variable to disable timeouts for debugging
+        /// </summary>
+        public const string DisableTimeoutsEnvironmentVariable = "XUNIT_VSIX_NO_TIMEOUT";
 
         public const string TracerName = "xunit.vsix";
         public const string ServerChannelName = "xunit.vsix.server";

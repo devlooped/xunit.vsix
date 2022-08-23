@@ -22,7 +22,7 @@ namespace Xunit
         /// Set to 'true' to launch a debugger in the xunit process.
         /// </summary>
         public const string DebugEnvironmentVariable = "XUNIT_VSIX_DEBUG";
-        
+
         /// <summary>
         /// Set to 'true' to launch a debugger in the remote VS process.
         /// </summary>

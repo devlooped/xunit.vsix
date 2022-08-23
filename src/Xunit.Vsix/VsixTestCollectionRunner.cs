@@ -40,7 +40,7 @@ namespace Xunit
         class LazyVsClient : IVsClient
         {
             Lazy<IVsClient> _vs;
-            
+
             public LazyVsClient(Func<IVsClient> factory) => _vs = new Lazy<IVsClient>(factory);
 
             public void Dispose()

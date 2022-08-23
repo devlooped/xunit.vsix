@@ -26,7 +26,7 @@ namespace Xunit
 
             _vsVersion = testCollection.VisualStudioVersion;
             _rootSuffix = testCollection.RootSuffix;
-            _vs = new VsClient(_vsVersion, _rootSuffix, testCollection.Settings);
+            _vs = new LazyVsClient(() => new VsClient(_vsVersion, _rootSuffix, testCollection.Settings));
         }
 
         protected override Task<RunSummary> RunTestClassAsync(ITestClass testClass, IReflectionTypeInfo @class, IEnumerable<IXunitTestCase> testCases)
@@ -35,9 +35,28 @@ namespace Xunit
                 Aggregator, CancellationTokenSource, CollectionFixtureMappings).RunAsync();
         }
 
-        public void Dispose()
+        public void Dispose() => _vs.Dispose();
+
+        class LazyVsClient : IVsClient
         {
-            _vs.Dispose();
+            Lazy<IVsClient> _vs;
+            
+            public LazyVsClient(Func<IVsClient> factory) => _vs = new Lazy<IVsClient>(factory);
+
+            public void Dispose()
+            {
+                if (_vs.IsValueCreated)
+                    _vs.Value.Dispose();
+            }
+
+            public void Recycle()
+            {
+                if (_vs.IsValueCreated)
+                    _vs.Value.Recycle();
+            }
+
+            public Task<RunSummary> RunAsync(VsixTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator)
+                => _vs.Value.RunAsync(testCase, messageBus, aggregator);
         }
     }
 }

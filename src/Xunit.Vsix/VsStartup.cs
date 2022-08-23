@@ -33,6 +33,9 @@ namespace Xunit
             if (bool.TryParse(Environment.GetEnvironmentVariable(Constants.DebugEnvironmentVariable), out var shouldDebug) && shouldDebug)
                 Debugger.Launch();
 
+            if (bool.TryParse(Environment.GetEnvironmentVariable(Constants.DebugRemoteEnvironmentVariable), out shouldDebug) && shouldDebug)
+                Debugger.Launch();
+
             var resolveDir = Environment.GetEnvironmentVariable(Constants.BaseDirectoryEnvironmentVariable);
             s_localAssemblyNames = GetLocalAssemblyNames(resolveDir);
 

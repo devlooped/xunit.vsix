@@ -39,7 +39,7 @@ namespace Xunit.Vsix.Tests
             _solution = solution;
         }
 
-        [VsixFact]
+        [VsixFact(RunOnUIThread = true)]
         public async Task when_running_then_solution_existsAsync()
         {
             Assert.NotNull(await _solution.Solution.GetValueAsync());

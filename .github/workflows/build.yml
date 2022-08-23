@@ -80,10 +80,10 @@ jobs:
             }
           }
           
-          echo "Ensuring all $total integration tests are run..."
+          write-warning "Ensuring all $total integration tests are run..."
             
           while ($true) {
-            dotnet test --no-build --filter "Vsix=true" --blame-hang-timeout 10m --blame-hang-dump-type full -r .\..\..\out | tee -variable results
+            dotnet test --no-build --filter "Vsix=true" --blame-hang-timeout 3m --blame-hang-dump-type full -r .\..\..\out | tee -variable results
             $run = [int][regex]::Match($results, 'Total:\s+(?<run>\d+)').Groups['run'].Value
             if ($run -ge $total) {
               break

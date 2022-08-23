@@ -16,7 +16,7 @@
     <Title>xUnit.net [VsixFact and VsixTheory]</Title>
     <Description>Allows creating reliable, flexible and fast VS SDK integration (VSIX) tests that run using any xUnit capable runner, such as Visual Studio built-in Test Explorer or TestDriven.NET.</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageProjectUrl>https://github.com/kzu/xunit.vsix</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/devlooped/xunit.vsix</PackageProjectUrl>
     <PackageTags>xunit vssdk testing</PackageTags>
   </PropertyGroup>
 
@@ -36,9 +36,9 @@
 
   <ItemGroup>
     <!--<PackageReference Include="envdte" Version="8.0.2" />-->
-    <PackageReference Include="GitInfo" Version="2.2.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="all" />
     <!--<PackageReference Include="Microsoft.VisualStudio.OLE.Interop" Version="7.10.6072" />-->
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.3.2180" PrivateAssets="all" />
     <!--<PackageReference Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6073" />-->

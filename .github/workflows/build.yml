@@ -53,46 +53,17 @@ jobs:
         run: dotnet pack --no-build -m:1
 
       - name: 🛠 vs
-        run: dotnet tool install -g dotnet-vs
-
-      - name: 🧪 unit tests
-        working-directory: src/Xunit.Vsix.Tests
-        run: |
-          msbuild -r -m:1 -p:PackOnBuild=false -p:PkgBin="$env:GITHUB_WORKSPACE\bin" -bl:.\..\..\out\test.binlog
-          dotnet test --no-build --filter "Vsix!=true" --blame-hang-timeout 3m
-
-      - name: 🛠 vs
-        run: |
+        run: | 
           dotnet tool install -g dotnet-vs
           vs /NoSplash /ResetSettings General /Command "File.Exit"
           wait-process -name 'devenv'
           vs
 
-      - name: 🧪 integration tests
-        timeout-minutes: 15
-        working-directory: src/Xunit.Vsix.Tests
-        run: |
-          while ($true) {
-            dotnet test --no-build --filter "Vsix=true" -t | tee -variable tests
-            $total = $tests | %{ $_.trim() } | where { $_.startswith('Xunit.Vsix.Tests.') } | measure | select -expandproperty Count
-            if ($total -ge 20) {
-              break
-            }
-          }
-          
-          write-warning "Ensuring all $total integration tests are run..."
-            
-          while ($true) {
-            dotnet test --no-build --filter "Vsix=true" --blame-hang-timeout 3m | tee -variable results
-            $run = [int][regex]::Match($results, 'Total:\s+(?<run>\d+)').Groups['run'].Value
-            if ($run -ge $total) {
-              break
-            }
-              
-            write-warning "Expected total tests $total but was $run. Retrying..."
-          } 
+      - name: 🧪 test
+        uses: ./.github/workflows/test
 
       - name: ❎ vs
+        if: always()
         run: vs kill all
 
       - name: 📦 artifact
@@ -104,7 +75,6 @@ jobs:
             ./out
             ./**/*.dmp
 
-      # Only push CI package to sleet feed if building on ubuntu (fastest)
       - name: 🚀 sleet
         env:
           SLEET_CONNECTION: ${{ secrets.SLEET_CONNECTION }}

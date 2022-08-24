@@ -57,12 +57,10 @@ jobs:
 
       - name: 📦 artifact
         uses: actions/upload-artifact@v2
-        if: always()
+        if: failure()
         with:
-          name: tests-${{ github.run_number }}
-          path: |
-            ./out
-            ./**/*.dmp
+          name: dumps-${{ github.run_number }}
+          path: ./**/*.dmp
 
       - name: 🚀 sleet
         env:

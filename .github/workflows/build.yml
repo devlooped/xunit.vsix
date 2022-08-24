@@ -52,19 +52,8 @@ jobs:
         if: always()
         run: dotnet pack --no-build -m:1
 
-      - name: 🛠 vs
-        run: | 
-          dotnet tool install -g dotnet-vs
-          vs /NoSplash /ResetSettings General /Command "File.Exit"
-          wait-process -name 'devenv'
-          vs
-
       - name: 🧪 test
         uses: ./.github/workflows/test
-
-      - name: ❎ vs
-        if: always()
-        run: vs kill all
 
       - name: 📦 artifact
         uses: actions/upload-artifact@v2

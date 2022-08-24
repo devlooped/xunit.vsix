@@ -53,6 +53,7 @@ jobs:
         run: dotnet pack --no-build -m:1
 
       - name: 🧪 test
+        timeout-minutes: 15
         uses: ./.github/workflows/test
 
       - name: 📦 artifact

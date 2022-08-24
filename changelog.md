@@ -1,25 +1,19 @@
 # Changelog
 
-## [v0.6.1](https://github.com/devlooped/xunit.vsix/tree/v0.6.1) (2022-08-23)
+## [v0.6.1](https://github.com/devlooped/xunit.vsix/tree/v0.6.1) (2022-08-24)
 
-[Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.6.0...v0.6.1)
-
-:bug: Fixed bugs:
-
-- After a new deployment of a VSIX, first test run randomly hangs VS [\#34](https://github.com/devlooped/xunit.vsix/issues/34)
-
-## [v0.6.0](https://github.com/devlooped/xunit.vsix/tree/v0.6.0) (2022-08-23)
-
-[Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.5.0...v0.6.0)
+[Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.5.0...v0.6.1)
 
 :bug: Fixed bugs:
 
 - Speed up skipped tests execution [\#39](https://github.com/devlooped/xunit.vsix/issues/39)
 - Allow disabling timeouts selectively without having to debug [\#38](https://github.com/devlooped/xunit.vsix/issues/38)
 - Allow debugging remote VS process via CLI/envvars [\#37](https://github.com/devlooped/xunit.vsix/issues/37)
+- After a new deployment of a VSIX, first test run randomly hangs VS [\#34](https://github.com/devlooped/xunit.vsix/issues/34)
 
 :twisted_rightwards_arrows: Merged:
 
+- Change back to previous retrying test runs [\#40](https://github.com/devlooped/xunit.vsix/pull/40) (@kzu)
 - Do not force MEF component initialization [\#35](https://github.com/devlooped/xunit.vsix/pull/35) (@kzu)
 
 ## [v0.5.0](https://github.com/devlooped/xunit.vsix/tree/v0.5.0) (2022-08-18)

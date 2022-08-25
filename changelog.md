@@ -1,5 +1,17 @@
 # Changelog
 
+## [v0.7.0](https://github.com/devlooped/xunit.vsix/tree/v0.7.0) (2022-08-25)
+
+[Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.6.1...v0.7.0)
+
+:hammer: Other:
+
+- Improve UI thread handling by leveraging JoinableTaskContext [\#42](https://github.com/devlooped/xunit.vsix/issues/42)
+
+:twisted_rightwards_arrows: Merged:
+
+- Remove slow vs tool install and reset [\#41](https://github.com/devlooped/xunit.vsix/pull/41) (@kzu)
+
 ## [v0.6.1](https://github.com/devlooped/xunit.vsix/tree/v0.6.1) (2022-08-24)
 
 [Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.5.0...v0.6.1)

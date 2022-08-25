@@ -12,6 +12,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 using Task = System.Threading.Tasks.Task;
@@ -26,7 +28,7 @@ namespace Xunit
     {
         string _pipeName;
         IChannel _channel;
-        IServiceProvider _services;
+        JoinableTaskContext _jtc;
 
         Dictionary<Type, object> _assemblyFixtureMappings = new Dictionary<Type, object>();
         Dictionary<Type, object> _collectionFixtureMappings = new Dictionary<Type, object>();
@@ -56,14 +58,32 @@ namespace Xunit
 
         public VsixRunSummary Run(VsixTestCase testCase, IMessageBus messageBus)
         {
-            // Before the first test is run, ensure we have initialized the global services 
-            // which in turn requests the component model which ensures MEF is initialized.
-            _services ??= GlobalServiceProvider.Default;
+            // Before the first test is run, ensure VS is properly initialized.
+            if (_jtc == null)
+            {
+                IVsShell shell;
+                while ((shell = GlobalServiceProvider.Default.GetService<SVsShell, IVsShell>()) == null)
+                {
+                    Thread.Sleep(100);
+                }
+
+                object zombie;
+                // __VSSPROPID.VSSPROPID_Zombie
+                while ((int?)(zombie = shell.GetProperty(-9014, out zombie)) != 0)
+                {
+                    Thread.Sleep(100);
+                }
+
+                // Retrieve the component model service, which could also now take time depending on new
+                // extensions being installed or updated before the first launch.
+                _jtc = GlobalServiceProvider.GetExport<JoinableTaskContext>();
+            }
 
             messageBus.QueueMessage(new DiagnosticMessage("Running {0}", testCase.DisplayName));
 
             var aggregator = new ExceptionAggregator();
-            var runner = _collectionRunnerMap.GetOrAdd(testCase.TestMethod.TestClass.TestCollection, tc => new VsRemoteTestCollectionRunner(tc, _assemblyFixtureMappings, _collectionFixtureMappings));
+            var runner = _collectionRunnerMap.GetOrAdd(testCase.TestMethod.TestClass.TestCollection,
+                tc => new VsRemoteTestCollectionRunner(tc, _jtc.Factory, _assemblyFixtureMappings, _collectionFixtureMappings));
 
             if (SynchronizationContext.Current == null)
                 SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
@@ -72,14 +92,17 @@ namespace Xunit
             {
                 using (var bus = new TestMessageBus(messageBus))
                 {
-                    var result = runner.RunAsync(testCase, bus, aggregator)
-                        .Result
-                        .ToVsixRunSummary();
+                    var ev = new ManualResetEventSlim();
 
-                    if (aggregator.HasExceptions && result != null)
-                        result.Exception = aggregator.ToException();
+                    var t = _jtc.Factory.RunAsync(async () =>
+                        (await runner.RunAsync(testCase, bus, aggregator)).ToVsixRunSummary());
 
-                    return result;
+                    _ = t.Task.ContinueWith(_ => ev.Set(), TaskScheduler.Default);
+                    ev.Wait();
+
+#pragma warning disable VSTHRD002 // We're not waiting synchronously here, we have already done that above with the MRE
+                    return t.Task.Result;
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
                 }
             }
             catch (AggregateException aex)
@@ -130,13 +153,15 @@ namespace Xunit
         class VsRemoteTestCollectionRunner : XunitTestCollectionRunner
         {
             readonly Dictionary<Type, object> _assemblyFixtureMappings;
+            readonly JoinableTaskFactory _jtf;
 
-            public VsRemoteTestCollectionRunner(ITestCollection testCollection, Dictionary<Type, object> assemblyFixtureMappings, Dictionary<Type, object> collectionFixtureMappings)
+            public VsRemoteTestCollectionRunner(ITestCollection testCollection, JoinableTaskFactory factory, Dictionary<Type, object> assemblyFixtureMappings, Dictionary<Type, object> collectionFixtureMappings)
                 : base(testCollection, Enumerable.Empty<IXunitTestCase>(), new NullMessageSink(), null,
                       new DefaultTestCaseOrderer(new NullMessageSink()), new ExceptionAggregator(), new CancellationTokenSource())
             {
                 _assemblyFixtureMappings = assemblyFixtureMappings;
                 CollectionFixtureMappings = collectionFixtureMappings;
+                _jtf = factory;
             }
 
             public Task<RunSummary> RunAsync(IXunitTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator)
@@ -174,7 +199,14 @@ namespace Xunit
                             {
                                 var fixture = Activator.CreateInstance(fixtureType);
                                 if (fixture is IAsyncLifetime asyncFixture)
-                                    Aggregator.RunAsync(asyncFixture.InitializeAsync);
+                                {
+                                    var ev = new ManualResetEventSlim();
+
+                                    _ = _jtf.RunAsync(asyncFixture.InitializeAsync)
+                                        .Task.ContinueWith(_ => ev.Set(), TaskScheduler.Default);
+
+                                    ev.Wait();
+                                }
 
                                 _assemblyFixtureMappings.Add(fixtureType, fixture);
                             });
@@ -189,16 +221,18 @@ namespace Xunit
                     combinedFixtures[kvp.Key] = kvp.Value;
 
                 // We've done everything we need, so let the built-in types do the rest of the heavy lifting
-                return new VsRemoteTestClassRunner(testClass, @class, Aggregator, combinedFixtures).RunAsync(testCases.Single(), MessageBus);
+                return new VsRemoteTestClassRunner(_jtf, testClass, @class, Aggregator, combinedFixtures).RunAsync(testCases.Single(), MessageBus);
             }
         }
 
         class VsRemoteTestClassRunner : XunitTestClassRunner
         {
-            public VsRemoteTestClassRunner(ITestClass testClass, IReflectionTypeInfo @class, ExceptionAggregator aggregator, Dictionary<Type, object> collectionFixtureMappings)
+            readonly JoinableTaskFactory _jtf;
+            public VsRemoteTestClassRunner(JoinableTaskFactory jtf, ITestClass testClass, IReflectionTypeInfo @class, ExceptionAggregator aggregator, Dictionary<Type, object> collectionFixtureMappings)
                 : base(testClass, @class, Enumerable.Empty<IXunitTestCase>(), new NullMessageSink(), null,
                       new DefaultTestCaseOrderer(new NullMessageSink()), aggregator, new CancellationTokenSource(), collectionFixtureMappings)
             {
+                _jtf = jtf;
             }
 
             public Task<RunSummary> RunAsync(IXunitTestCase testCase, IMessageBus messageBus)
@@ -211,9 +245,11 @@ namespace Xunit
             protected override async Task<RunSummary> RunTestMethodAsync(ITestMethod testMethod, IReflectionMethodInfo method, IEnumerable<IXunitTestCase> testCases, object[] constructorArguments)
             {
                 var vsixTest = testCases.OfType<VsixTestCase>().Single();
-                var cancellation = Debugger.IsAttached ?
-                    new CancellationTokenSource(TimeSpan.FromSeconds(vsixTest.TimeoutSeconds)) :
-                    new CancellationTokenSource();
+                var disableTimeout = bool.TryParse(Environment.GetEnvironmentVariable(Constants.DisableTimeoutsEnvironmentVariable), out var noTimeout) && noTimeout;
+                var cancellation = Debugger.IsAttached || disableTimeout ?
+                    // Don't timeout if we have an attached debugger.
+                    new CancellationTokenSource() :
+                    new CancellationTokenSource(TimeSpan.FromSeconds(vsixTest.TimeoutSeconds));
 
                 try
                 {
@@ -233,18 +269,15 @@ namespace Xunit
                                 .RunAsync();
 
                     // If the UI thread was requested, switch to the main dispatcher.
-                    var result = await Application.Current.Dispatcher.InvokeAsync(async () =>
-                   await new SyncTestCaseRunner(
+                    await _jtf.SwitchToMainThreadAsync();
+                    return await new SyncTestCaseRunner(
                            testCases.Single(),
                            testCases.Single().DisplayName,
                            testCases.Single().SkipReason,
                            constructorArguments,
                            testCases.Single().TestMethodArguments,
                            MessageBus,
-                           Aggregator, new CancellationTokenSource())
-                       .RunAsync(), DispatcherPriority.Background, cancellation.Token);
-
-                    return await result;
+                           Aggregator, new CancellationTokenSource()).RunAsync();
                 }
                 finally
                 {

@@ -128,7 +128,10 @@ namespace Xunit
                 : base(assemblyName, sourceInformationProvider, diagnosticMessageSink)
             { }
 
+#pragma warning disable VSTHRD100 // Avoid async void methods
+            // This is an inherited method, we cannot change the return type to Task
             protected override async void RunTestCases(IEnumerable<IXunitTestCase> testCases, IMessageSink executionMessageSink, ITestFrameworkExecutionOptions executionOptions)
+#pragma warning restore VSTHRD100 // Avoid async void methods
             {
                 SetupTracing(TestAssembly.Assembly);
 

@@ -6,7 +6,7 @@ namespace Xunit
 {
     static class TaskExtensions
     {
-        public static async Task<T> TimeoutAfter<T>(this Task<T> task, int millisecondsTimeout)
+        public static async Task<T> TimeoutAfterAsync<T>(this Task<T> task, int millisecondsTimeout)
         {
             var disableTimeout = bool.TryParse(Environment.GetEnvironmentVariable(Constants.DisableTimeoutsEnvironmentVariable), out var noTimeout) && noTimeout;
             // Never timeout if a debugger is attached.
@@ -20,7 +20,7 @@ namespace Xunit
             else
             {
                 // Ignore errors on faulted but otherwise timed out test.
-                _ = task.ContinueWith(_ => { }, TaskContinuationOptions.OnlyOnFaulted);
+                _ = task.ContinueWith(_ => { }, default, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
                 throw new TimeoutException(string.Format("Execution didn't complete within the required maximum {0} seconds.", millisecondsTimeout / 1000));
             }
         }

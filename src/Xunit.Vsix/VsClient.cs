@@ -68,12 +68,12 @@ namespace Xunit
 #if !DEBUG
             if (Debugger.IsAttached)
             {
-                return await RunAsyncCore(vsixTest, messageBus, aggregator);
+                return await RunCoreAsync(vsixTest, messageBus, aggregator);
             }
 #endif
 
             using var bufferBus = new InterceptingMessageBus(messageBus);
-            var summary = await RunAsyncCore(vsixTest, messageBus, aggregator);
+            var summary = await RunCoreAsync(vsixTest, messageBus, aggregator);
             var shouldRecycle = vsixTest.RecycleOnFailure.GetValueOrDefault();
 
             // Special case for MEF cache corruption, clear cache and restart the test.
@@ -99,13 +99,13 @@ namespace Xunit
             {
                 Recycle();
                 aggregator.Clear();
-                return await RunAsyncCore(vsixTest, messageBus, aggregator);
+                return await RunCoreAsync(vsixTest, messageBus, aggregator);
             }
 
             return summary;
         }
 
-        async Task<RunSummary> RunAsyncCore(VsixTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator)
+        async Task<RunSummary> RunCoreAsync(VsixTestCase testCase, IMessageBus messageBus, ExceptionAggregator aggregator)
         {
             if (!EnsureConnected(testCase, messageBus))
             {
@@ -128,7 +128,7 @@ namespace Xunit
                 var outputBus = new TraceOutputMessageBus(remoteBus);
                 var summary = await Task.Run(
                     () => _runner.Run(testCase, outputBus))
-                    .TimeoutAfter(testCase.TimeoutSeconds * 1000);
+                    .TimeoutAfterAsync(testCase.TimeoutSeconds * 1000);
 
                 if (summary.Exception != null)
                     aggregator.Add(summary.Exception);
@@ -140,8 +140,8 @@ namespace Xunit
                 if (ex is RemotingException || ex is TimeoutException)
                     Stop();
 
-                if (ex is RemotingException)
-                    ex = new Exception("Connection to running IDE lost.");
+                if (ex is RemotingException rex)
+                    ex = new Exception("Connection to running IDE lost: " + rex.Message, ex);
 
                 aggregator.Add(ex);
                 messageBus.QueueMessage(new TestFailed(xunitTest, 0, ex.Message, ex));
@@ -304,65 +304,6 @@ namespace Xunit
             var dte = RunningObjects.GetDTE(_visualStudioVersion, Process.Id, TimeSpan.FromSeconds(_settings.StartupTimeout));
             if (dte == null)
                 return false;
-
-            //var services = new OleServiceProvider(dte);
-            // These casts don't work on this side of the client, for some reason. 
-            //IVsShell shell;
-            //while ((shell = services.GetService<SVsShell, IVsShell>()) == null)
-            //{
-            //    Thread.Sleep(_settings.RetrySleepInterval);
-            //}
-
-            //object zombie;
-            //// __VSSPROPID.VSSPROPID_Zombie
-            //while ((int?)(zombie = shell.GetProperty(-9014, out zombie)) != 0)
-            //{
-            //    Thread.Sleep(_settings.RetrySleepInterval);
-            //}
-
-            // Retrieve the component model service, which could also now take time depending on new
-            // extensions being installed or updated before the first launch.
-            //var components = services.GetService<Interop.SComponentModel, object>();
-
-            //if (Debugger.IsAttached)
-            //{
-            //    // When attached via TD.NET, there will be an environment variable named DTE_MainWindow=2296172
-            //    var mainWindow = Environment.GetEnvironmentVariable("DTE_MainWindow");
-            //    if (!string.IsNullOrEmpty(mainWindow))
-            //    {
-            //        var attached = false;
-            //        var retries = 0;
-            //        var sleep = _settings.RetrySleepInterval;
-            //        while (retries++ < _settings.DebuggerAttachRetries && !attached)
-            //        {
-            //            try
-            //            {
-            //                var mainHWnd = int.Parse(mainWindow);
-            //                var mainDte = GetAllDtes().FirstOrDefault(x => x.MainWindow.HWnd == mainHWnd);
-            //                if (mainDte != null)
-            //                {
-            //                    var startedVs = mainDte.Debugger.LocalProcesses.OfType<EnvDTE.Process>().FirstOrDefault(x => x.ProcessID == Process.Id);
-            //                    if (startedVs != null)
-            //                    {
-            //                        startedVs.Attach();
-            //                        attached = true;
-            //                        break;
-            //                    }
-            //                }
-            //            }
-            //            catch (Exception ex)
-            //            {
-            //                s_tracer.TraceEvent(TraceEventType.Warning, 0, Strings.VsClient.RetryAttach(retries, _settings.DebuggerAttachRetries) + Environment.NewLine + ex.ToString());
-            //            }
-
-            //            Thread.Sleep(sleep);
-            //            sleep = sleep * retries;
-            //        }
-
-            //        if (!attached)
-            //            s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToAttach(_visualStudioVersion, _rootSuffix));
-            //    }
-            //}
 
             try
             {

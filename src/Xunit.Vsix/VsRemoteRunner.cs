@@ -98,7 +98,9 @@ namespace Xunit
                         (await runner.RunAsync(testCase, bus, aggregator)).ToVsixRunSummary());
 
                     _ = t.Task.ContinueWith(_ => ev.Set(), TaskScheduler.Default);
-                    ev.Wait();
+
+                    var disableTimeout = bool.TryParse(Environment.GetEnvironmentVariable(Constants.DisableTimeoutsEnvironmentVariable), out var noTimeout) && noTimeout;
+                    ev.Wait(disableTimeout ? Timeout.Infinite : testCase.TimeoutSeconds * 1000);
 
 #pragma warning disable VSTHRD002 // We're not waiting synchronously here, we have already done that above with the MRE
                     return t.Task.Result;

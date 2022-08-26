@@ -17,8 +17,7 @@ namespace Xunit
 
         public VsixTestFramework(IMessageSink messageSink) : base(new TracingMessageSink(messageSink, s_tracer))
         {
-            var debug = Environment.GetEnvironmentVariable(Constants.DebugEnvironmentVariable);
-            if (bool.TryParse(debug, out var shouldDebug) && shouldDebug)
+            if (RunContext.DebugFramework)
                 Debugger.Launch();
 
             //Debugger.Launch();

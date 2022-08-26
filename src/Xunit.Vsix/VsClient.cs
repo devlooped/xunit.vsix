@@ -274,7 +274,7 @@ namespace Xunit
             // tests in the VS app domain.
             info.EnvironmentVariables[Constants.PipeNameEnvironmentVariable] = _pipeName;
             info.EnvironmentVariables[Constants.BaseDirectoryEnvironmentVariable] = Directory.GetCurrentDirectory();
-            // Allow debugging xunit.vsix itself by setting the `xunit.vsix.debug=true` envvar in the current VS.
+            // Allow debugging xunit.vsix itself by setting the `XUNIT_VSIX_DEBUG=true` envvar in the current VS.
             info.EnvironmentVariables[Constants.DebugEnvironmentVariable] = Environment.GetEnvironmentVariable(Constants.DebugEnvironmentVariable);
             // Allow debugging the tests via CLI
             info.EnvironmentVariables[Constants.DebugRemoteEnvironmentVariable] = Environment.GetEnvironmentVariable(Constants.DebugRemoteEnvironmentVariable);
@@ -322,14 +322,6 @@ namespace Xunit
                     s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id) + $": could not find .NET injector helper at {toolPath}.");
                     return false;
                 }
-
-                var launchDebugger = bool.TryParse(Environment.GetEnvironmentVariable(Constants.DebugEnvironmentVariable), out var shouldDebug) && shouldDebug;
-
-#if DEBUG
-                // We'll only auto-launch on the client side of the debugger for debug builds of 
-                // xunit.vsix (local dev) *and* an already attached debugger on the xunit side.
-                launchDebugger |= Debugger.IsAttached;
-#endif
 
                 var injector = Process.Start(
                     new ProcessStartInfo(toolPath,

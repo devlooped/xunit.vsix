@@ -30,10 +30,7 @@ namespace Xunit
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static bool Start()
         {
-            if (bool.TryParse(Environment.GetEnvironmentVariable(Constants.DebugEnvironmentVariable), out var shouldDebug) && shouldDebug)
-                Debugger.Launch();
-
-            if (bool.TryParse(Environment.GetEnvironmentVariable(Constants.DebugRemoteEnvironmentVariable), out shouldDebug) && shouldDebug)
+            if (RunContext.DebugFramework || RunContext.DebugTests)
                 Debugger.Launch();
 
             var resolveDir = Environment.GetEnvironmentVariable(Constants.BaseDirectoryEnvironmentVariable);

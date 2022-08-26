@@ -31,7 +31,7 @@ namespace Xunit
         /// <summary>
         /// Environment variable to disable timeouts for debugging
         /// </summary>
-        public const string DisableTimeoutsEnvironmentVariable = "XUNIT_VSIX_NO_TIMEOUT";
+        public const string DisableTimeoutEnvironmentVariable = "XUNIT_VSIX_NO_TIMEOUT";
 
         public const string TracerName = "xunit.vsix";
         public const string ServerChannelName = "xunit.vsix.server";

@@ -99,8 +99,7 @@ namespace Xunit
 
                     _ = t.Task.ContinueWith(_ => ev.Set(), TaskScheduler.Default);
 
-                    var disableTimeout = bool.TryParse(Environment.GetEnvironmentVariable(Constants.DisableTimeoutsEnvironmentVariable), out var noTimeout) && noTimeout;
-                    ev.Wait(disableTimeout ? Timeout.Infinite : testCase.TimeoutSeconds * 1000);
+                    ev.Wait(RunContext.DisableTimeout ? Timeout.Infinite : testCase.TimeoutSeconds * 1000);
 
 #pragma warning disable VSTHRD002 // We're not waiting synchronously here, we have already done that above with the MRE
                     return t.Task.Result;
@@ -247,9 +246,7 @@ namespace Xunit
             protected override async Task<RunSummary> RunTestMethodAsync(ITestMethod testMethod, IReflectionMethodInfo method, IEnumerable<IXunitTestCase> testCases, object[] constructorArguments)
             {
                 var vsixTest = testCases.OfType<VsixTestCase>().Single();
-                var disableTimeout = bool.TryParse(Environment.GetEnvironmentVariable(Constants.DisableTimeoutsEnvironmentVariable), out var noTimeout) && noTimeout;
-                var cancellation = Debugger.IsAttached || disableTimeout ?
-                    // Don't timeout if we have an attached debugger.
+                var cancellation = RunContext.DisableTimeout ?
                     new CancellationTokenSource() :
                     new CancellationTokenSource(TimeSpan.FromSeconds(vsixTest.TimeoutSeconds));
 

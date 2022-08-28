@@ -11,6 +11,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Threading;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 using static ThisAssembly;
@@ -126,10 +127,12 @@ namespace Xunit
                     return instance;
                 });
                 var outputBus = new TraceOutputMessageBus(remoteBus);
-                var summary = await Task.Run(
-                    () => _runner.Run(testCase, outputBus))
-                    .TimeoutAfterAsync(testCase.TimeoutSeconds * 1000);
 
+                var task = Task.Run(() => _runner.Run(testCase, outputBus));
+                if (!RunContext.DisableTimeout)
+                    task = task.WithTimeout(TimeSpan.FromSeconds(testCase.TimeoutSeconds));
+
+                var summary = await task;
                 if (summary.Exception != null)
                     aggregator.Add(summary.Exception);
 

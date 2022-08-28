@@ -10,8 +10,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Threading;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using Xunit.Abstractions;
@@ -61,22 +60,28 @@ namespace Xunit
             // Before the first test is run, ensure VS is properly initialized.
             if (_jtc == null)
             {
-                IVsShell shell;
-                while ((shell = GlobalServiceProvider.Default.GetService<SVsShell, IVsShell>()) == null)
-                {
-                    Thread.Sleep(100);
-                }
-
-                object zombie;
-                // __VSSPROPID.VSSPROPID_Zombie
-                while ((int?)(zombie = shell.GetProperty(-9014, out zombie)) != 0)
-                {
-                    Thread.Sleep(100);
-                }
-
                 // Retrieve the component model service, which could also now take time depending on new
                 // extensions being installed or updated before the first launch.
                 _jtc = GlobalServiceProvider.GetExport<JoinableTaskContext>();
+
+                var ev = new ManualResetEventSlim();
+
+                _jtc.Factory.RunAsync(async () =>
+                {
+                    await _jtc.Factory.SwitchToMainThreadAsync();
+
+                    var shell = await ServiceProvider.GetGlobalServiceAsync<SVsShell, IVsShell>();
+
+                    object zombie;
+                    // __VSSPROPID.VSSPROPID_Zombie
+                    while ((int?)(zombie = shell.GetProperty(-9014, out zombie)) != 0)
+                    {
+                        Thread.Sleep(100);
+                    }
+
+                }).Task.ContinueWith(_ => ev.Set(), TaskScheduler.Default).Forget();
+
+                ev.Wait();
             }
 
             messageBus.QueueMessage(new DiagnosticMessage("Running {0}", testCase.DisplayName));

@@ -72,7 +72,7 @@ namespace Xunit
 
                 }).ContinueWith(_ => ev.Set(), TaskScheduler.Default).Forget();
 
-                ev.Wait();
+                ev.Wait(testCase.TimeoutSeconds * 1000);
                 ev.Reset();
 
                 _jtc.Factory.RunAsync(async () =>
@@ -90,7 +90,7 @@ namespace Xunit
 
                 }).Task.ContinueWith(_ => ev.Set(), TaskScheduler.Default).Forget();
 
-                ev.Wait();
+                ev.Wait(testCase.TimeoutSeconds * 1000);
             }
 
             messageBus.QueueMessage(new DiagnosticMessage("Running {0}", testCase.DisplayName));

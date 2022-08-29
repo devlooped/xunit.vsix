@@ -63,7 +63,7 @@ namespace Xunit
             {
                 var ev = new ManualResetEventSlim();
 
-                Task.Run(async () =>
+                _ = Task.Run(async () =>
                 {
                     var shell = await ServiceProvider.GetGlobalServiceAsync<SVsShell, IVsShell>();
                     while (true)
@@ -81,19 +81,14 @@ namespace Xunit
                     var components = await ServiceProvider.GetGlobalServiceAsync<SComponentModel, IComponentModel>();
                     _jtc = components.GetService<JoinableTaskContext>();
 
-                }).ContinueWith(_ => ev.Set(), TaskScheduler.Default).Forget();
+                }).ContinueWith(_ => ev.Set(), TaskScheduler.Default);
 
                 ev.Wait(testCase.TimeoutSeconds * 1000);
             }
 
-            messageBus.QueueMessage(new DiagnosticMessage("Running {0}", testCase.DisplayName));
-
             var aggregator = new ExceptionAggregator();
             var runner = _collectionRunnerMap.GetOrAdd(testCase.TestMethod.TestClass.TestCollection,
                 tc => new VsRemoteTestCollectionRunner(tc, _jtc.Factory, _assemblyFixtureMappings, _collectionFixtureMappings));
-
-            if (SynchronizationContext.Current == null)
-                SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
 
             try
             {

@@ -305,7 +305,22 @@ namespace Xunit
 
             // Wait a bit for warmup, before injecting into the .NET runtime in the VS process.
             Thread.Sleep(_settings.WarmupSeconds * 1000);
+
+            var start = Stopwatch.StartNew();
+            var timeout = _settings.StartupTimeoutSeconds * 1000;
+
+            var version = new Version(_visualStudioVersion);
+            var dteFound = false;
+            // Wait for DTE, but don't retrieve it, since that can cause a hang.
+            while (start.ElapsedMilliseconds < timeout && !(dteFound = RunningObjects.FindDTE(version, Process.Id)))
+                Thread.Sleep(100);
             
+            if (!dteFound)
+            {
+                s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id));
+                return false;
+            }
+
             try
             {
                 NativeMethods.IsWow64Process(Process.Handle, out var isWow);
@@ -349,8 +364,6 @@ namespace Xunit
                 s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id) + Environment.NewLine + ex.ToString());
                 return false;
             }
-
-            return true;
         }
 
         void PropagateProfilingVariables(ProcessStartInfo info)

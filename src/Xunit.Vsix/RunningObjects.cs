@@ -46,6 +46,9 @@ namespace Xunit
             }
         }
 
+        public static bool FindDTE(Version visualStudioVersion, int processId)
+            => FindMoniker($"!VisualStudio.DTE.{visualStudioVersion.Major}.0:{processId}") != null;
+
         public static Interop.DTE GetDTE(string visualStudioVersion, int processId, TimeSpan retryTimeout)
         {
             var version = Version.Parse(visualStudioVersion);
@@ -73,7 +76,19 @@ namespace Xunit
 
         static object GetComObject(string monikerName)
         {
-            object comObject = null;
+            var moniker = FindMoniker(monikerName);
+            if (moniker == null)
+                return null;
+
+            if (ErrorHandler.Succeeded(NativeMethods.GetRunningObjectTable(0, out var rdt)) && 
+                ErrorHandler.Succeeded(rdt.GetObject(moniker, out var comObject)))
+                return comObject;
+
+            return null;
+        }
+
+        static IMoniker? FindMoniker(string monikerName)
+        {
             try
             {
                 IRunningObjectTable table;
@@ -95,8 +110,7 @@ namespace Xunit
                         rgelt[0].GetDisplayName(ctx, null, out displayName);
                         if (displayName == monikerName)
                         {
-                            table.GetObject(rgelt[0], out comObject);
-                            return comObject;
+                            return rgelt[0];
                         }
                     }
                 }
@@ -106,7 +120,8 @@ namespace Xunit
                 return null;
             }
 
-            return comObject;
+            return null;
         }
+
     }
 }

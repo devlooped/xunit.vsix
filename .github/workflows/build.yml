@@ -58,7 +58,9 @@ jobs:
         if: failure()
         with:
           name: dumps-${{ github.run_number }}
-          path: ./**/*.dmp
+          path: |
+            ./**/*.dmp
+            ./**/*.log
 
       - name: 🚀 sleet
         env:

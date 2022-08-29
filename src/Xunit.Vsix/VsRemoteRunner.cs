@@ -63,14 +63,29 @@ namespace Xunit
             {
                 var ev = new ManualResetEventSlim();
 
-                Task.Run(async () =>
+                UIContext.FromUIContextGuid(new(UIContextGuids.NoSolution)).WhenActivated(() =>
                 {
-                    // Retrieve the component model service, which could also now take time depending on new
-                    // extensions being installed or updated before the first launch.
-                    var components = await ServiceProvider.GetGlobalServiceAsync<SComponentModel, IComponentModel>();
-                    _jtc = components.GetService<JoinableTaskContext>();
+                    Task.Run(async () =>
+                    {
+                        var shell = await ServiceProvider.GetGlobalServiceAsync<SVsShell, IVsShell>();
+                        while (true)
+                        {
+                            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                            shell.GetProperty((int)__VSSPROPID4.VSSPROPID_ShellInitialized, out var value);
+                            if (value is bool initialized && initialized)
+                                break;
 
-                }).ContinueWith(_ => ev.Set(), TaskScheduler.Default).Forget();
+                            await Task.Delay(200);
+                        }
+
+                        // Retrieve the component model service, which could also now take time depending on new
+                        // extensions being installed or updated before the first launch.
+                        var components = await ServiceProvider.GetGlobalServiceAsync<SComponentModel, IComponentModel>();
+                        _jtc = components.GetService<JoinableTaskContext>();
+                        ev.Set();
+
+                    }).Forget();
+                });
 
                 ev.Wait(testCase.TimeoutSeconds * 1000);
                 ev.Reset();

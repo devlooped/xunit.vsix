@@ -272,9 +272,9 @@ namespace Xunit
                                     Aggregator, cancellation)
                                 .RunAsync();
 
-                    // If the UI thread was requested, switch to the main dispatcher.
                     await _jtf.SwitchToMainThreadAsync();
                     return await new SyncTestCaseRunner(
+                            _jtf,
                            testCases.Single(),
                            testCases.Single().DisplayName,
                            testCases.Single().SkipReason,
@@ -291,58 +291,51 @@ namespace Xunit
 
             class SyncTestCaseRunner : XunitTestCaseRunner
             {
-                public SyncTestCaseRunner(IXunitTestCase testCase, string displayName, string skipReason, object[] constructorArguments, object[] testMethodArguments, IMessageBus messageBus, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
+                JoinableTaskFactory jtf;
+
+                public SyncTestCaseRunner(JoinableTaskFactory jtf, IXunitTestCase testCase, string displayName, string skipReason, object[] constructorArguments, object[] testMethodArguments, IMessageBus messageBus, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
                     : base(testCase, displayName, skipReason, constructorArguments, testMethodArguments, messageBus, aggregator, cancellationTokenSource)
                 {
+                    this.jtf = jtf;
                 }
 
                 protected override Task<RunSummary> RunTestAsync()
                 {
-                    return new SyncTestRunner(new XunitTest(TestCase, DisplayName), MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, SkipReason, BeforeAfterAttributes, new ExceptionAggregator(Aggregator), CancellationTokenSource).RunAsync();
+                    return new SyncTestRunner(jtf, new XunitTest(TestCase, DisplayName), MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, SkipReason, BeforeAfterAttributes, new ExceptionAggregator(Aggregator), CancellationTokenSource).RunAsync();
                 }
 
                 class SyncTestRunner : XunitTestRunner
                 {
-                    public SyncTestRunner(ITest test, IMessageBus messageBus, Type testClass, object[] constructorArguments, MethodInfo testMethod, object[] testMethodArguments, string skipReason, IReadOnlyList<BeforeAfterTestAttribute> beforeAfterAttributes, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
+                    JoinableTaskFactory jtf;
+
+                    public SyncTestRunner(JoinableTaskFactory jtf, ITest test, IMessageBus messageBus, Type testClass, object[] constructorArguments, MethodInfo testMethod, object[] testMethodArguments, string skipReason, IReadOnlyList<BeforeAfterTestAttribute> beforeAfterAttributes, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
                         : base(test, messageBus, testClass, constructorArguments, testMethod, testMethodArguments, skipReason, beforeAfterAttributes, aggregator, cancellationTokenSource)
                     {
+                        this.jtf = jtf;
                     }
 
                     protected override Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
                     {
-                        return new SyncTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource).RunAsync();
+                        return new SyncTestInvoker(jtf, Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource).RunAsync();
                     }
 
                     class SyncTestInvoker : XunitTestInvoker
                     {
-                        public SyncTestInvoker(ITest test, IMessageBus messageBus, Type testClass, object[] constructorArguments, MethodInfo testMethod, object[] testMethodArguments, IReadOnlyList<BeforeAfterTestAttribute> beforeAfterAttributes, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
+                        JoinableTaskFactory jtf;
+
+                        public SyncTestInvoker(JoinableTaskFactory jtf, ITest test, IMessageBus messageBus, Type testClass, object[] constructorArguments, MethodInfo testMethod, object[] testMethodArguments, IReadOnlyList<BeforeAfterTestAttribute> beforeAfterAttributes, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
                             : base(test, messageBus, testClass, constructorArguments, testMethod, testMethodArguments, beforeAfterAttributes, aggregator, cancellationTokenSource)
                         {
+                            this.jtf = jtf;
                         }
 
-                        protected override Task<decimal> InvokeTestMethodAsync(object testClassInstance)
+                        protected override async Task<decimal> InvokeTestMethodAsync(object testClassInstance)
                         {
-                            Aggregator.Run(() => Timer.Aggregate(() =>
+                            return await jtf.RunAsync(async () =>
                             {
-                                var parameterCount = TestMethod.GetParameters().Length;
-                                var valueCount = TestMethodArguments == null ? 0 : TestMethodArguments.Length;
-                                if (parameterCount != valueCount)
-                                {
-                                    Aggregator.Add(
-                                        new ArgumentException(
-                                            $"The test method expected {parameterCount} parameter value{(parameterCount == 1 ? "" : "s")}, but {valueCount} parameter value{(valueCount == 1 ? "" : "s")} {(valueCount == 1 ? "was" : "were")} provided."
-                                        )
-                                    );
-                                }
-                                else
-                                {
-                                    var result = CallTestMethod(testClassInstance);
-                                    if (result is Task task)
-                                        task.Wait();
-                                }
-                            }));
-
-                            return Task.FromResult(Timer.Total);
+                                await jtf.SwitchToMainThreadAsync();
+                                return await base.InvokeTestMethodAsync(testClassInstance);
+                            });
                         }
                     }
                 }

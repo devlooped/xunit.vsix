@@ -7,6 +7,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 using Xunit.Abstractions;
 
@@ -32,14 +33,13 @@ public class Misc
         var service = ServiceProvider.GlobalProvider.GetService<DTE>();
         Assert.NotNull(service);
 
-        service = GlobalServiceProvider.GetService<DTE>();
-        Assert.NotNull(service);
+        var components = await ServiceProvider.GetGlobalServiceAsync<SComponentModel, IComponentModel>();
 
-        var hierarchy = GlobalServiceProvider.GetExport<IVsHierarchyItemManager>();
+        var hierarchy = components.GetService<IVsHierarchyItemManager>();
 
         Assert.NotNull(hierarchy);
 
-        var items = GlobalServiceProvider.GetExports<ContentTypeDefinition>();
+        var items = components.GetExtensions<ContentTypeDefinition>();
 
         Assert.NotEmpty(items);
     }
@@ -67,22 +67,27 @@ public class Misc
         var dte = await ServiceProvider.GetGlobalServiceAsync<SDTE, DTE>();
         var solutionEmpty = await ServiceProvider.GetGlobalServiceAsync<SVsSolution, IVsSolution>();
         var components = await ServiceProvider.GetGlobalServiceAsync<SComponentModel, IComponentModel>();
-        var manager = components.GetService<IVsHierarchyItemManager>();
 
         await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+        var manager = components.GetService<IVsHierarchyItemManager>();
+
         var solutionEmptyItem = manager.GetHierarchyItem(solutionEmpty as IVsHierarchy, (uint)VSConstants.VSITEMID.Root);
+        await TaskScheduler.Default;
+
         Assert.NotNull(solutionEmptyItem);
 
         dte.Solution.Open(Path.Combine(BaseDir, "Content", "Blank.sln"));
 
-        var solution1 = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
+        var solution1 = await ServiceProvider.GetGlobalServiceAsync<SVsSolution, IVsSolution>();
+
         var solution1Item = manager.GetHierarchyItem(solution1 as IVsHierarchy, (uint)VSConstants.VSITEMID.Root);
 
         dte.Solution.Close();
 
         dte.Solution.Open(Path.Combine(BaseDir, "Content", "Blank.sln"));
 
-        var solution2 = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
+        var solution2 = await ServiceProvider.GetGlobalServiceAsync<SVsSolution, IVsSolution>();
+        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
         var solution2Item = manager.GetHierarchyItem(solution2 as IVsHierarchy, (uint)VSConstants.VSITEMID.Root);
 
         Assert.NotNull(solution1Item);

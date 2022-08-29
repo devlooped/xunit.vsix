@@ -10,6 +10,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
@@ -60,11 +61,19 @@ namespace Xunit
             // Before the first test is run, ensure VS is properly initialized.
             if (_jtc == null)
             {
-                // Retrieve the component model service, which could also now take time depending on new
-                // extensions being installed or updated before the first launch.
-                _jtc = GlobalServiceProvider.GetExport<JoinableTaskContext>();
-
                 var ev = new ManualResetEventSlim();
+
+                Task.Run(async () =>
+                {
+                    // Retrieve the component model service, which could also now take time depending on new
+                    // extensions being installed or updated before the first launch.
+                    var components = await ServiceProvider.GetGlobalServiceAsync<SComponentModel, IComponentModel>();
+                    _jtc = components.GetService<JoinableTaskContext>();
+
+                }).ContinueWith(_ => ev.Set(), TaskScheduler.Default).Forget();
+
+                ev.Wait();
+                ev.Reset();
 
                 _jtc.Factory.RunAsync(async () =>
                 {

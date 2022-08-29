@@ -2,7 +2,9 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.VisualStudio.Shell;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -73,9 +75,9 @@ namespace Xunit.Vsix.Tests
         }
 
         [VsixFact]
-        public void when_loading_solution_then_succeeds()
+        public async Task when_loading_solution_then_succeedsAsync()
         {
-            var dte = GlobalServiceProvider.GetService<EnvDTE.DTE>();
+            var dte = await ServiceProvider.GetGlobalServiceAsync<EnvDTE.DTE, EnvDTE.DTE>();
 
             Assert.NotNull(dte);
 
@@ -87,9 +89,9 @@ namespace Xunit.Vsix.Tests
         }
 
         [VsixFact(VisualStudioVersion.VS2017)]
-        public void when_specific_version_then_runs_on_it()
+        public async Task when_specific_version_then_runs_on_itAsync()
         {
-            var dte = GlobalServiceProvider.GetService<EnvDTE.DTE>();
+            var dte = await ServiceProvider.GetGlobalServiceAsync<EnvDTE.DTE, EnvDTE.DTE>();
 
             Assert.NotNull(dte);
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using EnvDTE;
 using Microsoft.VisualStudio;
@@ -61,12 +62,14 @@ public class Misc
     }
 
     [VsixFact(RunOnUIThread = true)]
-    public void when_reopenening_solution_then_hierarchy_item_is_same()
+    public async Task when_reopenening_solution_then_hierarchy_item_is_same()
     {
-        var dte = ServiceProvider.GlobalProvider.GetService<DTE>();
-        var solutionEmpty = ServiceProvider.GlobalProvider.GetService<SVsSolution, IVsSolution>();
-        var manager = ServiceProvider.GlobalProvider.GetService<SComponentModel, IComponentModel>().GetService<IVsHierarchyItemManager>();
+        var dte = await ServiceProvider.GetGlobalServiceAsync<SDTE, DTE>();
+        var solutionEmpty = await ServiceProvider.GetGlobalServiceAsync<SVsSolution, IVsSolution>();
+        var components = await ServiceProvider.GetGlobalServiceAsync<SComponentModel, IComponentModel>();
+        var manager = components.GetService<IVsHierarchyItemManager>();
 
+        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
         var solutionEmptyItem = manager.GetHierarchyItem(solutionEmpty as IVsHierarchy, (uint)VSConstants.VSITEMID.Root);
         Assert.NotNull(solutionEmptyItem);
 

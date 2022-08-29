@@ -223,7 +223,7 @@ namespace Xunit
                 {
                     Stop();
                     Thread.Sleep(sleep);
-                    sleep = sleep * retries;
+                    sleep *= retries;
                 }
 
                 if (!started)
@@ -233,7 +233,7 @@ namespace Xunit
                     s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToStart(_visualStudioVersion, _rootSuffix));
                     messageBus.QueueMessage(new TestFailed(new XunitTest(testCase, testCase.DisplayName), 0,
                         Strings.VsClient.FailedToStart(_visualStudioVersion, _rootSuffix),
-                        new TimeoutException("Failed to start Visual Studio " + _visualStudioVersion + " " + _rootSuffix)));
+                        new TimeoutException(Strings.VsClient.FailedToStart(_visualStudioVersion, _rootSuffix))));
 
                     return false;
                 }

@@ -19,9 +19,9 @@ runs:
             if [ $filter ]
             then
                 echo -e "${warn}Retry $counter for $filter ${reset}"
-                dotnet test --no-build -m:1 --blame-hang --blame-hang-timeout 5m --filter=$filter | tee ./output.log
+                dotnet test --no-build -m:1 --blame-hang --blame-hang-timeout 3m --filter=$filter | tee ./output.log
             else
-                dotnet test --no-build -m:1 --blame-hang --blame-hang-timeout 5m | tee ./output.log
+                dotnet test --no-build -m:1 --blame-hang --blame-hang-timeout 3m | tee ./output.log
             fi
             # capture dotnet test exit status, different from tee
             exitcode=${PIPESTATUS[0]}

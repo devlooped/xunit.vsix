@@ -63,47 +63,25 @@ namespace Xunit
             {
                 var ev = new ManualResetEventSlim();
 
-                UIContext.FromUIContextGuid(new(UIContextGuids.NoSolution)).WhenActivated(() =>
+                Task.Run(async () =>
                 {
-                    Task.Run(async () =>
-                    {
-                        var shell = await ServiceProvider.GetGlobalServiceAsync<SVsShell, IVsShell>();
-                        while (true)
-                        {
-                            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                            shell.GetProperty((int)__VSSPROPID4.VSSPROPID_ShellInitialized, out var value);
-                            if (value is bool initialized && initialized)
-                                break;
-
-                            await Task.Delay(200);
-                        }
-
-                        // Retrieve the component model service, which could also now take time depending on new
-                        // extensions being installed or updated before the first launch.
-                        var components = await ServiceProvider.GetGlobalServiceAsync<SComponentModel, IComponentModel>();
-                        _jtc = components.GetService<JoinableTaskContext>();
-                        ev.Set();
-
-                    }).Forget();
-                });
-
-                ev.Wait(testCase.TimeoutSeconds * 1000);
-                ev.Reset();
-
-                _jtc.Factory.RunAsync(async () =>
-                {
-                    await _jtc.Factory.SwitchToMainThreadAsync();
-
                     var shell = await ServiceProvider.GetGlobalServiceAsync<SVsShell, IVsShell>();
-
-                    object zombie;
-                    // __VSSPROPID.VSSPROPID_Zombie
-                    while ((int?)(zombie = shell.GetProperty(-9014, out zombie)) != 0)
+                    while (true)
                     {
-                        Thread.Sleep(100);
+                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                        shell.GetProperty((int)__VSSPROPID4.VSSPROPID_ShellInitialized, out var value);
+                        if (value is bool initialized && initialized)
+                            break;
+
+                        await Task.Delay(200);
                     }
 
-                }).Task.ContinueWith(_ => ev.Set(), TaskScheduler.Default).Forget();
+                    // Retrieve the component model service, which could also now take time depending on new
+                    // extensions being installed or updated before the first launch.
+                    var components = await ServiceProvider.GetGlobalServiceAsync<SComponentModel, IComponentModel>();
+                    _jtc = components.GetService<JoinableTaskContext>();
+
+                }).ContinueWith(_ => ev.Set(), TaskScheduler.Default).Forget();
 
                 ev.Wait(testCase.TimeoutSeconds * 1000);
             }

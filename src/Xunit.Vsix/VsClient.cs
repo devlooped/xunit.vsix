@@ -303,11 +303,9 @@ namespace Xunit
 
             Process = Process.Start(info);
 
-            // This forces us to wait until VS is fully started.
-            var dte = RunningObjects.GetDTE(_visualStudioVersion, Process.Id, TimeSpan.FromSeconds(_settings.StartupTimeout));
-            if (dte == null)
-                return false;
-
+            // Wait a bit for warmup, before injecting into the .NET runtime in the VS process.
+            Thread.Sleep(_settings.WarmupSeconds * 1000);
+            
             try
             {
                 NativeMethods.IsWow64Process(Process.Handle, out var isWow);
@@ -338,11 +336,13 @@ namespace Xunit
                     });
 
                 // Wait max 10 seconds for the injection to succeed
-                if (!injector.WaitForExit(10000))
+                if (!injector.WaitForExit(_settings.StartupTimeoutSeconds * 1000))
                 {
                     s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id));
                     return false;
                 }
+
+                return injector.ExitCode == 0;
             }
             catch (Exception ex)
             {

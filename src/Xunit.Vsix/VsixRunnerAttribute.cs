@@ -39,6 +39,12 @@ namespace Xunit
         public int StartupTimeout { get; set; }
 
         /// <summary>
+        /// Wait time in milliseconds to wait for Visual Studio to warm up 
+        /// before injecting into the .NET runtime in it.
+        /// </summary>
+        public int WarmupMilliseconds { get; set; }
+
+        /// <summary>
         /// Specifies the tracing level for runner diagnostics.
         /// </summary>
         public SourceLevels TraceLevel { get; set; }

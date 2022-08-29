@@ -26,7 +26,8 @@ namespace Xunit
                     settingsAttribute.GetInitializedArgument<int?>(nameof(VsixRunnerSettings.RemoteConnectionRetries)),
                     settingsAttribute.GetInitializedArgument<int?>(nameof(VsixRunnerSettings.ProcessStartRetries)),
                     settingsAttribute.GetInitializedArgument<int?>(nameof(VsixRunnerSettings.RetrySleepInterval)),
-                    settingsAttribute.GetInitializedArgument<int?>(nameof(VsixRunnerSettings.StartupTimeout)));
+                    settingsAttribute.GetInitializedArgument<int?>(nameof(VsixRunnerSettings.StartupTimeoutSeconds)),
+                    settingsAttribute.GetInitializedArgument<int?>(nameof(VsixRunnerSettings.WarmupSeconds)));
         }
 
         public string VisualStudioVersion { get; }

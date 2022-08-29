@@ -39,7 +39,7 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="15.0.1" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.3.32804.24" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.3.2180" PrivateAssets="all" />
     <PackageReference Include="ThisAssembly.Strings" Version="1.0.9" PrivateAssets="all" />
     <PackageReference Include="Devlooped.Injector" Version="42.42.42-main.7" />

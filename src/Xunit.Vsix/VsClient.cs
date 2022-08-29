@@ -317,7 +317,7 @@ namespace Xunit
             
             if (!dteFound)
             {
-                s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id));
+                s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToStart(_visualStudioVersion, _rootSuffix));
                 return false;
             }
 

@@ -1,5 +1,23 @@
 # Changelog
 
+## [v0.8.0](https://github.com/devlooped/xunit.vsix/tree/v0.8.0) (2022-08-30)
+
+[Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.7.0...v0.8.0)
+
+:hammer: Other:
+
+- InvalidOperationException for Visual Studio 2017 [\#6](https://github.com/devlooped/xunit.vsix/issues/6)
+
+:twisted_rightwards_arrows: Merged:
+
+- Open C\# file, and only only on exp instance [\#53](https://github.com/devlooped/xunit.vsix/pull/53) (@kzu)
+- Don't request DTE via COM since it can hang VS [\#50](https://github.com/devlooped/xunit.vsix/pull/50) (@kzu)
+- Remove usage of COM/process based ISP wrapper [\#49](https://github.com/devlooped/xunit.vsix/pull/49) (@kzu)
+- Further prevent hangs when running UI thread tests [\#46](https://github.com/devlooped/xunit.vsix/pull/46) (@kzu)
+- Switch to VSSDK, use built-in primitives, address warnings [\#45](https://github.com/devlooped/xunit.vsix/pull/45) (@kzu)
+- Kill the windows devenv process, since we're in bash [\#44](https://github.com/devlooped/xunit.vsix/pull/44) (@kzu)
+- Kill devenv between test runs [\#43](https://github.com/devlooped/xunit.vsix/pull/43) (@kzu)
+
 ## [v0.7.0](https://github.com/devlooped/xunit.vsix/tree/v0.7.0) (2022-08-25)
 
 [Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.6.1...v0.7.0)

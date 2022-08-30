@@ -30,8 +30,12 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: ⚙ msbuild
+      - name: ≥ msbuild
+        id: msbuild
         uses: microsoft/setup-msbuild@v1.1
+
+      - name: ≥ defaults
+        run: echo $((gi '${{ steps.msbuild.outputs.msbuildPath }}\..\..\..\Common7\IDE').FullName.TrimEnd('\')) >> $env:GITHUB_PATH
 
       - name: ≥ version
         if: github.event_name == 'release'
@@ -49,6 +53,15 @@ jobs:
         if: always()
         run: dotnet pack --no-build -m:1
 
+      - name: 🛠 vs
+        run: | 
+          # Forces a reset, full MEF refresh and exits
+          devenv .\Xunit.Vsix.sln /NoSplash /ResetSettings General /Command "File.Exit"
+          wait-process -name 'devenv'
+          # Same, for the experimental instance
+          devenv .\Xunit.Vsix.sln /RootSuffix Exp /NoSplash /ResetSettings General /Command "File.Exit"
+          wait-process -name 'devenv'
+        
       - name: 🧪 test
         timeout-minutes: 10
         uses: ./.github/workflows/test

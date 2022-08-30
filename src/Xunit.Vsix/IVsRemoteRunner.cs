@@ -5,6 +5,8 @@ namespace Xunit
 {
     interface IVsRemoteRunner : IDisposable
     {
+        void EnsureInitialized();
+
         string[][] GetEnvironment();
 
         void Ping();

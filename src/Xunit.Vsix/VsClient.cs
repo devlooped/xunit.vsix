@@ -209,6 +209,8 @@ namespace Xunit
             Constants.Tracer.TraceEvent(TraceEventType.Verbose, 0, Strings.VsClient.RemoteEnvVars(string.Join(Environment.NewLine,
                 remoteVars.Select(x => "    " + x[0] + "=" + x[1]))));
 
+            _runner.EnsureInitialized();
+
             return true;
         }
 

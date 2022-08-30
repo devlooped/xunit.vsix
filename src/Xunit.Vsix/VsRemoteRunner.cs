@@ -28,7 +28,7 @@ namespace Xunit
     {
         string _pipeName;
         IChannel _channel;
-        JoinableTaskContext _jtc;
+        JoinableTaskFactory _jtf; 
 
         Dictionary<Type, object> _assemblyFixtureMappings = new Dictionary<Type, object>();
         Dictionary<Type, object> _collectionFixtureMappings = new Dictionary<Type, object>();
@@ -39,6 +39,37 @@ namespace Xunit
             _pipeName = Environment.GetEnvironmentVariable(Constants.PipeNameEnvironmentVariable);
 
             RemotingServices.Marshal(this, RemotingUtil.HostName);
+        }
+
+        public void EnsureInitialized()
+        {
+            if (_jtf != null)
+                return;
+
+            var ev = new ManualResetEventSlim();
+            
+            var task = ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                var shell = await ServiceProvider.GetGlobalServiceAsync<SVsShell, IVsShell>();
+                while (true)
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    shell.GetProperty((int)__VSSPROPID4.VSSPROPID_ShellInitialized, out var value);
+                    if (value is bool initialized && initialized)
+                        break;
+
+                    await Task.Delay(200);
+                }
+
+                // Ensure MEF too
+                await ServiceProvider.GetGlobalServiceAsync<SComponentModel, IComponentModel>();
+
+                ev.Set();
+            });
+
+            ev.Wait();
+            
+            _jtf = ThreadHelper.JoinableTaskFactory;
         }
 
         public string[][] GetEnvironment()
@@ -58,37 +89,9 @@ namespace Xunit
 
         public VsixRunSummary Run(VsixTestCase testCase, IMessageBus messageBus)
         {
-            // Before the first test is run, ensure VS is properly initialized.
-            if (_jtc == null)
-            {
-                var ev = new ManualResetEventSlim();
-
-                _ = Task.Run(async () =>
-                {
-                    var shell = await ServiceProvider.GetGlobalServiceAsync<SVsShell, IVsShell>();
-                    while (true)
-                    {
-                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        shell.GetProperty((int)__VSSPROPID4.VSSPROPID_ShellInitialized, out var value);
-                        if (value is bool initialized && initialized)
-                            break;
-
-                        await Task.Delay(200);
-                    }
-
-                    // Retrieve the component model service, which could also now take time depending on new
-                    // extensions being installed or updated before the first launch.
-                    var components = await ServiceProvider.GetGlobalServiceAsync<SComponentModel, IComponentModel>();
-                    _jtc = components.GetService<JoinableTaskContext>();
-
-                }).ContinueWith(_ => ev.Set(), TaskScheduler.Default);
-
-                ev.Wait(testCase.TimeoutSeconds * 1000);
-            }
-
             var aggregator = new ExceptionAggregator();
             var runner = _collectionRunnerMap.GetOrAdd(testCase.TestMethod.TestClass.TestCollection,
-                tc => new VsRemoteTestCollectionRunner(tc, _jtc.Factory, _assemblyFixtureMappings, _collectionFixtureMappings));
+                tc => new VsRemoteTestCollectionRunner(tc, _jtf, _assemblyFixtureMappings, _collectionFixtureMappings));
 
             try
             {
@@ -96,7 +99,7 @@ namespace Xunit
                 {
                     var ev = new ManualResetEventSlim();
 
-                    var t = _jtc.Factory.RunAsync(async () =>
+                    var t = _jtf.RunAsync(async () =>
                         (await runner.RunAsync(testCase, bus, aggregator)).ToVsixRunSummary());
 
                     _ = t.Task.ContinueWith(_ => ev.Set(), TaskScheduler.Default);
@@ -148,10 +151,7 @@ namespace Xunit
             _channel = RemotingUtil.CreateChannel(Constants.ServerChannelName, _pipeName);
         }
 
-        public override object InitializeLifetimeService()
-        {
-            return null;
-        }
+        public override object InitializeLifetimeService() => null;
 
         class VsRemoteTestCollectionRunner : XunitTestCollectionRunner
         {

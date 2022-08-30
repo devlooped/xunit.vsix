@@ -28,7 +28,7 @@ namespace Xunit
     {
         string _pipeName;
         IChannel _channel;
-        JoinableTaskFactory _jtf; 
+        JoinableTaskFactory _jtf;
 
         Dictionary<Type, object> _assemblyFixtureMappings = new Dictionary<Type, object>();
         Dictionary<Type, object> _collectionFixtureMappings = new Dictionary<Type, object>();
@@ -47,7 +47,7 @@ namespace Xunit
                 return;
 
             var ev = new ManualResetEventSlim();
-            
+
             var task = ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 var shell = await ServiceProvider.GetGlobalServiceAsync<SVsShell, IVsShell>();
@@ -68,7 +68,7 @@ namespace Xunit
             });
 
             ev.Wait();
-            
+
             _jtf = ThreadHelper.JoinableTaskFactory;
         }
 

@@ -9,8 +9,8 @@
         {
             DebuggerAttachRetries = debuggerAttachRetries ?? 5;
             RemoteConnectionRetries = remoteConnectionRetries ?? 2;
-            ProcessStartRetries = processStartRetries ?? 1;
-            RetrySleepInterval = retrySleepInterval ?? 200;
+            ProcessStartRetries = processStartRetries ?? 3;
+            RetrySleepInterval = retrySleepInterval ?? 500;
             StartupTimeoutSeconds = startupTimeoutSeconds ?? 30;
             WarmupSeconds = warnupSeconds ?? 10;
         }
@@ -27,7 +27,7 @@
         public int RemoteConnectionRetries { get; private set; }
 
         /// <summary>
-        /// Number of retries to start VS and connect to its DTE service.
+        /// Number of retries to start VS and ensure proper initialization.
         /// </summary>
         public int ProcessStartRetries { get; private set; }
 

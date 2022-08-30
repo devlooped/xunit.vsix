@@ -10,6 +10,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -24,11 +25,12 @@ namespace Xunit
     /// Remote runner instance running in the IDE AppDomain/process
     /// to execute tests on.
     /// </summary>
-    class VsRemoteRunner : MarshalByRefObject, IVsRemoteRunner
+    class VsRemoteRunner : MarshalByRefObject, IVsRemoteRunner, IVsShellPropertyEvents
     {
         string _pipeName;
         IChannel _channel;
         JoinableTaskContext _jtc;
+        ManualResetEventSlim shellInitialized = new();
 
         Dictionary<Type, object> _assemblyFixtureMappings = new Dictionary<Type, object>();
         Dictionary<Type, object> _collectionFixtureMappings = new Dictionary<Type, object>();
@@ -39,6 +41,22 @@ namespace Xunit
             _pipeName = Environment.GetEnvironmentVariable(Constants.PipeNameEnvironmentVariable);
 
             RemotingServices.Marshal(this, RemotingUtil.HostName);
+
+            Task.Run(async () =>
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var shell = await ServiceProvider.GetGlobalServiceAsync<SVsShell, IVsShell>();
+                shell.GetProperty((int)__VSSPROPID4.VSSPROPID_ShellInitialized, out var value);
+                if (value is bool initialized && initialized)
+                {
+                    shellInitialized.Set();
+                }
+                else
+                {
+                    shell.AdviseShellPropertyChanges(this, out var _);
+                }
+            }).Forget();
         }
 
         public string[][] GetEnvironment()
@@ -65,16 +83,7 @@ namespace Xunit
 
                 _ = Task.Run(async () =>
                 {
-                    var shell = await ServiceProvider.GetGlobalServiceAsync<SVsShell, IVsShell>();
-                    while (true)
-                    {
-                        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        shell.GetProperty((int)__VSSPROPID4.VSSPROPID_ShellInitialized, out var value);
-                        if (value is bool initialized && initialized)
-                            break;
-
-                        await Task.Delay(200);
-                    }
+                    shellInitialized.Wait();
 
                     // Retrieve the component model service, which could also now take time depending on new
                     // extensions being installed or updated before the first launch.
@@ -415,6 +424,14 @@ namespace Xunit
                        !line.StartsWith("devenv.exe ", StringComparison.OrdinalIgnoreCase)
                     ));
             }
+        }
+
+        int IVsShellPropertyEvents.OnShellPropertyChange(int propid, object var)
+        {
+            if (propid == (int)__VSSPROPID4.VSSPROPID_ShellInitialized && var is bool initialized && initialized)
+                shellInitialized.Set();
+
+            return VSConstants.S_OK;
         }
     }
 }

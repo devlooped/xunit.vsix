@@ -4,7 +4,7 @@
     {
         public VsixRunnerSettings(int? debuggerAttachRetries = null, int? remoteConnectionRetries = null,
             int? processStartRetries = null, int? retrySleepInterval = null,
-            int? startupTimeoutSeconds = null, 
+            int? startupTimeoutSeconds = null,
             int? warnupSeconds = null)
         {
             DebuggerAttachRetries = debuggerAttachRetries ?? 5;

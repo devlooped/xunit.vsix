@@ -314,7 +314,7 @@ namespace Xunit
             // Wait for DTE, but don't retrieve it, since that can cause a hang.
             while (start.ElapsedMilliseconds < timeout && !(dteFound = RunningObjects.FindDTE(version, Process.Id)))
                 Thread.Sleep(100);
-            
+
             if (!dteFound)
             {
                 s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToStart(_visualStudioVersion, _rootSuffix));

@@ -80,7 +80,7 @@ namespace Xunit
             if (moniker == null)
                 return null;
 
-            if (ErrorHandler.Succeeded(NativeMethods.GetRunningObjectTable(0, out var rdt)) && 
+            if (ErrorHandler.Succeeded(NativeMethods.GetRunningObjectTable(0, out var rdt)) &&
                 ErrorHandler.Succeeded(rdt.GetObject(moniker, out var comObject)))
                 return comObject;
 

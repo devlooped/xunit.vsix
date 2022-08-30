@@ -58,9 +58,12 @@ jobs:
           # Forces a reset, full MEF refresh and exits
           devenv .\Xunit.Vsix.sln /NoSplash /ResetSettings General /Command "File.Exit"
           wait-process -name 'devenv'
+
+      - name: 🛠 vs exp
+        run: | 
           # Same, for the experimental instance
           devenv .\Xunit.Vsix.sln /RootSuffix Exp /NoSplash /ResetSettings General /Command "File.Exit"
-          wait-process -name 'devenv'
+          wait-process -name 'devenv'        
         
       - name: 🧪 test
         timeout-minutes: 10

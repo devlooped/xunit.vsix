@@ -70,6 +70,9 @@
       <ReferencePath Condition="'%(Filename)' == 'Microsoft.VisualStudio.Setup.Configuration.Interop'">
         <EmbedInteropTypes>true</EmbedInteropTypes>
       </ReferencePath>
+      <ReferencePath Condition="'%(FileName)' == 'EnvDTE.80'">
+        <EmbedInteropTypes>true</EmbedInteropTypes>
+      </ReferencePath>
     </ItemGroup>
   </Target>
 

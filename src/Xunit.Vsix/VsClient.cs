@@ -359,6 +359,22 @@ namespace Xunit
                     return false;
                 }
 
+                if (injector.ExitCode == 0 && Debugger.IsAttached)
+                {
+                    // Try to attach the process to the current debugger, if any.
+                    var debugee = Process.GetCurrentProcess().Id;
+#pragma warning disable VSTHRD010 // Invoke single-threaded types on Main thread
+                    var dte = GetAllDtes().FirstOrDefault(x =>
+                        x.Debugger.DebuggedProcesses != null &&
+                        x.Debugger.DebuggedProcesses.Cast<EnvDTE80.Process2>().Any(p => p.ProcessID == debugee));
+
+                    dte?.Debugger.LocalProcesses
+                        .Cast<EnvDTE80.Process2>()
+                        .FirstOrDefault(p => p.ProcessID == Process.Id)?
+                        .Attach();
+#pragma warning restore VSTHRD010 // Invoke single-threaded types on Main thread
+                }
+
                 return injector.ExitCode == 0;
             }
             catch (Exception ex)
@@ -448,7 +464,7 @@ namespace Xunit
             return path;
         }
 
-        IEnumerable<Interop.DTE> GetAllDtes()
+        IEnumerable<EnvDTE80.DTE2> GetAllDtes()
         {
             IRunningObjectTable table;
             IEnumMoniker moniker;
@@ -471,7 +487,7 @@ namespace Xunit
                     {
                         object comObject;
                         table.GetObject(rgelt[0], out comObject);
-                        yield return (Interop.DTE)comObject;
+                        yield return (EnvDTE80.DTE2)comObject;
                     }
                 }
             }

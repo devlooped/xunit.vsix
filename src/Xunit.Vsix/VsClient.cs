@@ -284,6 +284,10 @@ namespace Xunit
             // Allow debugging the tests via CLI
             info.EnvironmentVariables[Constants.DebugRemoteEnvironmentVariable] = Environment.GetEnvironmentVariable(Constants.DebugRemoteEnvironmentVariable);
 
+            // If debugger is already attached, propagate the no-timeout flag to the remote process
+            if (Debugger.IsAttached)
+                info.EnvironmentVariables[Constants.DisableTimeoutEnvironmentVariable] = "true";
+
             // Propagate profiling values to support OpenCover or any third party profiler
             // already attached to the current process.
             PropagateProfilingVariables(info);
@@ -448,7 +452,7 @@ namespace Xunit
             return path;
         }
 
-        IEnumerable<Interop.DTE> GetAllDtes()
+        IEnumerable<EnvDTE80.DTE2> GetAllDtes()
         {
             IRunningObjectTable table;
             IEnumMoniker moniker;
@@ -471,7 +475,9 @@ namespace Xunit
                     {
                         object comObject;
                         table.GetObject(rgelt[0], out comObject);
-                        yield return (Interop.DTE)comObject;
+#pragma warning disable VSTHRD010 // Invoke single-threaded types on Main thread
+                        yield return (EnvDTE80.DTE2)comObject;
+#pragma warning restore VSTHRD010 // Invoke single-threaded types on Main thread
                     }
                 }
             }

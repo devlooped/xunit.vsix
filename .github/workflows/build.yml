@@ -55,13 +55,7 @@ jobs:
 
       - name: 🛠 vs
         run: | 
-          # Forces a reset and exits
-          devenv /NoSplash /ResetSettings General /Command "File.Exit"
-          wait-process -name 'devenv'
-
-      - name: 🛠 vs exp
-        run: | 
-          # Same for the experimental instance, open C# file to force MEF init
+          # Force a reset and MEF init
           devenv .\src\Xunit.Vsix\Constants.cs /RootSuffix Exp /NoSplash /ResetSettings General /Command "File.Exit"
           wait-process -name 'devenv'        
         

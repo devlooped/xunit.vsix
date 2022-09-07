@@ -1,5 +1,19 @@
 # Changelog
 
+## [v0.9.0](https://github.com/devlooped/xunit.vsix/tree/v0.9.0) (2022-09-07)
+
+[Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.8.0...v0.9.0)
+
+:sparkles: Implemented enhancements:
+
+- While debugging a test, timeouts should be disabled [\#57](https://github.com/devlooped/xunit.vsix/issues/57)
+- Automatically attach debugger to VS if test is being debugged [\#55](https://github.com/devlooped/xunit.vsix/issues/55)
+
+:twisted_rightwards_arrows: Merged:
+
+- While debugging a test, timeouts should be disabled [\#58](https://github.com/devlooped/xunit.vsix/pull/58) (@kzu)
+- Automatically attach debugger to VS if test is being debugged [\#56](https://github.com/devlooped/xunit.vsix/pull/56) (@kzu)
+
 ## [v0.8.0](https://github.com/devlooped/xunit.vsix/tree/v0.8.0) (2022-08-30)
 
 [Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.7.0...v0.8.0)

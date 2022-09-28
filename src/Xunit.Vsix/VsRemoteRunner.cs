@@ -104,7 +104,15 @@ namespace Xunit
 
                     _ = t.Task.ContinueWith(_ => ev.Set(), TaskScheduler.Default);
 
-                    ev.Wait(RunContext.DisableTimeout ? Timeout.Infinite : testCase.TimeoutSeconds * 1000);
+                    if (!ev.Wait(RunContext.DisableTimeout ? Timeout.Infinite : testCase.TimeoutSeconds * 1000))
+                    {
+                        return new VsixRunSummary
+                        {
+                            Failed = 1,
+                            Total = 1,
+                            Exception = new TimeoutException($"Test case {testCase.DisplayName} timed out after {testCase.TimeoutSeconds} seconds")
+                        };
+                    }
 
 #pragma warning disable VSTHRD002 // We're not waiting synchronously here, we have already done that above with the MRE
                     return t.Task.Result;
@@ -115,6 +123,7 @@ namespace Xunit
             {
                 return new VsixRunSummary
                 {
+                    Total = 1,
                     Failed = 1,
                     Exception = aex.Flatten().InnerException
                 };

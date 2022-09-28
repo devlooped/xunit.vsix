@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.9.1](https://github.com/devlooped/xunit.vsix/tree/v0.9.1) (2022-09-28)
+
+[Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.9.0...v0.9.1)
+
+:twisted_rightwards_arrows: Merged:
+
+- Return failure when wait doesn't succeed [\#63](https://github.com/devlooped/xunit.vsix/pull/63) (@kzu)
+
 ## [v0.9.0](https://github.com/devlooped/xunit.vsix/tree/v0.9.0) (2022-09-07)
 
 [Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.8.0...v0.9.0)

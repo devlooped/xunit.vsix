@@ -6,7 +6,7 @@
     <RootNamespace>Xunit</RootNamespace>
     <WarningsAsErrors>NU1605;NU1603</WarningsAsErrors>
     <PackContent>true</PackContent>
-    <Nullable>disable</Nullable>
+    <Nullable>annotations</Nullable>
     <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 

@@ -64,6 +64,13 @@ namespace Xunit
                 // Ensure MEF too
                 await ServiceProvider.GetGlobalServiceAsync<SComponentModel, IComponentModel>();
 
+                // Make sure SVsExtensionManager loads before trying to execute any tests
+                // https://github.com/dotnet/roslyn/blob/5f135a0ff/src/VisualStudio/IntegrationTest/TestUtilities/InProcess/InProcComponent.cs#L37
+                var major = Process.GetCurrentProcess().MainModule.FileVersionInfo.ProductMajorPart;
+                var assembly = Assembly.Load($"Microsoft.VisualStudio.ExtensionManager, Version={major}.0.0.0, PublicKeyToken=b03f5f7f11d50a3a");
+                if (assembly.GetType("Microsoft.VisualStudio.ExtensionManager.SVsExtensionManager") is Type type)
+                    await AsyncServiceProvider.GlobalProvider.GetServiceAsync(type);
+
                 ev.Set();
             });
 
@@ -95,29 +102,26 @@ namespace Xunit
 
             try
             {
-                using (var bus = new TestMessageBus(messageBus))
+                using var bus = new TestMessageBus(messageBus);
+                using var ev = new ManualResetEventSlim();
+                var t = _jtf.RunAsync(async () =>
+                    (await runner.RunAsync(testCase, bus, aggregator)).ToVsixRunSummary());
+
+                _ = t.Task.ContinueWith(_ => ev.Set(), TaskScheduler.Default);
+
+                if (!ev.Wait(RunContext.DisableTimeout ? Timeout.Infinite : testCase.TimeoutSeconds * 1000))
                 {
-                    var ev = new ManualResetEventSlim();
-
-                    var t = _jtf.RunAsync(async () =>
-                        (await runner.RunAsync(testCase, bus, aggregator)).ToVsixRunSummary());
-
-                    _ = t.Task.ContinueWith(_ => ev.Set(), TaskScheduler.Default);
-
-                    if (!ev.Wait(RunContext.DisableTimeout ? Timeout.Infinite : testCase.TimeoutSeconds * 1000))
+                    return new VsixRunSummary
                     {
-                        return new VsixRunSummary
-                        {
-                            Failed = 1,
-                            Total = 1,
-                            Exception = new TimeoutException($"Test case {testCase.DisplayName} timed out after {testCase.TimeoutSeconds} seconds")
-                        };
-                    }
+                        Failed = 1,
+                        Total = 1,
+                        Exception = new TimeoutException($"Test case {testCase.DisplayName} timed out after {testCase.TimeoutSeconds} seconds")
+                    };
+                }
 
 #pragma warning disable VSTHRD002 // We're not waiting synchronously here, we have already done that above with the MRE
-                    return t.Task.Result;
+                return t.Task.Result;
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
-                }
             }
             catch (AggregateException aex)
             {

@@ -151,7 +151,11 @@ namespace Xunit
                 using (var assemblyRunner = new VsixTestAssemblyRunner(TestAssembly, testCases, DiagnosticMessageSink, new TracingMessageSink(executionMessageSink, Constants.Tracer), executionOptions))
                     await assemblyRunner.RunAsync();
 
-                s_tracer.Flush();
+                try
+                {
+                    s_tracer.Flush();
+                }
+                catch { }
             }
         }
 

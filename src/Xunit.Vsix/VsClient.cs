@@ -323,7 +323,7 @@ namespace Xunit
 
             if (!dteFound)
             {
-                s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToStart(_visualStudioVersion, _rootSuffix));
+                s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToLocateDTE(_visualStudioVersion, _rootSuffix, _settings.StartupTimeoutSeconds));
                 return false;
             }
 

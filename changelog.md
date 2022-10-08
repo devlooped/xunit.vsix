@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.9.2](https://github.com/devlooped/xunit.vsix/tree/v0.9.2) (2022-10-08)
+
+[Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.9.1...v0.9.2)
+
+:twisted_rightwards_arrows: Merged:
+
+- Emulate Roslyn's ensuring of extension manager loading [\#64](https://github.com/devlooped/xunit.vsix/pull/64) (@kzu)
+
 ## [v0.9.1](https://github.com/devlooped/xunit.vsix/tree/v0.9.1) (2022-09-28)
 
 [Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.9.0...v0.9.1)

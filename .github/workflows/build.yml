@@ -21,7 +21,120 @@ env:
   Configuration: Release
 
 jobs:
+  init:
+    runs-on: windows-latest
+    steps:
+      - name: 🤘 checkout
+        uses: actions/checkout@v2
+
+      - name: 🛠 dotnet-vs
+        id: vs
+        uses: ./.github/actions/dotnet-vs
+  
+      - name: 📦 vs config cache
+        id: vs-cache
+        uses: actions/cache@v3
+        with:
+          key: vs-init-${{ steps.vs.outputs.version }}
+          path: ${{ steps.vs.outputs.config }}
+
+      - name: 🛠 init vs
+        if: ${{ steps.vs-cache.outputs.cache-hit != 'true' }}
+        timeout-minutes: 30
+        run: | 
+          # Force MEF init
+          echo "//" > dummy.cs
+          cat dummy.cs
+
+          $original = if (test-path '${{ steps.vs.outputs.config }}\privateregistry.bin') { 
+            gci '${{ steps.vs.outputs.config }}\privateregistry.bin' | select -ExpandProperty LastWriteTime 
+          } else { 
+            get-date
+          }
+
+          echo "Running devenv..."
+          devenv dummy.cs /NoSplash /ResetSettings General /Command "File.Exit"
+          echo "Waiting for devenv to exit..."
+          wait-process -name devenv
+          
+          pushd ${{ steps.vs.outputs.config }}
+          while (!(test-path .\privateregistry.bin)) {
+            echo "::warning::Waiting for privateregistry.bin to be created..."
+            sleep 5
+          }
+          
+          echo "Begin wait for privateregistry.bin to be released..."          
+          sleep 5
+          
+          while ($true) {
+            $updated = gci .\privateregistry.bin | select -ExpandProperty LastWriteTime
+            $seconds = ([datetime]::now - $updated).TotalSeconds
+            echo "::debug::privateregistry.bin modified $seconds seconds ago"
+            if ($updated -gt $original -and $seconds -gt 30) {
+              echo "File changed at least 30 seconds ago. Exiting."
+              return              
+            }
+            sleep 5
+          }
+
+  init-exp:
+    runs-on: windows-latest
+    steps:
+      - name: 🤘 checkout
+        uses: actions/checkout@v2
+
+      - name: 🛠 dotnet-vs
+        id: vs
+        uses: ./.github/actions/dotnet-vs
+  
+      - name: 📦 vs exp config cache
+        id: vs-cache-exp
+        uses: actions/cache@v3
+        with:
+          key: vs-init-exp-${{ steps.vs.outputs.version }}
+          path: ${{ steps.vs.outputs.config }}Exp
+
+      - name: 🛠 init vs exp
+        if: ${{ steps.vs-cache-exp.outputs.cache-hit != 'true' }}
+        timeout-minutes: 30
+        run: | 
+          # Force MEF init
+          echo "//" > dummy.cs
+          cat dummy.cs
+
+          $original = if (test-path '${{ steps.vs.outputs.config }}Exp\privateregistry.bin') { 
+            gci '${{ steps.vs.outputs.config }}Exp\privateregistry.bin' | select -ExpandProperty LastWriteTime 
+          } else { 
+            get-date
+          }
+
+          echo "Running devenv..."
+          devenv dummy.cs /NoSplash /RootSuffix Exp /ResetSettings General /Command "File.Exit"
+          echo "Waiting for devenv to exit..."
+          wait-process -name devenv
+          
+          pushd ${{ steps.vs.outputs.config }}Exp
+          while (!(test-path .\privateregistry.bin)) {
+            echo "::warning::Waiting for privateregistry.bin to be created..."
+            sleep 5
+          }
+          
+          echo "Begin wait for privateregistry.bin to be released..."          
+          sleep 5
+          
+          while ($true) {
+            $updated = gci .\privateregistry.bin | select -ExpandProperty LastWriteTime
+            $seconds = ([datetime]::now - $updated).TotalSeconds
+            echo "::debug::privateregistry.bin modified $seconds seconds ago"
+            if ($updated -gt $original -and $seconds -gt 30) {
+              echo "File changed at least 30 seconds ago. Exiting."
+              return              
+            }
+            sleep 5
+          }
+          
   build:
+    needs: [ init, init-exp ]
     runs-on: windows-latest
     steps:
       - name: 🤘 checkout
@@ -30,13 +143,28 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: ≥ msbuild
-        id: msbuild
-        uses: microsoft/setup-msbuild@v1.1
+      - name: 🛠 dotnet-vs
+        id: vs
+        uses: ./.github/actions/dotnet-vs
 
-      - name: ≥ defaults
-        run: echo $((gi '${{ steps.msbuild.outputs.msbuildPath }}\..\..\..\Common7\IDE').FullName.TrimEnd('\')) >> $env:GITHUB_PATH
+      - name: 🔽 restore vs init
+        id: vs-cache
+        uses: actions/cache@v3
+        with:
+          key: vs-init-${{ steps.vs.outputs.version }}
+          path: ${{ steps.vs.outputs.config }}
 
+      - name: 🔽 restore vs exp init
+        id: vs-cache-exp
+        uses: actions/cache@v3
+        with:
+          key: vs-init-exp-${{ steps.vs.outputs.version }}
+          path: ${{ steps.vs.outputs.config }}Exp
+
+      - name: 🛑 cache miss
+        if: ${{ steps.vs-cache.outputs.cache-hit != 'true' || steps.vs-cache-exp.outputs.cache-hit != 'true' }}
+        run: throw "Cached VS config not found from init job"
+          
       - name: ≥ version
         if: github.event_name == 'release'
         shell: bash
@@ -52,16 +180,10 @@ jobs:
       - name: 📦 pack
         if: always()
         run: dotnet pack --no-build -m:1
-
-      - name: 🛠 vs
-        run: | 
-          # Force a reset and MEF init
-          devenv .\src\Xunit.Vsix\Constants.cs /RootSuffix Exp /NoSplash /ResetSettings General /Command "File.Exit"
-          wait-process -name 'devenv'        
         
       - name: 🧪 test
         timeout-minutes: 10
-        uses: ./.github/workflows/test
+        uses: ./.github/actions/test
 
       - name: 📦 artifact
         uses: actions/upload-artifact@v3

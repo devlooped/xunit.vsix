@@ -1,0 +1,62 @@
+﻿name: dotnet-vs
+description: installs dotnet-vs
+
+inputs:
+  sku:
+    description: Optional SKU/channel of VS to use for defaults, such as 'rel', 'pre' or 'com'
+    required: false
+    default: 'rel'
+  tool-version:
+    description: Version of dotnet-vs to install
+    required: false
+    default: '1.2.0'
+outputs:
+  config:
+    description: Configuration folder for VS
+    value: ${{ steps.defaults.outputs.config }}
+  id:
+    description: Identifier of installed VS
+    value: ${{ steps.defaults.outputs.id }}
+  path:
+    description: VS installation path
+    value: ${{ steps.defaults.outputs.path }}
+  version:
+    description: Installed version of VS
+    value: ${{ steps.defaults.outputs.version }}
+
+runs:
+  using: "composite"
+  steps:
+      - name: 📦 dotnet-tools cache
+        id: tools
+        uses: actions/cache@v3
+        with:
+          key: dotnet-tools-${{ inputs.tool-version }}
+          path: ~/.dotnet/tools
+            
+      - name: 🛠 dotnet-vs
+        if: ${{ steps.tools.outputs.cache-hit != 'true' }}
+        shell: pwsh
+        run: dotnet tool update -g dotnet-vs --version ${{ inputs.tool-version }}
+
+      - name: ≥ defaults
+        id: defaults
+        shell: pwsh
+        run: |
+          $vsdir = vs where ${{ inputs.sku }} --prop=InstallationPath
+          $vsversion = vs where ${{ inputs.sku }} --prop=InstallationVersion
+          $vsid = (vs where ${{ inputs.sku }} --prop=InstanceId)
+          if (!$vsversion -or !$vsid) {
+            throw 'Could not find installed VS (${{ inputs.sku }}) version or Id'
+          }
+          
+          $vsconfig = "$env:LocalAppData\Microsoft\VisualStudio\$($vsversion.substring(0, 2)).0_$vsid".replace('\', '/')
+          
+          echo "VSInstallDir=$vsdir" >> $env:GITHUB_ENV
+          echo "DevEnvDir=$vsdir\Common7\IDE" >> $env:GITHUB_ENV
+          echo "$vsdir\Common7\IDE" >> $env:GITHUB_PATH
+          echo "$vsdir\MSBuild\Current\Bin" >> $env:GITHUB_PATH
+          echo "::set-output name=config::$vsconfig"
+          echo "::set-output name=id::$vsid"
+          echo "::set-output name=path::$vsdir"
+          echo "::set-output name=version::$vsversion"

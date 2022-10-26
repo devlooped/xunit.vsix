@@ -1,0 +1,71 @@
+﻿name: test
+description: runs dotnet tests with retry
+
+inputs:
+  filter:
+    description: Optional initial filter for the test run
+    required: false
+  retries:
+    description: Retry count, defaults to 5
+    required: false
+    default: '5'
+  blame-hang-timeout:
+    description: |
+      Per-test timeout, after which a hang dump is triggered and the test host 
+      process and all of its child processes are dumped and terminated. 
+    required: false
+    default: '3m'
+  working-directory:
+    description: Working directory for the test run
+    required: false
+    default: '.'
+
+runs:
+  using: "composite"
+  steps:
+    - name: 🧪 test
+      shell: bash --noprofile --norc {0}
+      env:
+        LC_ALL: en_US.utf8
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        [ -f .bash_profile ] && source .bash_profile
+        filter="${{ inputs.filter }}"
+        counter=0
+        exitcode=0
+        reset="\e[0m"
+        warn="\e[0;33m"
+        while [ $counter -le ${{ inputs.retries }} ]
+        do
+            # run test and forward output also to a file in addition to stdout (tee command)
+            if [ $filter ]
+            then
+                if [ $counter -gt 0 ]
+                then
+                  echo -e "${warn}Retry $counter for $filter ${reset}"
+                fi
+
+                dotnet test --no-build --blame-hang-timeout ${{ inputs.blame-hang-timeout }} --filter="$filter" | tee ./output.log
+            else
+                dotnet test --no-build --blame-hang-timeout ${{ inputs.blame-hang-timeout }} | tee ./output.log
+            fi
+            # capture dotnet test exit status, different from tee
+            exitcode=${PIPESTATUS[0]}
+            if [ $exitcode == 0 ]
+            then
+                exit 0
+            fi
+
+            # cat output, get failed test names, remove trailing whitespace, sort+dedupe, join as FQN~TEST with |, remove trailing |.
+            filter=$(cat ./output.log | grep -o -P '(?<=\sFailed\s)[\w\._]*' | sed 's/ *$//g' | sort -u | awk 'BEGIN { ORS="|" } { print("FullyQualifiedName~" $0) }' | grep -o -P '.*(?=\|$)')
+            
+            # if $filtered was not empty, concatenate to $filter
+            if [ "${{ inputs.filter }}" ]
+            then
+                filter="${{ inputs.filter }} & ($filter)"
+            fi
+            
+            ((counter++))
+            taskkill.exe -IM devenv.exe && echo "Cleaned up devenv" || echo "No devenv to kill"
+        done
+        exit $exitcode

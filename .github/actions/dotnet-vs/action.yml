@@ -56,7 +56,8 @@ runs:
           echo "DevEnvDir=$vsdir\Common7\IDE" >> $env:GITHUB_ENV
           echo "$vsdir\Common7\IDE" >> $env:GITHUB_PATH
           echo "$vsdir\MSBuild\Current\Bin" >> $env:GITHUB_PATH
-          echo "::set-output name=config::$vsconfig"
-          echo "::set-output name=id::$vsid"
-          echo "::set-output name=path::$vsdir"
-          echo "::set-output name=version::$vsversion"
+          
+          echo "config=$vsconfig" >> $env:GITHUB_OUTPUT
+          echo "id=$vsid" >> $env:GITHUB_OUTPUT
+          echo "path=$vsdir" >> $env:GITHUB_OUTPUT
+          echo "version=$vsversion" >> $env:GITHUB_OUTPUT

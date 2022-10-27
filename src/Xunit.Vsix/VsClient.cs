@@ -310,6 +310,7 @@ namespace Xunit
             info.RedirectStandardInput = true;
             info.RedirectStandardError = true;
 
+            s_tracer.TraceEvent(TraceEventType.Information, 0, $"Running: {info.FileName} {info.Arguments}");
             Process = Process.Start(info);
 
             // Wait a bit for warmup, before injecting into the .NET runtime in the VS process.

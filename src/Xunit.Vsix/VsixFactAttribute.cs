@@ -42,7 +42,7 @@ namespace Xunit
         /// Backwards-compatible property.
         /// </devdoc>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public int TimeoutSeconds 
+        public int TimeoutSeconds
         {
             get => Timeout / 1000;
             set => Timeout = value * 1000;
@@ -52,10 +52,10 @@ namespace Xunit
         /// Timeout (in milliseconds) for the test to complete its run, excluding the
         /// time that it takes to launch VS and set up the test run context.
         /// </summary>
-        public override int Timeout 
-        { 
-            get => base.Timeout; 
-            set => base.Timeout = value; 
+        public override int Timeout
+        {
+            get => base.Timeout;
+            set => base.Timeout = value;
         }
 
         /// <summary>

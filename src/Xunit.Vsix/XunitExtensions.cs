@@ -52,7 +52,7 @@ namespace Xunit
             var timeoutSeconds = testMethod.GetComputedArgument<int?>(vsixAttribute, "TimeoutSeconds");
             var timeout = testMethod.GetComputedArgument<int?>(vsixAttribute, nameof(IVsixAttribute.Timeout)).GetValueOrDefault(
                 (timeoutSeconds ?? DefaultTimeout) * 1000);
-            
+
             var recycle = testMethod.GetComputedArgument<bool?>(vsixAttribute, nameof(IVsixAttribute.RecycleOnFailure));
             var uiThread = testMethod.GetComputedArgument<bool?>(vsixAttribute, nameof(IVsixAttribute.RunOnUIThread));
             var name = testMethod.Method.Name;

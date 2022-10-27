@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace Xunit
 {
@@ -33,7 +34,7 @@ namespace Xunit
             if (visualStudioVersions != null && visualStudioVersions.Length != 0)
                 VisualStudioVersions = visualStudioVersions;
 
-            TimeoutSeconds = -1;
+            Timeout = -1;
         }
 
         /// <summary>
@@ -66,11 +67,25 @@ namespace Xunit
         public bool NewIdeInstance { get; set; }
 
         /// <summary>
-        /// Timeout in seconds for the test to complete its run, excluding the
+        /// Timeout (in milliseconds) for the test to complete its run, excluding the
         /// time that it takes to launch VS and set up the test run context. 
         /// Default is 60 seconds.
         /// </summary>
-        public int TimeoutSeconds { get; set; }
+        public int Timeout { get; set; }
+
+        /// <summary>
+        /// Timeout in seconds for the test to complete its run, excluding the
+        /// time that it takes to launch VS and set up the test run context.
+        /// </summary>
+        /// <devdoc>
+        /// Backwards-compatible property.
+        /// </devdoc>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public int TimeoutSeconds
+        {
+            get => Timeout / 1000;
+            set => Timeout = value * 1000;
+        }
 
         /// <summary>
         /// Whether to retry once in a clean Visual Studio instance a failing

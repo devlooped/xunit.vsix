@@ -83,7 +83,7 @@ namespace Xunit
                 return new[]
                 {
                     new VsixTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod,
-                        versions, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread, dataRow)
+                        versions, vsix.RootSuffix, vsix.NewIdeInstance, vsix.Timeout, vsix.RecycleOnFailure, vsix.RunOnUIThread, dataRow)
                     {
                         SkipReason = $"Cannot execute test because no matching installation was found for Visual Studio version(s) '{versions}'.",
                     }
@@ -91,7 +91,7 @@ namespace Xunit
             }
             else
             {
-                return vsVersions.Select(version => new VsixTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod, version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread, dataRow));
+                return vsVersions.Select(version => new VsixTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod, version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.Timeout, vsix.RecycleOnFailure, vsix.RunOnUIThread, dataRow));
             }
         }
 
@@ -105,7 +105,7 @@ namespace Xunit
                 return new[]
                 {
                     new VsixTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod,
-                        versions, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread)
+                        versions, vsix.RootSuffix, vsix.NewIdeInstance, vsix.Timeout, vsix.RecycleOnFailure, vsix.RunOnUIThread)
                     {
                         SkipReason = $"Cannot execute test because no matching installation was found for Visual Studio version(s) '{versions}'.",
                     }
@@ -115,7 +115,7 @@ namespace Xunit
             {
                 return vsVersions.Select(version =>
                     new VsixTheoryTestCase(_diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod,
-                        version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread));
+                        version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.Timeout, vsix.RecycleOnFailure, vsix.RunOnUIThread));
             }
         }
     }

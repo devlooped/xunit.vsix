@@ -41,7 +41,7 @@ namespace Xunit
                     testCases.Add(new VsixTestCase(
                         _messageSink, defaultMethodDisplay, testMethod,
                         string.Join(", ", testMethod.GetComputedProperty<string[]>(factAttribute, nameof(IVsixAttribute.VisualStudioVersions))),
-                        vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread)
+                        vsix.RootSuffix, vsix.NewIdeInstance, vsix.Timeout, vsix.RecycleOnFailure, vsix.RunOnUIThread)
                     {
                         SkipReason = $"Cannot execute test because no matching installation was found for Visual Studio version(s) '{string.Join(",", factAttribute.GetNamedArgument<string[]>(nameof(IVsixAttribute.VisualStudioVersions)))}'.",
                     });
@@ -49,7 +49,7 @@ namespace Xunit
                 else
                 {
                     testCases.AddRange(vsix.VisualStudioVersions
-                        .Select(version => new VsixTestCase(_messageSink, defaultMethodDisplay, testMethod, version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.TimeoutSeconds, vsix.RecycleOnFailure, vsix.RunOnUIThread)));
+                        .Select(version => new VsixTestCase(_messageSink, defaultMethodDisplay, testMethod, version, vsix.RootSuffix, vsix.NewIdeInstance, vsix.Timeout, vsix.RecycleOnFailure, vsix.RunOnUIThread)));
                 }
 
                 return testCases;

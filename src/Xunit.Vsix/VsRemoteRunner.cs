@@ -109,13 +109,13 @@ namespace Xunit
 
                 _ = t.Task.ContinueWith(_ => ev.Set(), TaskScheduler.Default);
 
-                if (!ev.Wait(RunContext.DisableTimeout ? Timeout.Infinite : testCase.TimeoutSeconds * 1000))
+                if (!ev.Wait(RunContext.DisableTimeout ? Timeout.Infinite : testCase.Timeout))
                 {
                     return new VsixRunSummary
                     {
                         Failed = 1,
                         Total = 1,
-                        Exception = new TimeoutException($"Test case {testCase.DisplayName} timed out after {testCase.TimeoutSeconds} seconds")
+                        Exception = new TimeoutException($"Test case {testCase.DisplayName} timed out after {testCase.Timeout / 1000} seconds")
                     };
                 }
 
@@ -263,7 +263,7 @@ namespace Xunit
                 var vsixTest = testCases.OfType<VsixTestCase>().Single();
                 var cancellation = RunContext.DisableTimeout ?
                     new CancellationTokenSource() :
-                    new CancellationTokenSource(TimeSpan.FromSeconds(vsixTest.TimeoutSeconds));
+                    new CancellationTokenSource(TimeSpan.FromMilliseconds(vsixTest.Timeout));
 
                 try
                 {
@@ -291,7 +291,7 @@ namespace Xunit
                            constructorArguments,
                            testCases.Single().TestMethodArguments,
                            MessageBus,
-                           Aggregator, new CancellationTokenSource()).RunAsync();
+                           Aggregator, cancellation).RunAsync();
                 }
                 finally
                 {

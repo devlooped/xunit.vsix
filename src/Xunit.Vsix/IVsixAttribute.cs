@@ -19,10 +19,10 @@ namespace Xunit
         string RootSuffix { get; }
 
         /// <summary>
-        /// Timeout in seconds for the test to complete its run, excluding the
+        /// Timeout (in milliseconds) for the test to complete its run, excluding the
         /// time that it takes to launch VS and set up the test run context.
         /// </summary>
-        int TimeoutSeconds { get; }
+        int Timeout { get; }
 
         /// <summary>
         /// Specific versions of Visual Studio to run the given test in. See

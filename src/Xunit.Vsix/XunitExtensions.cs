@@ -47,10 +47,14 @@ namespace Xunit
                 suffix = "";
 
             var newInstance = testMethod.GetComputedArgument<bool?>(vsixAttribute, nameof(IVsixAttribute.NewIdeInstance));
-            var timeout = testMethod.GetComputedArgument<int?>(vsixAttribute, nameof(IVsixAttribute.TimeoutSeconds)).GetValueOrDefault(DefaultTimeout);
+
+            // Legacy TimeoutSeconds attribute
+            var timeoutSeconds = testMethod.GetComputedArgument<int?>(vsixAttribute, "TimeoutSeconds");
+            var timeout = testMethod.GetComputedArgument<int?>(vsixAttribute, nameof(IVsixAttribute.Timeout)).GetValueOrDefault(
+                (timeoutSeconds ?? DefaultTimeout) * 1000);
+            
             var recycle = testMethod.GetComputedArgument<bool?>(vsixAttribute, nameof(IVsixAttribute.RecycleOnFailure));
             var uiThread = testMethod.GetComputedArgument<bool?>(vsixAttribute, nameof(IVsixAttribute.RunOnUIThread));
-
             var name = testMethod.Method.Name;
 
             return new VsixAttribute(finalVersions)
@@ -59,7 +63,7 @@ namespace Xunit
                 MaximumVisualStudioVersion = maxVersion,
                 RootSuffix = suffix,
                 NewIdeInstance = newInstance.GetValueOrDefault(),
-                TimeoutSeconds = timeout,
+                Timeout = timeout,
                 RecycleOnFailure = recycle.GetValueOrDefault(),
                 RunOnUIThread = uiThread.GetValueOrDefault()
             };

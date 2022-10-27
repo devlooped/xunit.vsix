@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using Xunit.Sdk;
 
 namespace Xunit
@@ -30,7 +31,31 @@ namespace Xunit
         public VsixFactAttribute(params string[] visualStudioVersions)
         {
             VisualStudioVersions = visualStudioVersions;
-            TimeoutSeconds = -1;
+            Timeout = 1000;
+        }
+
+        /// <summary>
+        /// Timeout in seconds for the test to complete its run, excluding the
+        /// time that it takes to launch VS and set up the test run context.
+        /// </summary>
+        /// <devdoc>
+        /// Backwards-compatible property.
+        /// </devdoc>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public int TimeoutSeconds 
+        {
+            get => Timeout / 1000;
+            set => Timeout = value * 1000;
+        }
+
+        /// <summary>
+        /// Timeout (in milliseconds) for the test to complete its run, excluding the
+        /// time that it takes to launch VS and set up the test run context.
+        /// </summary>
+        public override int Timeout 
+        { 
+            get => base.Timeout; 
+            set => base.Timeout = value; 
         }
 
         /// <summary>
@@ -63,12 +88,6 @@ namespace Xunit
         /// test run.
         /// </summary>
         public bool NewIdeInstance { get; set; }
-
-        /// <summary>
-        /// Timeout in seconds for the test to complete its run, excluding the
-        /// time that it takes to launch VS and set up the test run context.
-        /// </summary>
-        public int TimeoutSeconds { get; set; }
 
         /// <summary>
         /// Whether to retry once in a clean Visual Studio instance a failing

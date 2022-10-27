@@ -130,10 +130,10 @@
     <value>Failed to connect to remote runner on Visual Studio {0}{1}</value>
   </data>
   <data name="VsClient_FailedToInject" xml:space="preserve">
-    <value>Failed to inject target process {0}</value>
+    <value>Failed to inject target process {0}.</value>
   </data>
   <data name="VsClient_FailedToStart" xml:space="preserve">
-    <value>Failed to start Visual Studio {0}{1}</value>
+    <value>Failed to start Visual Studio {0}{1}. See {2} for screenshot of the desktop.</value>
   </data>
   <data name="VsClient_RetryAttach" xml:space="preserve">
     <value>Failed to attach debugger. Attempt {0} of {1}</value>
@@ -170,5 +170,8 @@
   </data>
   <data name="VsClient_FailedToLocateDTE" xml:space="preserve">
     <value>Failed to locate running DTE for Visual Studio {0}{1} within {2} seconds.</value>
+  </data>
+  <data name="Screenshot" xml:space="preserve">
+    <value>Screenshot generated at {1}.</value>
   </data>
 </root>

@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -11,6 +13,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Microsoft.VisualStudio.Threading;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -147,7 +150,7 @@ namespace Xunit
                     ex = new Exception("Connection to running IDE lost: " + rex.Message, ex);
 
                 if (ex is TimeoutException tex)
-                    ex = new Exception($"Test execution did not finish within the expected {testCase.Timeout / 1000} seconds", ex);
+                    ex = new Exception($"Test execution did not finish within the expected {testCase.Timeout / 1000} seconds. See {Screenshot.Capture()} for a screenshot of the desktop.", ex);
 
                 aggregator.Add(ex);
                 messageBus.QueueMessage(new TestFailed(xunitTest, 0, ex.Message, ex));
@@ -196,11 +199,12 @@ namespace Xunit
                 }
 
                 Thread.Sleep(sleep);
-                sleep = sleep * retries;
+                sleep *= retries;
             }
 
             if (!connected)
             {
+                s_tracer.TraceEvent(TraceEventType.Warning, 0, Strings.Screenshot(Screenshot.Capture()));
                 Stop();
                 var message = Strings.VsClient.FailedToConnect(testCase.VisualStudioVersion, testCase.RootSuffix);
                 messageBus.QueueMessage(new TestFailed(new XunitTest(testCase, testCase.DisplayName), 0, message, new InvalidOperationException(message)));
@@ -235,10 +239,11 @@ namespace Xunit
                 {
                     Stop();
 
-                    s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToStart(_visualStudioVersion, _rootSuffix));
+                    var screenshot = Screenshot.Capture();
+                    s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToStart(_visualStudioVersion, _rootSuffix, screenshot));
                     messageBus.QueueMessage(new TestFailed(new XunitTest(testCase, testCase.DisplayName), 0,
-                        Strings.VsClient.FailedToStart(_visualStudioVersion, _rootSuffix),
-                        new TimeoutException(Strings.VsClient.FailedToStart(_visualStudioVersion, _rootSuffix))));
+                        Strings.VsClient.FailedToStart(_visualStudioVersion, _rootSuffix, screenshot),
+                        new TimeoutException(Strings.VsClient.FailedToStart(_visualStudioVersion, _rootSuffix, screenshot))));
 
                     return false;
                 }
@@ -328,6 +333,7 @@ namespace Xunit
             if (!dteFound)
             {
                 s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToLocateDTE(_visualStudioVersion, _rootSuffix, _settings.StartupTimeoutSeconds));
+                s_tracer.TraceEvent(TraceEventType.Warning, 0, Strings.Screenshot(Screenshot.Capture()));
                 return false;
             }
 
@@ -364,6 +370,10 @@ namespace Xunit
                 if (!injector.WaitForExit(_settings.StartupTimeoutSeconds * 1000))
                 {
                     s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id));
+                    s_tracer.TraceEvent(TraceEventType.Warning, 0, Strings.Screenshot(Screenshot.Capture()));
+                    if (!injector.HasExited)
+                        injector.Kill();
+
                     return false;
                 }
 
@@ -414,8 +424,7 @@ namespace Xunit
         {
             try
             {
-                if (_runner != null)
-                    _runner.Dispose();
+                _runner?.Dispose();
             }
             catch { }
 
@@ -493,10 +502,9 @@ namespace Xunit
                     rgelt[0].GetDisplayName(ctx, null, out displayName);
                     if (displayName.Contains("VisualStudio.DTE"))
                     {
-                        object comObject;
-                        table.GetObject(rgelt[0], out comObject);
+                        if (ErrorHandler.Succeeded(table.GetObject(rgelt[0], out var comObject)))
 #pragma warning disable VSTHRD010 // Invoke single-threaded types on Main thread
-                        yield return (EnvDTE80.DTE2)comObject;
+                            yield return (EnvDTE80.DTE2)comObject;
 #pragma warning restore VSTHRD010 // Invoke single-threaded types on Main thread
                     }
                 }
@@ -505,12 +513,9 @@ namespace Xunit
 
         class TraceOutputMessageBus : LongLivedMarshalByRefObject, IMessageBus
         {
-            IMessageBus _innerBus;
+            readonly IMessageBus _innerBus;
 
-            public TraceOutputMessageBus(IMessageBus innerBus)
-            {
-                _innerBus = innerBus;
-            }
+            public TraceOutputMessageBus(IMessageBus innerBus) => _innerBus = innerBus;
 
             public void Dispose()
             {

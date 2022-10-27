@@ -193,6 +193,7 @@ jobs:
           path: |
             ./**/*.dmp
             ./**/*.log
+            ./**/*.jpg
 
       - name: 🚀 sleet
         env:

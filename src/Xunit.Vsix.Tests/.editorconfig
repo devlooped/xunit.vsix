@@ -10,3 +10,6 @@ dotnet_diagnostic.VSTHRD200.severity = none
 
 # Default severity for analyzer diagnostics with category 'Usage'
 dotnet_analyzer_diagnostic.category-Usage.severity = none
+
+# IDE1006: Naming Styles
+dotnet_diagnostic.IDE1006.severity = none

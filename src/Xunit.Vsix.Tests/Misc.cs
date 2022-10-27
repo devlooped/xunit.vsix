@@ -54,14 +54,14 @@ public class Misc
     }
 
     [VsixFact(RunOnUIThread = true)]
-    public async System.Threading.Tasks.Task when_requesting_ui_thread_then_runs_on_UI_thread()
+    public async Task when_requesting_ui_thread_then_runs_on_UI_thread()
     {
         var currentThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
 
         Assert.Equal(currentThreadId, Application.Current.Dispatcher.Thread.ManagedThreadId);
     }
 
-    [VsixFact(RunOnUIThread = true)]
+    [VsixFact]
     public async Task when_reopenening_solution_then_hierarchy_item_is_same()
     {
         var dte = await ServiceProvider.GetGlobalServiceAsync<SDTE, DTE>();
@@ -72,7 +72,9 @@ public class Misc
         var manager = components.GetService<IVsHierarchyItemManager>();
 
         var solutionEmptyItem = manager.GetHierarchyItem(solutionEmpty as IVsHierarchy, (uint)VSConstants.VSITEMID.Root);
+        // Simulate non-UI thread work
         await TaskScheduler.Default;
+        await Task.Delay(200);
 
         Assert.NotNull(solutionEmptyItem);
 
@@ -80,14 +82,13 @@ public class Misc
 
         var solution1 = await ServiceProvider.GetGlobalServiceAsync<SVsSolution, IVsSolution>();
 
+        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
         var solution1Item = manager.GetHierarchyItem(solution1 as IVsHierarchy, (uint)VSConstants.VSITEMID.Root);
 
         dte.Solution.Close();
-
         dte.Solution.Open(Path.Combine(BaseDir, "Content", "Blank.sln"));
 
         var solution2 = await ServiceProvider.GetGlobalServiceAsync<SVsSolution, IVsSolution>();
-        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
         var solution2Item = manager.GetHierarchyItem(solution2 as IVsHierarchy, (uint)VSConstants.VSITEMID.Root);
 
         Assert.NotNull(solution1Item);

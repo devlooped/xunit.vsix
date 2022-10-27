@@ -2,4 +2,4 @@
 using Xunit;
 
 [assembly: VsixRunner(WarmupMilliseconds = 10000, TraceLevel = SourceLevels.Information)]
-[assembly: Vsix(TimeoutSeconds = 90)]
+[assembly: Vsix(TimeoutSeconds = 60)]

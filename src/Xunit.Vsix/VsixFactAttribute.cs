@@ -31,7 +31,7 @@ namespace Xunit
         public VsixFactAttribute(params string[] visualStudioVersions)
         {
             VisualStudioVersions = visualStudioVersions;
-            Timeout = 1000;
+            Timeout = VsixAttribute.DefaultTimeout;
         }
 
         /// <summary>

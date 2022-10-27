@@ -28,7 +28,7 @@ namespace Xunit
         /// This is an internal method, and is not intended to be called from end-user code.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static bool Start()
+        public static int Start(string _)
         {
             if (RunContext.DebugFramework || RunContext.DebugTests)
                 Debugger.Launch();
@@ -45,12 +45,12 @@ namespace Xunit
                 s_runner.Start();
 
                 s_tracer.TraceInformation(Strings.VsStartup.Started);
-                return true;
+                return 0;
             }
             catch (Exception ex)
             {
                 s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsStartup.Failed + Environment.NewLine + ex.ToString());
-                return false;
+                return -1;
             }
         }
 

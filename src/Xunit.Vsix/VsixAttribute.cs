@@ -11,6 +11,11 @@ namespace Xunit
     public class VsixAttribute : Attribute, IVsixAttribute
     {
         /// <summary>
+        /// Default timeout for tests unless specified, equals 30 seconds.
+        /// </summary>
+        public const int DefaultTimeout = 30000;
+
+        /// <summary>
         /// Sets default values for properties other than the VS version.
         /// </summary>
         public VsixAttribute()
@@ -34,7 +39,7 @@ namespace Xunit
             if (visualStudioVersions != null && visualStudioVersions.Length != 0)
                 VisualStudioVersions = visualStudioVersions;
 
-            Timeout = -1;
+            Timeout = DefaultTimeout;
         }
 
         /// <summary>

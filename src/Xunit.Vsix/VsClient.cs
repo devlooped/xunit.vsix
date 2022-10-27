@@ -130,7 +130,7 @@ namespace Xunit
 
                 var task = Task.Run(() => _runner.Run(testCase, outputBus));
                 if (!RunContext.DisableTimeout)
-                    task = task.WithTimeout(TimeSpan.FromSeconds(testCase.TimeoutSeconds));
+                    task = task.WithTimeout(TimeSpan.FromMilliseconds(testCase.Timeout));
 
                 var summary = await task;
                 if (summary.Exception != null)
@@ -145,6 +145,9 @@ namespace Xunit
 
                 if (ex is RemotingException rex)
                     ex = new Exception("Connection to running IDE lost: " + rex.Message, ex);
+
+                if (ex is TimeoutException tex)
+                    ex = new Exception($"Test execution did not finish within the expected {testCase.Timeout / 1000} seconds", ex);
 
                 aggregator.Add(ex);
                 messageBus.QueueMessage(new TestFailed(xunitTest, 0, ex.Message, ex));

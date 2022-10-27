@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using EnvDTE;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -14,14 +15,16 @@ namespace Xunit
 
         [Obsolete]
         public VsixTestCase(IMessageSink messageSink, TestMethodDisplay defaultMethodDisplay, ITestMethod testMethod,
-            string vsVersion, string rootSuffix, bool? newIdeInstance, int timeoutSeconds, bool? recycleOnFailure, bool? runOnUIThread, object[] testMethodArguments = null)
+            string vsVersion, string rootSuffix, bool? newIdeInstance, int timeout, bool? recycleOnFailure, bool? runOnUIThread, object[] testMethodArguments = null)
             : base(messageSink, defaultMethodDisplay, testMethod, testMethodArguments)
         {
             VisualStudioVersion = vsVersion;
             RootSuffix = rootSuffix;
             NewIdeInstance = newIdeInstance;
-            TimeoutSeconds = timeoutSeconds;
+            Timeout = timeout;
             RecycleOnFailure = recycleOnFailure;
+
+            var name = testMethod.Method.Name;
             RunOnUIThread = runOnUIThread;
         }
 
@@ -30,8 +33,6 @@ namespace Xunit
         public string RootSuffix { get; private set; }
 
         public bool? NewIdeInstance { get; private set; }
-
-        public int TimeoutSeconds { get; private set; }
 
         public bool? RecycleOnFailure { get; private set; }
 
@@ -69,7 +70,6 @@ namespace Xunit
             data.AddValue("VisualStudioVersion", VisualStudioVersion);
             data.AddValue(nameof(IVsixAttribute.RootSuffix), RootSuffix);
             data.AddValue(nameof(IVsixAttribute.NewIdeInstance), NewIdeInstance);
-            data.AddValue(nameof(IVsixAttribute.TimeoutSeconds), TimeoutSeconds);
             data.AddValue(nameof(IVsixAttribute.RecycleOnFailure), RecycleOnFailure);
             data.AddValue(nameof(IVsixAttribute.RunOnUIThread), RunOnUIThread);
             data.AddValue(nameof(SkipReason), SkipReason, typeof(string));
@@ -82,7 +82,6 @@ namespace Xunit
             VisualStudioVersion = data.GetValue<string>("VisualStudioVersion");
             RootSuffix = data.GetValue<string>(nameof(IVsixAttribute.RootSuffix));
             NewIdeInstance = data.GetValue<bool?>(nameof(IVsixAttribute.NewIdeInstance));
-            TimeoutSeconds = data.GetValue<int>(nameof(IVsixAttribute.TimeoutSeconds));
             RecycleOnFailure = data.GetValue<bool?>(nameof(IVsixAttribute.RecycleOnFailure));
             RunOnUIThread = data.GetValue<bool?>(nameof(IVsixAttribute.RunOnUIThread));
             SkipReason = data.GetValue<string>(nameof(SkipReason));

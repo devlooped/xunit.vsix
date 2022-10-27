@@ -316,21 +316,6 @@ namespace Xunit
             // Wait a bit for warmup, before injecting into the .NET runtime in the VS process.
             Thread.Sleep(_settings.WarmupSeconds * 1000);
 
-            var start = Stopwatch.StartNew();
-            var timeout = _settings.StartupTimeoutSeconds * 1000;
-
-            var version = new Version(_visualStudioVersion);
-            var dteFound = false;
-            // Wait for DTE, but don't retrieve it, since that can cause a hang.
-            while (start.ElapsedMilliseconds < timeout && !(dteFound = RunningObjects.FindDTE(version, Process.Id)))
-                Thread.Sleep(100);
-
-            if (!dteFound)
-            {
-                s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToLocateDTE(_visualStudioVersion, _rootSuffix, _settings.StartupTimeoutSeconds));
-                return false;
-            }
-
             try
             {
                 NativeMethods.IsWow64Process(Process.Handle, out var isWow);
@@ -342,7 +327,7 @@ namespace Xunit
                     return false;
                 }
 
-                var toolPath = Path.Combine(Path.GetDirectoryName(thisFile), "Injector", platform, "Injector.exe");
+                var toolPath = Path.Combine(Path.GetDirectoryName(thisFile), "snoop", $"Snoop.InjectorLauncher.{platform}.exe");
                 if (!File.Exists(toolPath))
                 {
                     s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id) + $": could not find .NET injector helper at {toolPath}.");
@@ -351,10 +336,7 @@ namespace Xunit
 
                 var injector = Process.Start(
                     new ProcessStartInfo(toolPath,
-                        Process.MainWindowHandle + " " +
-                        thisFile + " " +
-                        typeof(VsStartup).FullName + " " +
-                        nameof(VsStartup.Start))
+                        $"-t {Process.Id} -a {thisFile} -c {typeof(VsStartup).FullName} -m {nameof(VsStartup.Start)} -v")
                     {
                         CreateNoWindow = true,
                         WindowStyle = ProcessWindowStyle.Hidden,

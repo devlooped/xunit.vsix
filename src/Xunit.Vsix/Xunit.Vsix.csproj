@@ -27,6 +27,11 @@
     <PackageFile Include="build\*.*" PackFolder="build" />
     <!-- Pack also alongside assembly for easier location at run-time -->
     <PackageFile Include="build\EmptyStartup.vssettings" PackFolder="lib" />
+    <Content Include="$(Pkgsnoop)\tools\**\*.*" 
+             CopyToOutputDirectory="PreserveNewest"
+             Visible="false"
+             Link="snoop\%(RecursiveDir)%(Filename)%(Extension)"
+             PackagePath="tools\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,11 +49,11 @@
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="15.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.3.2180" PrivateAssets="all" />
     <PackageReference Include="ThisAssembly.Strings" Version="1.0.10" PrivateAssets="all" />
-    <PackageReference Include="Devlooped.Injector" Version="1.1.0" />
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.extensibility.execution" Version="2.4.2" />
     <PackageReference Include="NuGet.Versioning" Version="6.3.0" PrivateAssets="all" />
     <PackageReference Include="NuGetizer" Version="0.9.0" PrivateAssets="all" />
+    <PackageReference Include="snoop" Version="4.0.1" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

@@ -14,11 +14,6 @@ namespace Xunit
     /// </summary>
     static class XunitExtensions
     {
-        /// <summary>
-        /// Default timeout is 60 seconds.
-        /// </summary>
-        public const int DefaultTimeout = 60;
-
         public static IVsixAttribute GetVsixAttribute(this ITestMethod testMethod, IAttributeInfo vsixAttribute)
         {
             var vsVersions = testMethod.GetComputedProperty<string[]>(vsixAttribute, nameof(IVsixAttribute.VisualStudioVersions));
@@ -49,9 +44,9 @@ namespace Xunit
             var newInstance = testMethod.GetComputedArgument<bool?>(vsixAttribute, nameof(IVsixAttribute.NewIdeInstance));
 
             // Legacy TimeoutSeconds attribute
-            var timeoutSeconds = testMethod.GetComputedArgument<int?>(vsixAttribute, "TimeoutSeconds");
+            var timeoutSeconds = testMethod.GetComputedArgument<int?>(vsixAttribute, "TimeoutSeconds") * 1000;
             var timeout = testMethod.GetComputedArgument<int?>(vsixAttribute, nameof(IVsixAttribute.Timeout)).GetValueOrDefault(
-                (timeoutSeconds ?? DefaultTimeout) * 1000);
+                timeoutSeconds ?? VsixAttribute.DefaultTimeout);
 
             var recycle = testMethod.GetComputedArgument<bool?>(vsixAttribute, nameof(IVsixAttribute.RecycleOnFailure));
             var uiThread = testMethod.GetComputedArgument<bool?>(vsixAttribute, nameof(IVsixAttribute.RunOnUIThread));

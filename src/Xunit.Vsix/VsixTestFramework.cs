@@ -132,30 +132,34 @@ namespace Xunit
             protected override async void RunTestCases(IEnumerable<IXunitTestCase> testCases, IMessageSink executionMessageSink, ITestFrameworkExecutionOptions executionOptions)
 #pragma warning restore VSTHRD100 // Avoid async void methods
             {
-                SetupTracing(TestAssembly.Assembly);
-
-                // Always run at least with one thread per VS version.
-                if (executionOptions.MaxParallelThreadsOrDefault() < VsVersions.Default.InstalledVersions.Length && !Debugger.IsAttached)
-                {
-                    executionOptions.SetValue("xunit.execution.MaxParallelThreads", VsVersions.Default.InstalledVersions.Length);
-                    Constants.Tracer.TraceEvent(TraceEventType.Verbose, 0, Strings.VsixTestFramework.SettingMaxThreads(VsVersions.Default.InstalledVersions.Length));
-                }
-                // If debugger is attached, don't run multiple instances simultaneously since that makes debugging much harder.
-                if (Debugger.IsAttached)
-                {
-                    executionOptions.SetValue("xunit.execution.MaxParallelThreads", 1);
-                    Constants.Tracer.TraceEvent(TraceEventType.Verbose, 0, Strings.VsixTestFramework.DebugMaxThreads);
-                }
-
-                // This is the implementation of the base XunitTestFrameworkExecutor
-                using (var assemblyRunner = new VsixTestAssemblyRunner(TestAssembly, testCases, DiagnosticMessageSink, new TracingMessageSink(executionMessageSink, Constants.Tracer), executionOptions))
-                    await assemblyRunner.RunAsync();
-
                 try
                 {
-                    s_tracer.Flush();
+                    SetupTracing(TestAssembly.Assembly);
+
+                    // Always run at least with one thread per VS version.
+                    if (executionOptions.MaxParallelThreadsOrDefault() < VsVersions.Default.InstalledVersions.Length && !Debugger.IsAttached)
+                    {
+                        executionOptions.SetValue("xunit.execution.MaxParallelThreads", VsVersions.Default.InstalledVersions.Length);
+                        Constants.Tracer.TraceEvent(TraceEventType.Verbose, 0, Strings.VsixTestFramework.SettingMaxThreads(VsVersions.Default.InstalledVersions.Length));
+                    }
+                    // If debugger is attached, don't run multiple instances simultaneously since that makes debugging much harder.
+                    if (Debugger.IsAttached)
+                    {
+                        executionOptions.SetValue("xunit.execution.MaxParallelThreads", 1);
+                        Constants.Tracer.TraceEvent(TraceEventType.Verbose, 0, Strings.VsixTestFramework.DebugMaxThreads);
+                    }
+
+                    using var assemblyRunner = new VsixTestAssemblyRunner(TestAssembly, testCases, DiagnosticMessageSink, new TracingMessageSink(executionMessageSink, Constants.Tracer), executionOptions);
+                    await assemblyRunner.RunAsync();
                 }
-                catch { }
+                catch
+                {
+                }
+                finally
+                {
+                    foreach (var listener in s_tracer.Listeners.OfType<IDisposable>())
+                        listener.Dispose();
+                }
             }
         }
 

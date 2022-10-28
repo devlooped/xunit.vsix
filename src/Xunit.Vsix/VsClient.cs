@@ -199,12 +199,11 @@ namespace Xunit
                 }
 
                 Thread.Sleep(sleep);
-                sleep *= retries;
+                sleep = sleep * retries;
             }
 
             if (!connected)
             {
-                s_tracer.TraceEvent(TraceEventType.Warning, 0, Strings.Screenshot(Screenshot.Capture()));
                 Stop();
                 var message = Strings.VsClient.FailedToConnect(testCase.VisualStudioVersion, testCase.RootSuffix);
                 messageBus.QueueMessage(new TestFailed(new XunitTest(testCase, testCase.DisplayName), 0, message, new InvalidOperationException(message)));
@@ -335,7 +334,6 @@ namespace Xunit
             if (!dteFound)
             {
                 s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToLocateDTE(_visualStudioVersion, _rootSuffix, _settings.StartupTimeoutSeconds));
-                s_tracer.TraceEvent(TraceEventType.Warning, 0, Strings.Screenshot(Screenshot.Capture()));
                 return false;
             }
 
@@ -374,7 +372,6 @@ namespace Xunit
                 if (!injector.WaitForExit(_settings.StartupTimeoutSeconds * 1000))
                 {
                     s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id));
-                    s_tracer.TraceEvent(TraceEventType.Warning, 0, Strings.Screenshot(Screenshot.Capture()));
                     if (!injector.HasExited)
                         injector.Kill();
 

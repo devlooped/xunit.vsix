@@ -327,14 +327,14 @@ namespace Xunit
                 var thisFile = Assembly.GetExecutingAssembly().Location;
                 if (thisFile.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)))
                 {
-                    s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id) + ": xunit.vsix seems to be running in shadow copy mode, which is not supported.");
+                    s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id, ": xunit.vsix seems to be running in shadow copy mode, which is not supported."));
                     return false;
                 }
 
                 var toolPath = Path.Combine(Path.GetDirectoryName(thisFile), "snoop", $"Snoop.InjectorLauncher.{platform}.exe");
                 if (!File.Exists(toolPath))
                 {
-                    s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id) + $": could not find .NET injector helper at {toolPath}.");
+                    s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id, $": could not find .NET injector helper at {toolPath}."));
                     return false;
                 }
 
@@ -344,12 +344,15 @@ namespace Xunit
                     {
                         CreateNoWindow = true,
                         WindowStyle = ProcessWindowStyle.Hidden,
+                        RedirectStandardOutput = true, 
+                        UseShellExecute = false,
                     });
 
                 // Wait max 10 seconds for the injection to succeed
                 if (!injector.WaitForExit(_settings.StartupTimeoutSeconds * 1000))
                 {
-                    s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id));
+                    var output = injector.StandardOutput.ReadToEnd();
+                    s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id, Environment.NewLine + output));
                     return false;
                 }
 
@@ -373,7 +376,7 @@ namespace Xunit
             }
             catch (Exception ex)
             {
-                s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id) + Environment.NewLine + ex.ToString());
+                s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id, Environment.NewLine + ex.ToString()));
                 return false;
             }
         }

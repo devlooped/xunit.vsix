@@ -130,7 +130,7 @@
     <value>Failed to connect to remote runner on Visual Studio {0}{1}</value>
   </data>
   <data name="VsClient_FailedToInject" xml:space="preserve">
-    <value>Failed to inject target process {0}</value>
+    <value>Failed to inject target process {0}{1}</value>
   </data>
   <data name="VsClient_FailedToStart" xml:space="preserve">
     <value>Failed to start Visual Studio {0}{1}. See {2} for screenshot of the desktop.</value>

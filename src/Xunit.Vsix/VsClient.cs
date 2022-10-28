@@ -316,6 +316,7 @@ namespace Xunit
 
             s_tracer.TraceEvent(TraceEventType.Information, 0, $"Running: {info.FileName} {info.Arguments}");
             Process = Process.Start(info);
+            Process.WaitForInputIdle();
 
             // Wait a bit for warmup, before injecting into the .NET runtime in the VS process.
             Thread.Sleep(_settings.WarmupSeconds * 1000);

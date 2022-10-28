@@ -16,6 +16,7 @@ namespace Xunit
     class VsixTestAssemblyRunner : XunitTestAssemblyRunner
     {
         List<IDisposable> _disposables = new List<IDisposable>();
+        MarshalledObjects marshalled = new();
 
         public VsixTestAssemblyRunner(ITestAssembly testAssembly,
                                        IEnumerable<IXunitTestCase> testCases,
@@ -23,7 +24,9 @@ namespace Xunit
                                        IMessageSink executionMessageSink,
                                        ITestFrameworkExecutionOptions executionOptions)
             : base(testAssembly, testCases, diagnosticMessageSink, executionMessageSink, executionOptions)
-        { }
+        {
+            _disposables.Add(marshalled);
+        }
 
         class SkippedTest : ITest
         {
@@ -91,6 +94,7 @@ namespace Xunit
             if (testCollection is VsixTestCollection vsixCollection)
             {
                 var runner = new VsixTestCollectionRunner(vsixCollection, testCases, DiagnosticMessageSink, messageBus, TestCaseOrderer, new ExceptionAggregator(Aggregator), cancellationTokenSource);
+                marshalled.AddRange(testCases.OfType<MarshalByRefObject>());
                 _disposables.Add(runner);
                 return runner.RunAsync();
             }

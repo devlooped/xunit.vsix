@@ -1,0 +1,16 @@
+﻿AllocConsole
+CoRegisterMessageFilter
+CreateBindCtx
+FreeConsole
+GetConsoleWindow
+GetLastActivePopup
+GetRunningObjectTable
+IsWindowVisible
+IsWow64Process
+NtQueryInformationProcess
+SetForegroundWindow
+SetWindowPos
+SwitchToThisWindow
+
+PENDINGMSG
+SERVERCALL

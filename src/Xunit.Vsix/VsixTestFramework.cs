@@ -149,6 +149,8 @@ namespace Xunit
                         Constants.Tracer.TraceEvent(TraceEventType.Verbose, 0, Strings.VsixTestFramework.DebugMaxThreads);
                     }
 
+                    // Install a COM message filter to handle retry operations when the first attempt fails
+                    using var messageFilter = new Harness.MessageFilter();
                     using var assemblyRunner = new VsixTestAssemblyRunner(TestAssembly, testCases, DiagnosticMessageSink, new TracingMessageSink(executionMessageSink, Constants.Tracer), executionOptions);
                     await assemblyRunner.RunAsync();
                 }

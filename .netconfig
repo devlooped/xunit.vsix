@@ -147,3 +147,18 @@
 	sha = 74189b061850a3527676d76281de61044abc86a2
 	etag = 10106929413a89658d22c36b5b934c598809e1deb8cdd994ec846f824195aac6
 	weak
+[file "src/Xunit.Vsix/External/MessageFilter.cs"]
+	url = https://github.com/microsoft/vs-extension-testing/blob/main/src/Microsoft.VisualStudio.Extensibility.Testing.Xunit.Shared/Harness/MessageFilter.cs
+	sha = 766e6ad15fc8193d8761397805f543b20e1f2e82
+	etag = d5291d38afc621b72b6f45ca402be5e211445cf31353a7f51612e77163d83212
+	weak
+[file "src/Xunit.Vsix/External/MessageFilterSafeHandle.cs"]
+	url = https://github.com/microsoft/vs-extension-testing/blob/main/src/Microsoft.VisualStudio.Extensibility.Testing.Xunit.Shared/Harness/MessageFilterSafeHandle.cs
+	sha = 766e6ad15fc8193d8761397805f543b20e1f2e82
+	etag = 5c3248e8a6443562dae5436471e9fcc0ea9f0299bf12aada1aa2bd32f89c8cfa
+	weak
+[file "src/Xunit.Vsix/External/VSConstants.cs"]
+	url = https://github.com/microsoft/vs-extension-testing/blob/main/src/Microsoft.VisualStudio.Extensibility.Testing.Xunit.Shared/Harness/VSConstants.cs
+	sha = 9ea97ced34e354b300b3c903bf66c69dc19c57d0
+	etag = fe24790457b11097e2965000272967ce7dc5197f71bd4c4a1570201f8835b509
+	weak

@@ -24,24 +24,6 @@ namespace Xunit.Interop
         int QueryService([In][ComAliasName("Microsoft.VisualStudio.OLE.Interop.REFGUID")] ref Guid guidService, [In][ComAliasName("Microsoft.VisualStudio.OLE.Interop.REFIID")] ref Guid riid, out IntPtr ppvObject);
     }
 
-    [Guid("FD9DC8E3-2FFC-446D-8C50-99CA4A3D2D1C")]
-    interface SVsShell
-    {
-    }
-
-    /// <summary />
-    [ComImport]
-    [TypeIdentifier]
-    [Guid("FD9DC8E3-2FFC-446D-8C50-99CA4A3D2D1C")]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public interface IVsShell
-    {
-        /// <summary />
-        [MethodImpl(MethodImplOptions.PreserveSig | MethodImplOptions.InternalCall)]
-        int GetProperty([In][ComAliasName("Microsoft.VisualStudio.Shell.Interop.VSSPROPID")] int propid, [MarshalAs(UnmanagedType.Struct)] out object pvar);
-    }
-
     /// <summary />
     [TypeIdentifier]
     [ComImport]
@@ -78,8 +60,6 @@ static class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool IsWow64Process([In] IntPtr process, [Out] out bool wow64Process);
 
-    [DllImport("ole32.dll")]
-    internal static extern int CoRegisterMessageFilter(IMessageFilter lpMessageFilter, out IMessageFilter lplpMessageFilter);
     [DllImport("ole32.dll")]
     internal static extern int CreateBindCtx(int reserved, out IBindCtx ppbc);
     [DllImport("ole32.dll")]

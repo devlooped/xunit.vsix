@@ -120,7 +120,7 @@ namespace Xunit
             }
 
             var xunitTest = new XunitTest(testCase, testCase.DisplayName);
-
+            var shouldStop = false;
             try
             {
                 var remoteBus = _remoteBuses.GetOrAdd(messageBus, bus =>
@@ -143,8 +143,7 @@ namespace Xunit
             }
             catch (Exception ex)
             {
-                if (ex is RemotingException || ex is TimeoutException)
-                    Stop();
+                shouldStop = ex is RemotingException || ex is TimeoutException;
 
                 if (ex is RemotingException rex)
                     ex = new Exception("Connection to running IDE lost: " + rex.Message, ex);
@@ -159,12 +158,14 @@ namespace Xunit
                     Failed = 1
                 };
             }
+            finally
+            {
+                if (shouldStop)
+                    Stop();
+            }
         }
 
-        public void Dispose()
-        {
-            Stop();
-        }
+        public void Dispose() => Stop();
 
         bool EnsureConnected(VsixTestCase testCase, IMessageBus messageBus)
         {
@@ -199,7 +200,7 @@ namespace Xunit
                 }
 
                 Thread.Sleep(sleep);
-                sleep = sleep * retries;
+                sleep *= retries;
             }
 
             if (!connected)

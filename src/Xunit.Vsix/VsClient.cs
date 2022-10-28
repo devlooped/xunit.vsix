@@ -79,7 +79,7 @@ namespace Xunit
 #endif
 
             using var bufferBus = new InterceptingMessageBus(messageBus);
-            var summary = await RunCoreAsync(vsixTest, messageBus, aggregator);
+            var summary = await RunCoreAsync(vsixTest, bufferBus, aggregator);
             var shouldRecycle = vsixTest.RecycleOnFailure.GetValueOrDefault();
 
             // Special case for MEF cache corruption, clear cache and restart the test.
@@ -384,9 +384,6 @@ namespace Xunit
 
                 if (injector.ExitCode == 0 && Debugger.IsAttached)
                 {
-                    // Install a COM message filter to handle retry operations when the first attempt fails
-                    using var messageFilter = new Harness.MessageFilter();
-
                     // Try to attach the process to the current debugger, if any.
                     var debugee = Process.GetCurrentProcess().Id;
 #pragma warning disable VSTHRD010 // Invoke single-threaded types on Main thread

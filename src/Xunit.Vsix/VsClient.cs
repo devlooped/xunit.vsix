@@ -228,7 +228,7 @@ namespace Xunit
                 var sleep = _settings.RetrySleepInterval;
                 var retries = 0;
                 var started = false;
-                while (retries++ <= _settings.ProcessStartRetries && !(started = Start()))
+                while (retries++ <= _settings.ProcessStartRetries && !(started = Start(out var retry)) && retry)
                 {
                     Stop();
                     Thread.Sleep(sleep);
@@ -265,8 +265,9 @@ namespace Xunit
             }
         }
 
-        bool Start()
+        bool Start(out bool retry)
         {
+            retry = true;
             _pipeName = Guid.NewGuid().ToString();
             var args = "";
 
@@ -346,6 +347,7 @@ namespace Xunit
                 if (thisFile.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)))
                 {
                     s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id) + ": xunit.vsix seems to be running in shadow copy mode, which is not supported.");
+                    retry = false;
                     return false;
                 }
 
@@ -353,6 +355,7 @@ namespace Xunit
                 if (!File.Exists(toolPath))
                 {
                     s_tracer.TraceEvent(TraceEventType.Error, 0, Strings.VsClient.FailedToInject(Process.Id) + $": could not find .NET injector helper at {toolPath}.");
+                    retry = false;
                     return false;
                 }
 

@@ -2,9 +2,9 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text.RegularExpressions;
 using NuGet.Versioning;
+using Windows.Win32;
 
 namespace Xunit
 {
@@ -80,39 +80,42 @@ namespace Xunit
             if (moniker == null)
                 return null;
 
-            if (ErrorHandler.Succeeded(NativeMethods.GetRunningObjectTable(0, out var rdt)) &&
-                ErrorHandler.Succeeded(rdt.GetObject(moniker, out var comObject)))
+            if (ErrorHandler.Succeeded(PInvoke.GetRunningObjectTable(0, out var rdt)))
+            {
+                rdt.GetObject(moniker, out var comObject);
                 return comObject;
+            }
 
             return null;
         }
 
-        static IMoniker? FindMoniker(string monikerName)
+        static Windows.Win32.System.Com.IMoniker FindMoniker(string monikerName)
         {
             try
             {
-                IRunningObjectTable table;
-                IEnumMoniker moniker;
-                if (ErrorHandler.Failed(NativeMethods.GetRunningObjectTable(0, out table)))
+                if (ErrorHandler.Failed(PInvoke.GetRunningObjectTable(0, out var table)))
                     return null;
 
-                table.EnumRunning(out moniker);
-                moniker.Reset();
-                var pceltFetched = IntPtr.Zero;
-                var rgelt = new IMoniker[1];
+                table.EnumRunning(out var enumMoniker);
+                if (ErrorHandler.Failed(PInvoke.CreateBindCtx(0, out var ctx)))
+                    return null;
 
-                while (moniker.Next(1, rgelt, pceltFetched) == 0)
+                table.EnumRunning(out var moniker);
+                moniker.Reset();
+
+                uint pceltFetched = 0;
+                var rgelt = new Windows.Win32.System.Com.IMoniker[1];
+                unsafe
                 {
-                    IBindCtx ctx;
-                    if (!ErrorHandler.Failed(NativeMethods.CreateBindCtx(0, out ctx)))
+                    moniker.Next(1, rgelt, &pceltFetched);
+                    do
                     {
-                        string displayName;
-                        rgelt[0].GetDisplayName(ctx, null, out displayName);
-                        if (displayName == monikerName)
-                        {
+                        rgelt[0].GetDisplayName(ctx, null, out var displayName);
+                        if (displayName.ToString() == monikerName)
                             return rgelt[0];
-                        }
-                    }
+
+                        moniker.Next(1, rgelt, &pceltFetched);
+                    } while (pceltFetched > 0);
                 }
             }
             catch

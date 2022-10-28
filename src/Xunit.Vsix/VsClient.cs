@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Threading;
+using Windows.Win32;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 using static ThisAssembly;
@@ -341,7 +342,8 @@ namespace Xunit
 
             try
             {
-                NativeMethods.IsWow64Process(Process.Handle, out var isWow);
+                PInvoke.IsWow64Process(Process.SafeHandle, out var isWow);
+                //NativeMethods.IsWow64Process(Process.Handle, out var isWow);
                 var platform = isWow ? "x86" : "x64";
                 var thisFile = Assembly.GetExecutingAssembly().Location;
                 if (thisFile.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)))
@@ -382,6 +384,9 @@ namespace Xunit
 
                 if (injector.ExitCode == 0 && Debugger.IsAttached)
                 {
+                    // Install a COM message filter to handle retry operations when the first attempt fails
+                    using var messageFilter = new Harness.MessageFilter();
+
                     // Try to attach the process to the current debugger, if any.
                     var debugee = Process.GetCurrentProcess().Id;
 #pragma warning disable VSTHRD010 // Invoke single-threaded types on Main thread

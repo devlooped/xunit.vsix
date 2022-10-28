@@ -58,7 +58,6 @@ namespace Xunit
                 else
                     taskRunner = code => Task.Run(code, cancellationTokenSource.Token);
 
-
                 var tasks = CreateTestCollections(allTests.OfType<VsixTestCase>()).Select(
                     collection => taskRunner(() => RunTestCollectionAsync(messageBus, collection.Item1, collection.Item2, cancellationTokenSource))
                 ).ToArray();

@@ -14,6 +14,7 @@ using System.Runtime.Remoting.Channels;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Threading;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -391,7 +392,7 @@ namespace Xunit
                     dte?.Debugger.LocalProcesses
                         .Cast<EnvDTE80.Process2>()
                         .FirstOrDefault(p => p.ProcessID == Process.Id)?
-                        .Attach();
+                        .Attach2(VSConstants.DebugEnginesGuids.ManagedOnly_string);
 #pragma warning restore VSTHRD010 // Invoke single-threaded types on Main thread
                 }
 

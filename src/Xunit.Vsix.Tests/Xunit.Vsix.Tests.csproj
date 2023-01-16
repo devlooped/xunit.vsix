@@ -41,7 +41,7 @@
     <PackageReference Include="IsExternalInit" Version="1.0.3" PrivateAssets="all" />
     <PackageReference Include="NuGet.Versioning" Version="6.3.0" />
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.3.*" />
-    <PackageReference Include="Octokit" Version="3.0.1" />
+    <PackageReference Include="Octokit" Version="4.0.4" />
     <PackageReference Include="ThisAssembly.Project" Version="1.0.10" />
   </ItemGroup>
   

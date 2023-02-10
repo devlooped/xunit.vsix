@@ -1,5 +1,22 @@
 # Changelog
 
+## [v0.9.3-alpha](https://github.com/devlooped/xunit.vsix/tree/v0.9.3-alpha) (2023-02-10)
+
+[Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.9.2...v0.9.3-alpha)
+
+:sparkles: Implemented enhancements:
+
+- Take screenshots on certain failures for troubleshooting [\#77](https://github.com/devlooped/xunit.vsix/pull/77) (@kzu)
+
+:hammer: Other:
+
+- Drop TimeoutSeconds and instead use the built-in Timeout from base FactAttribute [\#59](https://github.com/devlooped/xunit.vsix/issues/59)
+
+:twisted_rightwards_arrows: Merged:
+
+- Add COM filter to retry messages for devenv [\#79](https://github.com/devlooped/xunit.vsix/pull/79) (@kzu)
+- ⛙ ⬆️ Bump ThisAssembly [\#74](https://github.com/devlooped/xunit.vsix/pull/74) (@github-actions[bot])
+
 ## [v0.9.2](https://github.com/devlooped/xunit.vsix/tree/v0.9.2) (2022-10-08)
 
 [Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.9.1...v0.9.2)

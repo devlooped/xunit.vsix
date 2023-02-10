@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.9.3](https://github.com/devlooped/xunit.vsix/tree/v0.9.3) (2023-02-10)
+
+[Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.9.3-alpha...v0.9.3)
+
 ## [v0.9.3-alpha](https://github.com/devlooped/xunit.vsix/tree/v0.9.3-alpha) (2023-02-10)
 
 [Full Changelog](https://github.com/devlooped/xunit.vsix/compare/v0.9.2...v0.9.3-alpha)

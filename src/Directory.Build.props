@@ -55,7 +55,9 @@
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <Nullable>enable</Nullable>
-
+    <!-- See https://www.meziantou.net/csharp-compiler-strict-mode.htm -->
+    <Features>strict</Features>
+    
     <!-- Simplify namespaces by defaulting to the single root name -->
     <RootNamespace>$(MSBuildProjectName)</RootNamespace>
     <RootNamespaceDot>$(MSBuildProjectName.IndexOf('.'))</RootNamespaceDot>
@@ -110,7 +112,7 @@
          after the fixed prefix. This allows dogfooding a branch build.
          The suffix is sanitized and optionally turned into 
     -->
-    <VersionPrefix>42.42.42</VersionPrefix>
+    <VersionPrefix Condition="$(VersionPrefix) == ''">42.42.42</VersionPrefix>
   </PropertyGroup>
 
   <PropertyGroup Label="Version" Condition="$(VersionLabel) != ''">

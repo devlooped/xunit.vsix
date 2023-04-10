@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
     <RootNamespace>Xunit</RootNamespace>
@@ -42,7 +42,7 @@
     <PackageReference Include="NuGet.Versioning" Version="6.4.0" />
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.3.*" />
     <PackageReference Include="Octokit" Version="5.0.0" />
-    <PackageReference Include="ThisAssembly.Project" Version="1.0.10" />
+    <PackageReference Include="ThisAssembly.Project" Version="1.2.13" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(PkgBin)' == ''" >

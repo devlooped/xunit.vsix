@@ -9,6 +9,8 @@ namespace Xunit
     /// inside the test, a constructor argument should be added to the test class which
     /// exactly matches the <typeparamref name="TFixture"/>.
     /// </summary>
+    /// 
+    /// 
     /// <typeparam name="TFixture">The type of the fixture.</typeparam>
     public interface IAssemblyFixture<TFixture> where TFixture : class, new() { }
 }

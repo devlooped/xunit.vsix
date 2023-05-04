@@ -12,5 +12,7 @@ namespace Xunit
     /// 
     /// 
     /// <typeparam name="TFixture">The type of the fixture.</typeparam>
+    /// 
+
     public interface IAssemblyFixture<TFixture> where TFixture : class, new() { }
 }
